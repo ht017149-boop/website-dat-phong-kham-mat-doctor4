@@ -78,6 +78,8 @@ function loginUser(username, password) {
 
         alert("Đăng nhập thành công!");
 
+window.location.href = "../index.html";
+
       
         window.location.href = "../index.html";
 
