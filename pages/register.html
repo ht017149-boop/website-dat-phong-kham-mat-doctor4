@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Đăng ký - Doctor4</title>
 
     <style>
@@ -14,9 +16,11 @@
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f0f6ff;
+
             display: flex;
             justify-content: center;
             align-items: center;
+
             min-height: 100vh;
         }
 
@@ -25,7 +29,8 @@
             background: white;
             padding: 35px;
             border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
         }
 
         h2 {
@@ -38,18 +43,23 @@
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
+
             border: 1px solid #ccc;
             border-radius: 6px;
+
             font-size: 15px;
         }
 
         button {
             width: 100%;
             padding: 12px;
+
             border: none;
             border-radius: 6px;
+
             background: #1976d2;
             color: white;
+
             font-size: 16px;
             cursor: pointer;
         }
@@ -72,51 +82,52 @@
 
 <body>
 
-<div class="register-box">
+    <div class="register-box">
 
-    <h2>Đăng ký tài khoản</h2>
+        <h2>Đăng ký tài khoản</h2>
 
-    <form onsubmit="return registerUser(
-        document.getElementById('username').value,
-        document.getElementById('password').value,
-        document.getElementById('confirmPassword').value
-    );">
+        <form onsubmit="return registerUser(
+            document.getElementById('username').value,
+            document.getElementById('password').value,
+            document.getElementById('confirmPassword').value
+        );">
 
-        <input
-            type="text"
-            id="username"
-            placeholder="Tên đăng nhập"
-            required
-        >
+            <input
+                type="text"
+                id="username"
+                placeholder="Tên đăng nhập"
+                required
+            >
 
-        <input
-            type="password"
-            id="password"
-            placeholder="Mật khẩu"
-            required
-        >
+            <input
+                type="password"
+                id="password"
+                placeholder="Mật khẩu"
+                required
+            >
 
-        <input
-            type="password"
-            id="confirmPassword"
-            placeholder="Nhập lại mật khẩu"
-            required
-        >
+            <input
+                type="password"
+                id="confirmPassword"
+                placeholder="Nhập lại mật khẩu"
+                required
+            >
 
-        <button type="submit">
-            Đăng ký
-        </button>
+            <button type="submit">
+                Đăng ký
+            </button>
 
-    </form>
+        </form>
 
-    <div class="login-link">
-        Đã có tài khoản?
-        <a href="login.html">Đăng nhập</a>
+        <div class="login-link">
+            Đã có tài khoản?
+            <a href="login.html">Đăng nhập</a>
+        </div>
+
     </div>
 
-</div>
-
-<script src="../js/auth.js"></script>
+    <script src="../js/auth.js"></script>
 
 </body>
+
 </html>
