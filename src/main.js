@@ -1,4 +1,5 @@
 import './css/style.css';
+import './css/home.css';
 import { renderHeader, renderFooter } from './components/layout.js';
 
 function init() {
