@@ -1,12 +1,52 @@
+/* ============================================================
+   src/components/layout.js — Doctor4 Eye Clinic
+   Header & Footer components + Navigation & Auth status
+   ============================================================ */
+
 const NAV_LINKS = [
   { id: 'home', label: 'Trang chủ', href: '/index.html' },
   { id: 'about', label: 'Giới thiệu', href: '/gioi-thieu.html' },
-  { id: 'services', label: 'Dịch vụ', href: '/index.htmldich-vu' },
-  { id: 'doctors', label: 'Bác sĩ', href: '/index.htmldoctors' },
-  { id: 'contact', label: 'Liên hệ', href: '/index.htmlcontact' },
-]
+  { id: 'services', label: 'Dịch vụ', href: '/index.html#dich-vu' },
+  { id: 'doctors', label: 'Bác sĩ', href: '/index.html#doctors' },
+  { id: 'contact', label: 'Liên hệ', href: '/index.html#contact' },
+];
+
+export function getCurrentUser() {
+  try {
+    const session = localStorage.getItem('doctor4_session') || sessionStorage.getItem('doctor4_session');
+    return session ? JSON.parse(session) : null;
+  } catch (e) {
+    return null;
+  }
+}
 
 export function renderHeader(active) {
+  const user = getCurrentUser();
+
+  const userActionHtml = user
+    ? `
+      <div class="nav-user-wrapper" id="navUserWrapper">
+        <button class="nav-user-btn" id="navUserBtn" aria-label="Menu tài khoản">
+          <span class="nav-user-avatar">${user.name ? user.name.charAt(0).toUpperCase() : '👤'}</span>
+          <span class="nav-user-name">${user.name || 'Tài khoản'}</span>
+          <span style="font-size: 0.7rem;">▼</span>
+        </button>
+        <div class="nav-user-dropdown" id="navUserDropdown">
+          <div style="padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-weight: 700; color: #fff; font-size: 0.9rem;">${user.name}</div>
+            <div style="color: #94A3B8; font-size: 0.78rem;">${user.email || user.phone}</div>
+          </div>
+          ${user.role === 'admin' ? `<a href="/admin/index.html" class="nav-dropdown-item">📊 Quản trị Admin</a>` : ''}
+          <a href="/index.html#dat-lich" class="nav-dropdown-item">📅 Lịch khám của tôi</a>
+          <div class="nav-dropdown-divider"></div>
+          <button class="nav-dropdown-item text-danger" id="navBtnLogout">🚪 Đăng xuất</button>
+        </div>
+      </div>
+    `
+    : `
+      <a href="/dang-nhap.html" class="btn-login" id="navBtnLogin">Đăng nhập</a>
+    `;
+
   return `
   <div class="notice-strip" id="noticeStrip">
     🎉 <strong>Ưu đãi tháng này:</strong> Giảm 30% phí khám tổng quát khi đặt lịch online &nbsp;|&nbsp; Hotline: <strong>1800 1234</strong>
@@ -31,8 +71,8 @@ export function renderHeader(active) {
       </ul>
 
       <div class="nav-actions">
-        <a href="/index.htmldang-nhap" class="btn-login" id="navBtnLogin">Đăng nhập</a>
-        <a href="/index.htmldat-lich" class="btn-book-nav" id="navBtnBook">📅 Đặt lịch ngay</a>
+        ${userActionHtml}
+        <a href="/index.html#dat-lich" class="btn-book-nav" id="navBtnBook">📅 Đặt lịch ngay</a>
       </div>
 
       <button class="nav-toggle" id="navToggle" aria-label="Menu">
@@ -40,7 +80,63 @@ export function renderHeader(active) {
       </button>
     </div>
   </nav>
-  `
+  `;
+}
+
+export function setupHeaderEvents() {
+  const notice = document.getElementById('noticeStrip');
+  const closeBtn = document.getElementById('closeNotice');
+  const navbar = document.getElementById('navbar');
+  const toggle = document.getElementById('navToggle');
+  const menu = document.getElementById('navMenu');
+  const userBtn = document.getElementById('navUserBtn');
+  const userDropdown = document.getElementById('navUserDropdown');
+  const logoutBtn = document.getElementById('navBtnLogout');
+
+  if (closeBtn && notice && navbar) {
+    closeBtn.addEventListener('click', () => {
+      notice.classList.add('hidden');
+      navbar.classList.add('notice-gone');
+      menu?.classList.add('notice-gone');
+    });
+  }
+
+  if (toggle && menu) {
+    toggle.addEventListener('click', () => {
+      toggle.classList.toggle('open');
+      menu.classList.toggle('open');
+    });
+  }
+
+  // Toggle user menu dropdown
+  if (userBtn && userDropdown) {
+    userBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      userDropdown.classList.toggle('show');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!userDropdown.contains(e.target) && !userBtn.contains(e.target)) {
+        userDropdown.classList.remove('show');
+      }
+    });
+  }
+
+  // Handle logout
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('doctor4_session');
+      sessionStorage.removeItem('doctor4_session');
+      window.location.reload();
+    });
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!navbar) return;
+    navbar.classList.toggle('scrolled', window.scrollY > 10);
+    if (menu) menu.classList.remove('open');
+    if (toggle) toggle.classList.remove('open');
+  });
 }
 
 export function renderFooter() {
@@ -67,11 +163,11 @@ export function renderFooter() {
       <div>
         <h4 class="footer-col-title">Dịch vụ</h4>
         <ul class="footer-links">
-          <li><a href="/index.htmldich-vu">Khám mắt tổng quát</a></li>
-          <li><a href="/index.htmldich-vu">Phẫu thuật LASIK</a></li>
-          <li><a href="/index.htmldich-vu">Điều trị đục thủy tinh thể</a></li>
-          <li><a href="/index.htmldich-vu">Tư vấn kính mắt</a></li>
-          <li><a href="/index.htmldich-vu">Khám mắt trẻ em</a></li>
+          <li><a href="/index.html#dich-vu">Khám mắt tổng quát</a></li>
+          <li><a href="/index.html#dich-vu">Phẫu thuật LASIK</a></li>
+          <li><a href="/index.html#dich-vu">Điều trị đục thủy tinh thể</a></li>
+          <li><a href="/index.html#dich-vu">Tư vấn kính mắt</a></li>
+          <li><a href="/index.html#dich-vu">Khám mắt trẻ em</a></li>
         </ul>
       </div>
 
@@ -79,10 +175,10 @@ export function renderFooter() {
         <h4 class="footer-col-title">Thông tin</h4>
         <ul class="footer-links">
           <li><a href="/gioi-thieu.html">Về chúng tôi</a></li>
-          <li><a href="/index.htmldoctors">Đội ngũ bác sĩ</a></li>
+          <li><a href="/index.html#doctors">Đội ngũ bác sĩ</a></li>
           <li><a href="/index.html">Tin tức sức khỏe</a></li>
           <li><a href="/index.html">Câu hỏi thường gặp</a></li>
-          <li><a href="/index.html">Tuyển dụng</a></li>
+          <li><a href="/dang-nhap.html">Tài khoản thành viên</a></li>
         </ul>
       </div>
 
@@ -130,5 +226,5 @@ export function renderFooter() {
       </nav>
     </div>
   </footer>
-  `
+  `;
 }

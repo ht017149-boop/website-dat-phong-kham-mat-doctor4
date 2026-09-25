@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng Nhập - Doctor4 Phòng Khám Mắt</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <!-- Header -->
+    <div id="header-container"></div>
+
+    <!-- Main Auth Area -->
+    <main class="auth-page">
+      <div class="auth-bg-grid"></div>
+      <div class="auth-orb auth-orb-1"></div>
+      <div class="auth-orb auth-orb-2"></div>
+
+      <div class="auth-container">
+        <div class="auth-card-wrapper">
+          <!-- Left Showcase Banner -->
+          <div class="auth-showcase">
+            <div class="auth-showcase-top">
+              <a href="/index.html" class="auth-showcase-logo">
+                <div class="logo-icon">👁️</div>
+                <div class="logo-text">
+                  <span class="logo-name">Doctor<span>4</span></span>
+                  <span class="logo-sub">Eye Clinic</span>
+                </div>
+              </a>
+
+              <h2 class="auth-showcase-title">
+                Chăm sóc thị lực<br />
+                <span>chuẩn quốc tế</span>
+              </h2>
+
+              <p class="auth-showcase-desc">
+                Đăng nhập để quản lý lịch khám, theo dõi kết quả hồ sơ bệnh án nhãn khoa và nhận hỗ trợ nhanh chóng từ chuyên gia.
+              </p>
+
+              <ul class="auth-features-list">
+                <li class="auth-feature-item">
+                  <div class="auth-feature-icon">📋</div>
+                  <span>Hồ sơ bệnh án điện tử bảo mật</span>
+                </li>
+                <li class="auth-feature-item">
+                  <div class="auth-feature-icon">⚡</div>
+                  <span>Đặt lịch khám ưu tiên, không chờ đợi</span>
+                </li>
+                <li class="auth-feature-item">
+                  <div class="auth-feature-icon">👨‍⚕️</div>
+                  <span>Tư vấn trực tiếp cùng Bác sĩ Chuyên khoa</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="auth-showcase-bottom">
+              <div class="auth-avatar-group">
+                <div class="auth-avatar-mock">👩‍⚕️</div>
+                <div class="auth-avatar-mock">👨‍⚕️</div>
+                <div class="auth-avatar-mock">🧑</div>
+                <div class="auth-avatar-mock">👧</div>
+              </div>
+              <div class="auth-showcase-bottom-text">
+                Hơn <strong>50,000+</strong> bệnh nhân đã tin tưởng lựa chọn Doctor4
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Login Form -->
+          <div class="auth-form-panel">
+            <div class="auth-panel-header">
+              <div class="auth-badge">
+                <span>🔐</span> Cổng Thành Viên
+              </div>
+              <h1 class="auth-panel-title">Đăng Nhập</h1>
+              <p class="auth-panel-subtitle">Vui lòng điền thông tin để đăng nhập vào tài khoản của bạn</p>
+            </div>
+
+            <!-- Social Login -->
+            <div class="auth-social-buttons">
+              <button type="button" class="btn-social">
+                <span class="btn-social-icon">🌐</span> Google
+              </button>
+              <button type="button" class="btn-social">
+                <span class="btn-social-icon">👥</span> Facebook
+              </button>
+            </div>
+
+            <div class="auth-divider">
+              <span>hoặc qua email / sđt</span>
+            </div>
+
+            <!-- Login Form -->
+            <form id="formLogin" class="auth-form" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="loginIdentifier">
+                  <span>Email hoặc Số điện thoại <span class="form-label-required">*</span></span>
+                </label>
+                <div class="input-icon-wrapper">
+                  <input
+                    type="text"
+                    id="loginIdentifier"
+                    class="auth-input"
+                    placeholder="VD: email@doctor4.vn hoặc 0912345678"
+                    autocomplete="username"
+                    required
+                  />
+                  <span class="input-icon">👤</span>
+                </div>
+                <div class="form-error" id="loginIdentifier-error"></div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="loginPassword">
+                  <span>Mật khẩu <span class="form-label-required">*</span></span>
+                </label>
+                <div class="input-icon-wrapper">
+                  <input
+                    type="password"
+                    id="loginPassword"
+                    class="auth-input"
+                    placeholder="Nhập mật khẩu"
+                    autocomplete="current-password"
+                    required
+                  />
+                  <span class="input-icon">🔒</span>
+                  <button type="button" class="btn-toggle-pwd" data-target="loginPassword" aria-label="Hiện mật khẩu">👁️</button>
+                </div>
+                <div class="form-error" id="loginPassword-error"></div>
+              </div>
+
+              <div class="form-actions-row">
+                <label class="custom-checkbox">
+                  <input type="checkbox" id="loginRemember" checked />
+                  <span>Ghi nhớ đăng nhập</span>
+                </label>
+                <a href="javascript:void(0)" class="link-forgot" onclick="alert('Vui lòng liên hệ hotline 1800 1234 hoặc gửi email tới support@doctor4.vn để được cấp lại mật khẩu.')">Quên mật khẩu?</a>
+              </div>
+
+              <button type="submit" class="btn-auth-submit" id="btnLoginSubmit">
+                <span class="btn-text">Đăng Nhập</span>
+                <span class="btn-icon">→</span>
+                <div class="btn-spinner"></div>
+              </button>
+            </form>
+
+            <!-- Quick Demo Accounts -->
+            <div class="auth-demo-box">
+              <div class="auth-demo-header">💡 Tài khoản mẫu thử nghiệm nhanh:</div>
+              <div class="auth-demo-actions">
+                <button type="button" class="btn-demo-fill" data-email="benhnhan@doctor4.vn" data-pwd="123456">👤 Bệnh nhân: benhnhan@doctor4.vn</button>
+                <button type="button" class="btn-demo-fill" data-email="admin@doctor4.vn" data-pwd="123456">🛡️ Quản trị: admin@doctor4.vn</button>
+              </div>
+            </div>
+
+            <!-- Switch to Register -->
+            <div class="auth-switch-prompt">
+              Chưa có tài khoản Doctor4?
+              <a href="/dang-ky.html" id="linkToRegister">Đăng ký ngay</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <div id="footer-container"></div>
+
+    <!-- Script -->
+    <script type="module" src="/src/pages/auth.js"></script>
+  </body>
+</html>
