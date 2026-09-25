@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng Ký Tài Khoản - Doctor4 Phòng Khám Mắt</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <!-- Header -->
+    <div id="header-container"></div>
+
+    <!-- Main Auth Area -->
+    <main class="auth-page">
+      <div class="auth-bg-grid"></div>
+      <div class="auth-orb auth-orb-1"></div>
+      <div class="auth-orb auth-orb-2"></div>
+
+      <div class="auth-container">
+        <div class="auth-card-wrapper">
+          <!-- Left Showcase Banner -->
+          <div class="auth-showcase">
+            <div class="auth-showcase-top">
+              <a href="/index.html" class="auth-showcase-logo">
+                <div class="logo-icon">👁️</div>
+                <div class="logo-text">
+                  <span class="logo-name">Doctor<span>4</span></span>
+                  <span class="logo-sub">Eye Clinic</span>
+                </div>
+              </a>
+
+              <h2 class="auth-showcase-title">
+                Đồng hành cùng<br />
+                <span>đôi mắt sáng khỏe</span>
+              </h2>
+
+              <p class="auth-showcase-desc">
+                Đăng ký thành viên chỉ trong 30 giây để tận hưởng trọn vẹn quyền lợi chăm sóc mắt hàng đầu tại Doctor4.
+              </p>
+
+              <ul class="auth-features-list">
+                <li class="auth-feature-item">
+                  <div class="auth-feature-icon">🎁</div>
+                  <span>Giảm ngay 30% chi phí khám tổng quát đầu tiên</span>
+                </li>
+                <li class="auth-feature-item">
+                  <div class="auth-feature-icon">📲</div>
+                  <span>Nhận nhắc lịch khám & đơn thuốc qua SMS/Zalo</span>
+                </li>
+                <li class="auth-feature-item">
+                  <div class="auth-feature-icon">🛡️</div>
+                  <span>Bảo mật dữ liệu y tế theo chuẩn HIPAA</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="auth-showcase-bottom">
+              <div class="auth-avatar-group">
+                <div class="auth-avatar-mock">👨‍⚕️</div>
+                <div class="auth-avatar-mock">👩‍⚕️</div>
+                <div class="auth-avatar-mock">🧑‍💻</div>
+                <div class="auth-avatar-mock">👵</div>
+              </div>
+              <div class="auth-showcase-bottom-text">
+                Tham gia cộng đồng hơn <strong>50,000+</strong> người bệnh tin chọn
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Register Form -->
+          <div class="auth-form-panel">
+            <div class="auth-panel-header">
+              <div class="auth-badge">
+                <span>✨</span> Đăng Ký Mới
+              </div>
+              <h1 class="auth-panel-title">Tạo Tài Khoản</h1>
+              <p class="auth-panel-subtitle">Điền các thông tin dưới đây để đăng ký hồ sơ bệnh nhân</p>
+            </div>
+
+            <!-- Social Registration -->
+            <div class="auth-social-buttons">
+              <button type="button" class="btn-social">
+                <span class="btn-social-icon">🌐</span> Google
+              </button>
+              <button type="button" class="btn-social">
+                <span class="btn-social-icon">👥</span> Facebook
+              </button>
+            </div>
+
+            <div class="auth-divider">
+              <span>hoặc đăng ký thông thường</span>
+            </div>
+
+            <!-- Register Form -->
+            <form id="formRegister" class="auth-form" novalidate>
+              <!-- Full Name -->
+              <div class="form-group">
+                <label class="form-label" for="regName">
+                  <span>Họ và tên của bạn <span class="form-label-required">*</span></span>
+                </label>
+                <div class="input-icon-wrapper">
+                  <input
+                    type="text"
+                    id="regName"
+                    class="auth-input"
+                    placeholder="VD: Nguyễn Văn An"
+                    autocomplete="name"
+                    required
+                  />
+                  <span class="input-icon">👤</span>
+                </div>
+                <div class="form-error" id="regName-error"></div>
+              </div>
+
+              <!-- Phone and Email row -->
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label" for="regPhone">
+                    <span>Số điện thoại <span class="form-label-required">*</span></span>
+                  </label>
+                  <div class="input-icon-wrapper">
+                    <input
+                      type="tel"
+                      id="regPhone"
+                      class="auth-input"
+                      placeholder="VD: 0987654321"
+                      autocomplete="tel"
+                      required
+                    />
+                    <span class="input-icon">📞</span>
+                  </div>
+                  <div class="form-error" id="regPhone-error"></div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="regEmail">
+                    <span>Địa chỉ Email <span class="form-label-required">*</span></span>
+                  </label>
+                  <div class="input-icon-wrapper">
+                    <input
+                      type="email"
+                      id="regEmail"
+                      class="auth-input"
+                      placeholder="VD: an.nguyen@gmail.com"
+                      autocomplete="email"
+                      required
+                    />
+                    <span class="input-icon">✉️</span>
+                  </div>
+                  <div class="form-error" id="regEmail-error"></div>
+                </div>
+              </div>
+
+              <!-- Passwords row -->
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label" for="regPassword">
+                    <span>Mật khẩu <span class="form-label-required">*</span></span>
+                  </label>
+                  <div class="input-icon-wrapper">
+                    <input
+                      type="password"
+                      id="regPassword"
+                      class="auth-input"
+                      placeholder="Tối thiểu 6 ký tự"
+                      autocomplete="new-password"
+                      required
+                    />
+                    <span class="input-icon">🔒</span>
+                    <button type="button" class="btn-toggle-pwd" data-target="regPassword" aria-label="Hiện mật khẩu">👁️</button>
+                  </div>
+                  <div class="form-error" id="regPassword-error"></div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="regConfirmPassword">
+                    <span>Nhập lại mật khẩu <span class="form-label-required">*</span></span>
+                  </label>
+                  <div class="input-icon-wrapper">
+                    <input
+                      type="password"
+                      id="regConfirmPassword"
+                      class="auth-input"
+                      placeholder="Xác nhận mật khẩu"
+                      autocomplete="new-password"
+                      required
+                    />
+                    <span class="input-icon">🔐</span>
+                    <button type="button" class="btn-toggle-pwd" data-target="regConfirmPassword" aria-label="Hiện mật khẩu">👁️</button>
+                  </div>
+                  <div class="form-error" id="regConfirmPassword-error"></div>
+                </div>
+              </div>
+
+              <!-- Terms Agreement -->
+              <div class="form-group">
+                <label class="custom-checkbox">
+                  <input type="checkbox" id="regAgreeTerms" checked />
+                  <span style="font-size: 0.85rem; line-height: 1.4;">
+                    Tôi đồng ý với <a href="#" style="color: var(--clr-accent); text-decoration: underline;">Điều khoản dịch vụ</a> và <a href="#" style="color: var(--clr-accent); text-decoration: underline;">Chính sách bảo mật</a> y tế của Doctor4.
+                  </span>
+                </label>
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" class="btn-auth-submit" id="btnRegisterSubmit">
+                <span class="btn-text">Đăng Ký Tài Khoản</span>
+                <span class="btn-icon">→</span>
+                <div class="btn-spinner"></div>
+              </button>
+            </form>
+
+            <!-- Switch to Login -->
+            <div class="auth-switch-prompt">
+              Đã có tài khoản Doctor4?
+              <a href="/dang-nhap.html" id="linkToLogin">Đăng nhập ngay</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <div id="footer-container"></div>
+
+    <!-- Script -->
+    <script type="module" src="/src/pages/auth.js"></script>
+  </body>
+</html>
