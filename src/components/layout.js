@@ -1,9 +1,9 @@
 const NAV_LINKS = [
-  { id: 'home', label: 'Trang chủ', href: '#/' },
-  { id: 'about', label: 'Giới thiệu', href: '#/gioi-thieu' },
-  { id: 'services', label: 'Dịch vụ', href: '#/dich-vu' },
-  { id: 'doctors', label: 'Bác sĩ', href: '#/doctors' },
-  { id: 'contact', label: 'Liên hệ', href: '#/contact' },
+  { id: 'home', label: 'Trang chủ', href: '/index.html' },
+  { id: 'about', label: 'Giới thiệu', href: '/gioi-thieu.html' },
+  { id: 'services', label: 'Dịch vụ', href: '/index.htmldich-vu' },
+  { id: 'doctors', label: 'Bác sĩ', href: '/index.htmldoctors' },
+  { id: 'contact', label: 'Liên hệ', href: '/index.htmlcontact' },
 ]
 
 export function renderHeader(active) {
@@ -15,7 +15,7 @@ export function renderHeader(active) {
 
   <nav class="navbar" id="navbar">
     <div class="nav-inner">
-      <a href="#/" class="nav-logo" id="navLogo">
+      <a href="/index.html" class="nav-logo" id="navLogo">
         <div class="logo-icon">👁️</div>
         <div class="logo-text">
           <span class="logo-name">Doctor<span>4</span></span>
@@ -31,8 +31,8 @@ export function renderHeader(active) {
       </ul>
 
       <div class="nav-actions">
-        <a href="#/dang-nhap" class="btn-login" id="navBtnLogin">Đăng nhập</a>
-        <a href="#/dat-lich" class="btn-book-nav" id="navBtnBook">📅 Đặt lịch ngay</a>
+        <a href="/index.htmldang-nhap" class="btn-login" id="navBtnLogin">Đăng nhập</a>
+        <a href="/index.htmldat-lich" class="btn-book-nav" id="navBtnBook">📅 Đặt lịch ngay</a>
       </div>
 
       <button class="nav-toggle" id="navToggle" aria-label="Menu">
@@ -67,22 +67,22 @@ export function renderFooter() {
       <div>
         <h4 class="footer-col-title">Dịch vụ</h4>
         <ul class="footer-links">
-          <li><a href="#/dich-vu">Khám mắt tổng quát</a></li>
-          <li><a href="#/dich-vu">Phẫu thuật LASIK</a></li>
-          <li><a href="#/dich-vu">Điều trị đục thủy tinh thể</a></li>
-          <li><a href="#/dich-vu">Tư vấn kính mắt</a></li>
-          <li><a href="#/dich-vu">Khám mắt trẻ em</a></li>
+          <li><a href="/index.htmldich-vu">Khám mắt tổng quát</a></li>
+          <li><a href="/index.htmldich-vu">Phẫu thuật LASIK</a></li>
+          <li><a href="/index.htmldich-vu">Điều trị đục thủy tinh thể</a></li>
+          <li><a href="/index.htmldich-vu">Tư vấn kính mắt</a></li>
+          <li><a href="/index.htmldich-vu">Khám mắt trẻ em</a></li>
         </ul>
       </div>
 
       <div>
         <h4 class="footer-col-title">Thông tin</h4>
         <ul class="footer-links">
-          <li><a href="#/gioi-thieu">Về chúng tôi</a></li>
-          <li><a href="#/doctors">Đội ngũ bác sĩ</a></li>
-          <li><a href="#/">Tin tức sức khỏe</a></li>
-          <li><a href="#/">Câu hỏi thường gặp</a></li>
-          <li><a href="#/">Tuyển dụng</a></li>
+          <li><a href="/gioi-thieu.html">Về chúng tôi</a></li>
+          <li><a href="/index.htmldoctors">Đội ngũ bác sĩ</a></li>
+          <li><a href="/index.html">Tin tức sức khỏe</a></li>
+          <li><a href="/index.html">Câu hỏi thường gặp</a></li>
+          <li><a href="/index.html">Tuyển dụng</a></li>
         </ul>
       </div>
 

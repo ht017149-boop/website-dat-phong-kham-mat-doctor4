@@ -1,5 +1,13 @@
-export function renderAbout() {
-  return `
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Giới thiệu - Doctor4 Phòng Khám Mắt</title>
+  </head>
+  <body>
+    <div id="header-container"></div>
+    
   <main id="page-about">
     <section class="page-hero">
       <div class="hero-grid"></div>
@@ -226,7 +234,7 @@ export function renderAbout() {
             <li>✔️ Khu vực chờ rộng rãi, điều hòa, nước uống miễn phí</li>
             <li>✔️ Bãi giữ xe thuận tiện và xe lăn hỗ trợ</li>
           </ul>
-          <a href="#/dat-lich" class="btn-primary">📅 Đặt lịch tham quan</a>
+          <a href="/index.htmldat-lich" class="btn-primary">📅 Đặt lịch tham quan</a>
         </div>
         <div class="facility-visual">
           <div class="story-eye">🏥</div>
@@ -247,11 +255,14 @@ export function renderAbout() {
           Đặt lịch khám ngay hôm nay để nhận ưu đãi đặc biệt và trải nghiệm dịch vụ chăm sóc mắt chuẩn quốc tế.
         </p>
         <div class="cta-actions">
-          <a href="#/dat-lich" class="btn-cta-primary">📅 Đặt lịch khám ngay</a>
+          <a href="/index.htmldat-lich" class="btn-cta-primary">📅 Đặt lịch khám ngay</a>
           <a href="tel:18001234" class="btn-cta-outline">📞 Gọi 1800 1234</a>
         </div>
       </div>
     </section>
   </main>
-  `
-}
+  
+    <div id="footer-container"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
