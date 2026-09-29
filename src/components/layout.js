@@ -222,7 +222,7 @@ export function renderFooter() {
       <nav class="footer-policies">
         <a href="#">Chính sách bảo mật</a>
         <a href="#">Điều khoản sử dụng</a>
-        <a href="#">Cookie</a>
+        <a href="/admin/index.html" style="color: #38bdf8; font-weight: 600;">🛡️ Cổng Quản Trị Admin</a>
       </nav>
     </div>
   </footer>
