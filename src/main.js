@@ -1,6 +1,7 @@
 import './css/style.css';
 import './css/home.css';
 import { renderHeader, renderFooter, setupHeaderEvents } from './components/layout.js';
+import { setupBookingSystem } from './pages/booking.js';
 
 function init() {
   const header = document.getElementById('header-container');
@@ -16,6 +17,7 @@ function init() {
   }
 
   setupHeaderEvents();
+  setupBookingSystem();
 }
 
 init();
