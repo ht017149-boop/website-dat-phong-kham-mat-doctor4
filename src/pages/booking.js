@@ -272,14 +272,26 @@ function showBookingSuccessModal(app) {
           ℹ️ Vui lòng có mặt trước giờ hẹn 10 phút tại quầy lễ tân tầng 1 và xuất trình Mã lịch hẹn để được ưu tiên vào phòng khám.
         </div>
 
-        <button type="button" id="btn-close-success-modal" style="width: 100%; padding: 13px; background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; font-size: 15px;">
-          Đã hiểu & Hoàn tất
-        </button>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" id="btn-view-ticket-now" style="flex: 1; padding: 13px; background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; font-size: 14px;">
+            🎫 Xem chi tiết vé & sơ đồ phòng
+          </button>
+          <button type="button" id="btn-close-success-modal" style="padding: 13px 20px; background: #e2e8f0; color: #334155; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; font-size: 14px;">
+            Đóng
+          </button>
+        </div>
       </div>
     </div>
   `;
 
   document.getElementById('btn-close-success-modal')?.addEventListener('click', () => {
     modal.innerHTML = '';
+  });
+
+  document.getElementById('btn-view-ticket-now')?.addEventListener('click', () => {
+    modal.innerHTML = '';
+    import('./my-appointments.js').then(module => {
+      module.openLookupAppointmentModal(app.id);
+    });
   });
 }

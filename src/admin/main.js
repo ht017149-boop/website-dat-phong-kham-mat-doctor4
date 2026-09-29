@@ -612,16 +612,19 @@ function renderAppointmentRow(app) {
   `;
 }
 
-// ── TAB 3: SƠ ĐỒ 10 PHÒNG KHÁM CHUYÊN BIỆT ───────────────────
+// ── TAB 3: SƠ ĐỒ & QUẢN LÝ 10 PHÒNG KHÁM CHUYÊN BIỆT ─────────
 function renderRoomsDiagramView() {
   const roomsOverview = AppointmentManager.getRoomsOverview();
 
   return `
     <div class="adm-page-header">
       <div class="adm-page-title">
-        <h1>Sơ Đồ Hệ Thống 10 Phòng Khám Mắt</h1>
-        <p>Theo dõi tình trạng hoạt động thực tế, bác sĩ trực và số lượng bệnh nhân tại từng phòng</p>
+        <h1>Quản lý Hệ Thống Phòng Khám Mắt (${roomsOverview.length} Phòng)</h1>
+        <p>Theo dõi tình trạng hoạt động thực tế, trang thiết bị, bác sĩ trực và phân bổ phòng cho bệnh nhân</p>
       </div>
+      <button class="adm-btn-create" id="btn-open-create-room-modal">
+        <span>➕ Thêm Phòng Khám Mới</span>
+      </button>
     </div>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
@@ -636,9 +639,14 @@ function renderRoomsDiagramView() {
               </span>
               <h3 style="color: #fff; font-size: 17px; margin-top: 6px;">${r.number}: ${r.name}</h3>
             </div>
-            <span class="adm-badge ${r.isOccupied ? 'adm-badge-active' : 'adm-badge-off'}">
-              <span class="adm-badge-dot"></span> ${r.isOccupied ? 'Đang mở cửa' : 'Trống phòng'}
-            </span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="adm-badge ${r.isOccupied ? 'adm-badge-active' : 'adm-badge-off'}">
+                <span class="adm-badge-dot"></span> ${r.isOccupied ? 'Đang mở' : 'Trống'}
+              </span>
+              <button class="adm-btn-action edit btn-edit-room" data-room-id="${r.id}" title="Sửa thông tin phòng">
+                ✏️
+              </button>
+            </div>
           </div>
 
           <div style="font-size: 12px; color: var(--adm-text-muted); margin-bottom: 14px; line-height: 1.6;">
@@ -659,9 +667,9 @@ function renderRoomsDiagramView() {
           </div>
 
           <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-            <span style="color: var(--adm-text-muted);">Ca khám đang chờ: <strong style="color: #fff;">${r.activeCount} ca</strong></span>
+            <span style="color: var(--adm-text-muted);">Bệnh nhân đang chờ: <strong style="color: #38bdf8;">${r.activeCount} ca</strong></span>
             <button class="adm-btn-create btn-room-view-apps" data-room-id="${r.id}" style="padding: 6px 12px; font-size: 12px;">
-              Xem lịch khám →
+              Xem bệnh nhân tại phòng →
             </button>
           </div>
         </div>
@@ -1459,7 +1467,17 @@ function bindViewSpecificEvents() {
     });
   });
 
-  // Events cho Tab Rooms
+  // Events cho Tab Rooms (Quản lý Phòng Khám)
+  document.getElementById('btn-open-create-room-modal')?.addEventListener('click', () => openRoomModal(null));
+
+  document.querySelectorAll('.btn-edit-room').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const roomId = btn.getAttribute('data-room-id');
+      const room = CLINIC_ROOMS.find(r => r.id === roomId);
+      if (room) openRoomModal(room);
+    });
+  });
+
   document.querySelectorAll('.btn-room-view-apps').forEach(btn => {
     btn.addEventListener('click', () => {
       const roomId = btn.getAttribute('data-room-id');
@@ -1469,6 +1487,89 @@ function bindViewSpecificEvents() {
       document.querySelector('[data-tab="appointments"]')?.classList.add('active');
       refreshMainView();
     });
+  });
+}
+
+// Modal Thêm / Chỉnh Sửa Phòng Khám (Admin)
+function openRoomModal(room = null) {
+  const isEdit = !!room;
+  const modalRoot = document.getElementById('adm-modals-root');
+
+  modalRoot.innerHTML = `
+    <div class="adm-modal-overlay" id="adm-modal-overlay">
+      <div class="adm-modal" style="max-width: 520px;">
+        <div class="adm-modal-header">
+          <h3>${isEdit ? `✏️ Chỉnh Sửa ${escapeHtml(room.number)}` : '➕ Thêm Phòng Khám Mới'}</h3>
+          <button class="adm-modal-close" id="btn-close-room-modal">✕</button>
+        </div>
+
+        <form id="adm-room-form">
+          <div class="adm-modal-body">
+            <div class="adm-grid-2">
+              <div class="adm-form-group">
+                <label class="adm-form-label">Số hiệu phòng *</label>
+                <input type="text" id="room-form-num" class="adm-input adm-input-no-icon" placeholder="VD: Phòng 111" value="${room ? escapeHtml(room.number) : ''}" required/>
+              </div>
+
+              <div class="adm-form-group">
+                <label class="adm-form-label">Vị trí Tầng *</label>
+                <input type="text" id="room-form-floor" class="adm-input adm-input-no-icon" placeholder="VD: Tầng 1 / Tầng 2" value="${room ? escapeHtml(room.floor) : 'Tầng 1'}" required/>
+              </div>
+            </div>
+
+            <div class="adm-form-group">
+              <label class="adm-form-label">Tên chức năng phòng khám *</label>
+              <input type="text" id="room-form-name" class="adm-input adm-input-no-icon" placeholder="VD: Khám Khúc Xạ & Đo Bản Đồ Giác Mạc" value="${room ? escapeHtml(room.name) : ''}" required/>
+            </div>
+
+            <div class="adm-form-group">
+              <label class="adm-form-label">Thiết bị y tế chính trong phòng</label>
+              <input type="text" id="room-form-equip" class="adm-input adm-input-no-icon" placeholder="VD: Máy VisuMax SMILE, Carl Zeiss..." value="${room ? escapeHtml(room.equipment) : ''}"/>
+            </div>
+          </div>
+
+          <div class="adm-modal-footer">
+            <button type="button" class="adm-btn-secondary" id="btn-cancel-room">Hủy bỏ</button>
+            <button type="submit" class="adm-btn-create">
+              <span>💾 ${isEdit ? 'Lưu Thông Tin Phòng' : 'Tạo Phòng Khám'}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+
+  const closeModal = () => { modalRoot.innerHTML = ''; };
+  document.getElementById('btn-close-room-modal')?.addEventListener('click', closeModal);
+  document.getElementById('btn-cancel-room')?.addEventListener('click', closeModal);
+
+  document.getElementById('adm-room-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const num = document.getElementById('room-form-num').value.trim();
+    const name = document.getElementById('room-form-name').value.trim();
+    const floor = document.getElementById('room-form-floor').value.trim();
+    const equip = document.getElementById('room-form-equip').value.trim();
+
+    if (isEdit) {
+      room.number = num;
+      room.name = name;
+      room.floor = floor;
+      room.equipment = equip;
+      showToast(`Đã cập nhật ${num}!`, 'success');
+    } else {
+      CLINIC_ROOMS.push({
+        id: 'R' + (CLINIC_ROOMS.length + 101),
+        number: num,
+        name: name,
+        floor: floor,
+        equipment: equip,
+        specialty: 'general'
+      });
+      showToast(`Đã thêm phòng khám mới ${num}!`, 'success');
+    }
+
+    closeModal();
+    refreshMainView();
   });
 }
 

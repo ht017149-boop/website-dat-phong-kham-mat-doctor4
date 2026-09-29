@@ -8,6 +8,7 @@ function init() {
   if (header) {
     let active = 'home';
     if (window.location.pathname.includes('gioi-thieu')) active = 'about';
+    if (window.location.pathname.includes('lich-kham')) active = 'lookup';
     header.innerHTML = renderHeader(active);
   }
 
