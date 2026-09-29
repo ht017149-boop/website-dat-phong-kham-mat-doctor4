@@ -612,16 +612,19 @@ function renderAppointmentRow(app) {
   `;
 }
 
-// ── TAB 3: SƠ ĐỒ 10 PHÒNG KHÁM CHUYÊN BIỆT ───────────────────
+// ── TAB 3: SƠ ĐỒ & QUẢN LÝ 10 PHÒNG KHÁM CHUYÊN BIỆT ─────────
 function renderRoomsDiagramView() {
   const roomsOverview = AppointmentManager.getRoomsOverview();
 
   return `
     <div class="adm-page-header">
       <div class="adm-page-title">
-        <h1>Sơ Đồ Hệ Thống 10 Phòng Khám Mắt</h1>
-        <p>Theo dõi tình trạng hoạt động thực tế, bác sĩ trực và số lượng bệnh nhân tại từng phòng</p>
+        <h1>Quản lý Hệ Thống Phòng Khám Mắt (${roomsOverview.length} Phòng)</h1>
+        <p>Theo dõi tình trạng hoạt động thực tế, trang thiết bị, bác sĩ trực và phân bổ phòng cho bệnh nhân</p>
       </div>
+      <button class="adm-btn-create" id="btn-open-create-room-modal">
+        <span>➕ Thêm Phòng Khám Mới</span>
+      </button>
     </div>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
@@ -636,9 +639,14 @@ function renderRoomsDiagramView() {
               </span>
               <h3 style="color: #fff; font-size: 17px; margin-top: 6px;">${r.number}: ${r.name}</h3>
             </div>
-            <span class="adm-badge ${r.isOccupied ? 'adm-badge-active' : 'adm-badge-off'}">
-              <span class="adm-badge-dot"></span> ${r.isOccupied ? 'Đang mở cửa' : 'Trống phòng'}
-            </span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="adm-badge ${r.isOccupied ? 'adm-badge-active' : 'adm-badge-off'}">
+                <span class="adm-badge-dot"></span> ${r.isOccupied ? 'Đang mở' : 'Trống'}
+              </span>
+              <button class="adm-btn-action edit btn-edit-room" data-room-id="${r.id}" title="Sửa thông tin phòng">
+                ✏️
+              </button>
+            </div>
           </div>
 
           <div style="font-size: 12px; color: var(--adm-text-muted); margin-bottom: 14px; line-height: 1.6;">
@@ -659,9 +667,9 @@ function renderRoomsDiagramView() {
           </div>
 
           <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-            <span style="color: var(--adm-text-muted);">Ca khám đang chờ: <strong style="color: #fff;">${r.activeCount} ca</strong></span>
+            <span style="color: var(--adm-text-muted);">Bệnh nhân đang chờ: <strong style="color: #38bdf8;">${r.activeCount} ca</strong></span>
             <button class="adm-btn-create btn-room-view-apps" data-room-id="${r.id}" style="padding: 6px 12px; font-size: 12px;">
-              Xem lịch khám →
+              Xem bệnh nhân tại phòng →
             </button>
           </div>
         </div>
