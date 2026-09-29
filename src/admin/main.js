@@ -1467,7 +1467,17 @@ function bindViewSpecificEvents() {
     });
   });
 
-  // Events cho Tab Rooms
+  // Events cho Tab Rooms (Quản lý Phòng Khám)
+  document.getElementById('btn-open-create-room-modal')?.addEventListener('click', () => openRoomModal(null));
+
+  document.querySelectorAll('.btn-edit-room').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const roomId = btn.getAttribute('data-room-id');
+      const room = CLINIC_ROOMS.find(r => r.id === roomId);
+      if (room) openRoomModal(room);
+    });
+  });
+
   document.querySelectorAll('.btn-room-view-apps').forEach(btn => {
     btn.addEventListener('click', () => {
       const roomId = btn.getAttribute('data-room-id');
@@ -1477,6 +1487,89 @@ function bindViewSpecificEvents() {
       document.querySelector('[data-tab="appointments"]')?.classList.add('active');
       refreshMainView();
     });
+  });
+}
+
+// Modal Thêm / Chỉnh Sửa Phòng Khám (Admin)
+function openRoomModal(room = null) {
+  const isEdit = !!room;
+  const modalRoot = document.getElementById('adm-modals-root');
+
+  modalRoot.innerHTML = `
+    <div class="adm-modal-overlay" id="adm-modal-overlay">
+      <div class="adm-modal" style="max-width: 520px;">
+        <div class="adm-modal-header">
+          <h3>${isEdit ? `✏️ Chỉnh Sửa ${escapeHtml(room.number)}` : '➕ Thêm Phòng Khám Mới'}</h3>
+          <button class="adm-modal-close" id="btn-close-room-modal">✕</button>
+        </div>
+
+        <form id="adm-room-form">
+          <div class="adm-modal-body">
+            <div class="adm-grid-2">
+              <div class="adm-form-group">
+                <label class="adm-form-label">Số hiệu phòng *</label>
+                <input type="text" id="room-form-num" class="adm-input adm-input-no-icon" placeholder="VD: Phòng 111" value="${room ? escapeHtml(room.number) : ''}" required/>
+              </div>
+
+              <div class="adm-form-group">
+                <label class="adm-form-label">Vị trí Tầng *</label>
+                <input type="text" id="room-form-floor" class="adm-input adm-input-no-icon" placeholder="VD: Tầng 1 / Tầng 2" value="${room ? escapeHtml(room.floor) : 'Tầng 1'}" required/>
+              </div>
+            </div>
+
+            <div class="adm-form-group">
+              <label class="adm-form-label">Tên chức năng phòng khám *</label>
+              <input type="text" id="room-form-name" class="adm-input adm-input-no-icon" placeholder="VD: Khám Khúc Xạ & Đo Bản Đồ Giác Mạc" value="${room ? escapeHtml(room.name) : ''}" required/>
+            </div>
+
+            <div class="adm-form-group">
+              <label class="adm-form-label">Thiết bị y tế chính trong phòng</label>
+              <input type="text" id="room-form-equip" class="adm-input adm-input-no-icon" placeholder="VD: Máy VisuMax SMILE, Carl Zeiss..." value="${room ? escapeHtml(room.equipment) : ''}"/>
+            </div>
+          </div>
+
+          <div class="adm-modal-footer">
+            <button type="button" class="adm-btn-secondary" id="btn-cancel-room">Hủy bỏ</button>
+            <button type="submit" class="adm-btn-create">
+              <span>💾 ${isEdit ? 'Lưu Thông Tin Phòng' : 'Tạo Phòng Khám'}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+
+  const closeModal = () => { modalRoot.innerHTML = ''; };
+  document.getElementById('btn-close-room-modal')?.addEventListener('click', closeModal);
+  document.getElementById('btn-cancel-room')?.addEventListener('click', closeModal);
+
+  document.getElementById('adm-room-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const num = document.getElementById('room-form-num').value.trim();
+    const name = document.getElementById('room-form-name').value.trim();
+    const floor = document.getElementById('room-form-floor').value.trim();
+    const equip = document.getElementById('room-form-equip').value.trim();
+
+    if (isEdit) {
+      room.number = num;
+      room.name = name;
+      room.floor = floor;
+      room.equipment = equip;
+      showToast(`Đã cập nhật ${num}!`, 'success');
+    } else {
+      CLINIC_ROOMS.push({
+        id: 'R' + (CLINIC_ROOMS.length + 101),
+        number: num,
+        name: name,
+        floor: floor,
+        equipment: equip,
+        specialty: 'general'
+      });
+      showToast(`Đã thêm phòng khám mới ${num}!`, 'success');
+    }
+
+    closeModal();
+    refreshMainView();
   });
 }
 

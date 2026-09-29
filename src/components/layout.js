@@ -8,7 +8,7 @@ const NAV_LINKS = [
   { id: 'about', label: 'Giới thiệu', href: '/gioi-thieu.html' },
   { id: 'services', label: 'Dịch vụ', href: '/index.html#dich-vu' },
   { id: 'doctors', label: 'Bác sĩ', href: '/index.html#doctors' },
-  { id: 'lookup', label: '🎫 Tra cứu phòng khám', href: 'javascript:void(0)' },
+  { id: 'lookup', label: '🎫 Tra cứu phòng khám', href: '/lich-kham.html' },
   { id: 'contact', label: 'Liên hệ', href: '/index.html#contact' },
 ];
 

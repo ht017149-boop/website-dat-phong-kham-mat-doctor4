@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tra Cứu Lịch Hẹn & Phòng Khám - Doctor4 Eye Clinic</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <div id="header-container"></div>
+
+    <main id="page-lookup">
+      <!-- Hero Section -->
+      <section style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0c1a3a 100%); color: #ffffff; padding: 4.5rem 1.5rem 3.5rem; text-align: center; position: relative;">
+        <div style="max-width: 800px; margin: 0 auto;">
+          <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; padding: 6px 16px; border-radius: 9999px; font-size: 0.88rem; font-weight: 700; margin-bottom: 1.25rem;">
+            <span>🎫</span> CỔNG TRA CỨU VÉ KHÁM ĐIỆN TỬ
+          </div>
+          <h1 style="font-size: 2.5rem; font-weight: 800; font-family: var(--font-heading); margin-bottom: 1rem; line-height: 1.2;">
+            Tra Cứu Lịch Hẹn & <span style="color: #38bdf8;">Phòng Khám Đã Đặt</span>
+          </h1>
+          <p style="color: #94a3b8; font-size: 1.05rem; line-height: 1.6; margin-bottom: 2rem;">
+            Nhập Số điện thoại hoặc Mã vé khám của bạn để kiểm tra chính xác <strong>Số phòng khám (101 - 110)</strong>, <strong>Bác sĩ phụ trách</strong> và <strong>Khung giờ hẹn</strong>.
+          </p>
+
+          <!-- Search Form -->
+          <div style="background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 18px; padding: 1.25rem; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+            <form id="search-appointment-form" style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <input 
+                type="text" 
+                id="search-query-input" 
+                placeholder="Nhập SĐT hoặc Mã hẹn (VD: 0918 123 456 hoặc DOC-2026-XXXX)..." 
+                style="flex: 1; min-width: 260px; padding: 14px 18px; background: #ffffff; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 0.95rem; color: #0f172a; outline: none;"
+              />
+              <button type="submit" style="padding: 14px 28px; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #0b1329; font-weight: 800; font-size: 1rem; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 14px rgba(56,189,248,0.4);">
+                <span>🔍 Tra cứu ngay</span>
+              </button>
+            </form>
+
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 1rem; flex-wrap: wrap; font-size: 0.82rem; color: #94a3b8;">
+              <span>💡 Thử tra cứu nhanh:</span>
+              <button type="button" class="btn-sample-search" data-q="0918123456" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #e2e8f0; padding: 3px 10px; border-radius: 6px; cursor: pointer;">
+                SĐT: 0918 123 456
+              </button>
+              <button type="button" class="btn-sample-search" data-q="0988765432" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #e2e8f0; padding: 3px 10px; border-radius: 6px; cursor: pointer;">
+                SĐT: 0988 765 432
+              </button>
+              <button type="button" class="btn-sample-search" data-q="DOC-2026" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #38bdf8; padding: 3px 10px; border-radius: 6px; cursor: pointer;">
+                Tất cả mã DOC-2026
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Container -->
+      <section style="max-width: 1200px; margin: 0 auto; padding: 3.5rem 1.5rem;">
+        <div id="appointment-results-container">
+          <!-- Populated by lich-kham-page.js -->
+        </div>
+      </section>
+
+      <!-- 10 Rooms Showcase & Floor Map -->
+      <section style="background: #f8fafc; border-top: 1px solid var(--clr-border); padding: 4rem 1.5rem;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+          <div class="section-header" style="text-align: center; margin-bottom: 2.5rem;">
+            <span class="section-tag">Cơ sở vật chất</span>
+            <h2 class="section-title">Hệ Thống <span>10 Phòng Khám Chuyên Sâu</span></h2>
+            <p class="section-desc">
+              Quy hoạch khoa học theo từng chuyên khoa và vị trí tầng giúp bệnh nhân dễ dàng di chuyển và thăm khám nhanh chóng.
+            </p>
+          </div>
+
+          <div id="rooms-showcase-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem;">
+            <!-- Populated by lich-kham-page.js -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="footer-container"></div>
+    <script type="module" src="/src/pages/lich-kham-page.js"></script>
+  </body>
+</html>
