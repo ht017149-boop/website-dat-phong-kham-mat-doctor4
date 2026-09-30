@@ -31,8 +31,36 @@ function init() {
   if (AdminAuth.isAuthenticated()) {
     renderAdminPortal();
   } else {
+    // Kiểm tra nếu đang có phiên đăng nhập người dùng thường (không phải admin)
+    try {
+      const userSession = localStorage.getItem('doctor4_session') || sessionStorage.getItem('doctor4_session');
+      if (userSession) {
+        const userData = JSON.parse(userSession);
+        if (userData && userData.role !== 'admin') {
+          renderAccessDenied();
+          return;
+        }
+      }
+    } catch (e) { /* bỏ qua lỗi parse */ }
     renderLoginView();
   }
+}
+
+// Màn hình từ chối quyền truy cập
+function renderAccessDenied() {
+  appRoot.innerHTML = `
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 20%,#1e3a8a 0%,#0b1329 70%);padding:24px;">
+      <div style="text-align:center;max-width:420px;">
+        <div style="font-size:5rem;margin-bottom:1.5rem;">🚫</div>
+        <h1 style="font-size:1.8rem;font-weight:800;color:#f1f5f9;margin-bottom:0.75rem;">Không có quyền truy cập</h1>
+        <p style="color:#94a3b8;margin-bottom:2rem;line-height:1.6;">Bạn đang đăng nhập bằng tài khoản bệnh nhân. Khu vực Quản trị Admin chỉ dành cho Quản trị viên được cấp phép.</p>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          <a href="/index.html" style="display:block;padding:0.85rem 1.5rem;background:#38bdf8;color:#0b1329;font-weight:700;border-radius:10px;text-decoration:none;">← Quay về Trang chủ</a>
+          <a href="/dang-nhap.html" style="display:block;padding:0.85rem 1.5rem;background:rgba(255,255,255,0.08);color:#f1f5f9;font-weight:600;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,0.12);">Đăng nhập bằng tài khoản khác</a>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -59,8 +87,7 @@ function renderLoginView() {
                 type="text" 
                 id="adm-username" 
                 class="adm-input" 
-                placeholder="Nhập 'admin' hoặc email" 
-                value="admin"
+                placeholder="Nhập tên đăng nhập hoặc email" 
                 required 
                 autocomplete="username"
               />
@@ -75,8 +102,7 @@ function renderLoginView() {
                 type="password" 
                 id="adm-password" 
                 class="adm-input" 
-                placeholder="Nhập mật khẩu (123456)" 
-                value="123456"
+                placeholder="Nhập mật khẩu quản trị" 
                 required 
                 autocomplete="current-password"
               />
@@ -95,12 +121,7 @@ function renderLoginView() {
           </button>
         </form>
 
-        <div class="adm-demo-account-hint">
-          <div style="font-weight: 600; color: #fff; margin-bottom: 4px;">🔑 Thông tin đăng nhập mặc định:</div>
-          <div>Tài khoản: <strong>admin</strong> (hoặc admin@doctor4.vn)</div>
-          <div>Mật khẩu: <strong>123456</strong></div>
-          <button type="button" class="adm-quick-fill-btn" id="btn-quick-fill">⚡ Tự động điền tài khoản</button>
-        </div>
+
 
         <a href="/" class="adm-back-to-site">← Quay về trang chủ website Doctor4</a>
       </div>
@@ -109,13 +130,6 @@ function renderLoginView() {
   `;
 
   const form = document.getElementById('adm-login-form');
-  const quickFillBtn = document.getElementById('btn-quick-fill');
-
-  quickFillBtn?.addEventListener('click', () => {
-    document.getElementById('adm-username').value = 'admin';
-    document.getElementById('adm-password').value = '123456';
-    showToast('Đã điền tài khoản & mật khẩu mẫu!', 'info');
-  });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
