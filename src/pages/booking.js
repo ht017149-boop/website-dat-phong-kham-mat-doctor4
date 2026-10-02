@@ -52,7 +52,7 @@ function saveAppointment(data) {
     date: data.date,
     timeSlot: data.timeSlot,
     symptoms: data.symptoms || 'Khám mắt định kỳ theo yêu cầu',
-    status: 'confirmed',
+    status: 'pending',
     createdAt: new Date().toISOString()
   };
 
@@ -254,27 +254,35 @@ function showBookingSuccessModal(app) {
 
   modal.innerHTML = `
     <div style="position: fixed; inset: 0; background: rgba(15,23,42,0.8); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-      <div style="background: #ffffff; color: #0f172a; max-width: 520px; width: 100%; border-radius: 20px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; animation: admScaleIn 0.3s ease-out;">
-        <div style="font-size: 56px; margin-bottom: 12px;">🎉</div>
-        <h2 style="font-size: 22px; font-weight: 800; color: #0284c7; margin-bottom: 6px;">Đặt Lịch Khám Thành Công!</h2>
-        <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Hệ thống phòng khám mắt Doctor4 đã tiếp nhận và xếp lịch khám cho bạn.</p>
+      <div style="background: #ffffff; color: #0f172a; max-width: 540px; width: 100%; border-radius: 20px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; animation: admScaleIn 0.3s ease-out;">
+        <div style="font-size: 56px; margin-bottom: 12px;">📋</div>
+        <h2 style="font-size: 22px; font-weight: 800; color: #0284c7; margin-bottom: 6px;">Yêu Cầu Đã Được Ghi Nhận!</h2>
+        <p style="color: #64748b; font-size: 14px; margin-bottom: 16px;">Doctor4 đã tiếp nhận yêu cầu đặt lịch của bạn. Phòng khám đang xem xét và sẽ xác nhận phòng & bác sĩ phụ trách sớm nhất.</p>
 
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; text-align: left; font-size: 13.5px; line-height: 1.9; margin-bottom: 24px;">
-          <div>🔖 <strong>Mã lịch hẹn:</strong> <span style="font-family: monospace; color: #2563eb; font-weight: 800; font-size: 15px;">${app.id}</span></div>
-          <div>👤 <strong>Bệnh nhân:</strong> ${app.patientName} (📞 ${app.patientPhone})</div>
-          <div>🩺 <strong>Dịch vụ khám:</strong> ${app.serviceName}</div>
-          <div>👨‍⚕️ <strong>Bác sĩ phụ trách:</strong> <strong style="color: #0f172a;">${app.doctorName}</strong></div>
-          <div>🏥 <strong>Phòng khám xếp lịch:</strong> <strong style="color: #0284c7;">${app.roomName}</strong></div>
-          <div>📅 <strong>Thời gian hẹn:</strong> <strong style="color: #d97706;">${app.timeSlot} — Ngày ${app.date}</strong></div>
+        <!-- Trạng thái chờ duyệt -->
+        <div style="background: #fef3c7; border: 1.5px solid #fcd34d; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; text-align: left;">
+          <span style="font-size: 22px;">⏳</span>
+          <div>
+            <div style="font-weight: 700; color: #92400e; font-size: 13px;">Đang chờ Admin xét duyệt & xếp phòng</div>
+            <div style="font-size: 12px; color: #b45309;">Phòng khám sẽ xác nhận lịch hẹn trong vòng 30 phút – 2 giờ làm việc.</div>
+          </div>
         </div>
 
-        <div style="font-size: 12.5px; color: #64748b; margin-bottom: 20px;">
-          ℹ️ Vui lòng có mặt trước giờ hẹn 10 phút tại quầy lễ tân tầng 1 và xuất trình Mã lịch hẹn để được ưu tiên vào phòng khám.
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; text-align: left; font-size: 13.5px; line-height: 1.9; margin-bottom: 20px;">
+          <div>🔖 <strong>Mã lịch hẹn:</strong> <span style="font-family: monospace; color: #2563eb; font-weight: 800; font-size: 15px;">${app.id}</span></div>
+          <div>👤 <strong>Bệnh nhân:</strong> ${app.patientName} (📞 ${app.patientPhone})</div>
+          <div>🩺 <strong>Dịch vụ yêu cầu:</strong> ${app.serviceName}</div>
+          <div>👨‍⚕️ <strong>Bác sĩ đề xuất:</strong> ${app.doctorName}</div>
+          <div>📅 <strong>Ngày hẹn mong muốn:</strong> <strong style="color: #d97706;">${app.timeSlot} — Ngày ${app.date}</strong></div>
+        </div>
+
+        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px 16px; font-size: 12.5px; color: #0369a1; margin-bottom: 20px; text-align: left;">
+          💡 <strong>Lưu mã hẹn:</strong> Dùng mã <strong style="font-family: monospace; color: #2563eb;">${app.id}</strong> hoặc số điện thoại để tra cứu trạng thái xác nhận phòng khám.
         </div>
 
         <div style="display: flex; gap: 10px;">
           <button type="button" id="btn-view-ticket-now" style="flex: 1; padding: 13px; background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; font-size: 14px;">
-            🎫 Xem chi tiết vé & sơ đồ phòng
+            🔍 Theo dõi trạng thái lịch hẹn
           </button>
           <button type="button" id="btn-close-success-modal" style="padding: 13px 20px; background: #e2e8f0; color: #334155; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; font-size: 14px;">
             Đóng

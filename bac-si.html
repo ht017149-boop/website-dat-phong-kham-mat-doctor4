@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cổng Bác Sĩ Điều Trị & Kê Đơn - Doctor4 Eye Clinic</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  </head>
+  <body class="doctor-portal-body">
+    <!-- Top Navigation Bar -->
+    <header class="doc-header">
+      <div class="doc-header-inner">
+        <div class="doc-brand">
+          <a href="/index.html" class="doc-logo">
+            <span class="doc-logo-icon">👁️</span>
+            <span class="doc-logo-text">Doctor<strong>4</strong></span>
+          </a>
+          <span class="doc-portal-badge">🩺 BÁC SĨ LÂM SÀNG</span>
+        </div>
+
+        <!-- Quick Switch Doctor Selector & Profile -->
+        <div class="doc-nav-right">
+          <div class="doc-switch-wrapper">
+            <label for="doctor-quick-switch" class="doc-switch-label">Chuyển Bác Sĩ / Phòng:</label>
+            <select id="doctor-quick-switch" class="doc-switch-select">
+              <!-- Dynamically populated with 10 doctors -->
+            </select>
+          </div>
+
+          <div class="doc-profile-card" id="doc-active-profile">
+            <img id="doc-avatar-img" src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=120" alt="Bác sĩ" class="doc-profile-avatar" />
+            <div class="doc-profile-info">
+              <div class="doc-profile-name" id="doc-profile-name">BS. Chuyên Khoa</div>
+              <div class="doc-profile-room" id="doc-profile-room">Phòng 101 - Tầng 1</div>
+            </div>
+          </div>
+
+          <div class="doc-header-actions">
+            <a href="/lich-kham.html" class="doc-btn-ghost" title="Xem cổng bệnh nhân">
+              <span>🎫 Cổng BN</span>
+            </a>
+            <a href="/admin/index.html" class="doc-btn-ghost" title="Vào cổng quản trị">
+              <span>🛡️ Admin</span>
+            </a>
+            <button type="button" id="btn-doc-logout" class="doc-btn-logout" title="Đăng xuất">
+              <span>🚪 Đăng xuất</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="doc-main-container">
+      <!-- Doctor Shift Banner -->
+      <section class="doc-shift-banner" id="doc-shift-banner">
+        <div class="doc-shift-left">
+          <div class="doc-shift-tag">
+            <span class="pulse-indicator"></span> CA TRỰC HÔM NAY
+          </div>
+          <h1 class="doc-shift-title" id="banner-doctor-name">
+            BS. Đang tải...
+          </h1>
+          <div class="doc-shift-details">
+            <span class="doc-detail-item" id="banner-room-info">
+              🏥 <strong>Phòng khám:</strong> Đang tải...
+            </span>
+            <span class="doc-detail-divider">•</span>
+            <span class="doc-detail-item" id="banner-specialty-info">
+              🎯 <strong>Chuyên khoa:</strong> Đang tải...
+            </span>
+            <span class="doc-detail-divider">•</span>
+            <span class="doc-detail-item" id="banner-time-info">
+              ⏰ <strong>Khung giờ trực:</strong> 08:00 - 17:00
+            </span>
+          </div>
+        </div>
+
+        <div class="doc-shift-stats">
+          <div class="doc-stat-box">
+            <div class="doc-stat-num" id="stat-total-patients">0</div>
+            <div class="doc-stat-label">Tổng ca khám</div>
+          </div>
+          <div class="doc-stat-box stat-waiting">
+            <div class="doc-stat-num" id="stat-waiting-patients">0</div>
+            <div class="doc-stat-label">Đang chờ khám</div>
+          </div>
+          <div class="doc-stat-box stat-completed">
+            <div class="doc-stat-num" id="stat-completed-patients">0</div>
+            <div class="doc-stat-label">Đã khám xong</div>
+          </div>
+          <div class="doc-stat-box stat-revenue">
+            <div class="doc-stat-num" id="stat-total-revenue">0đ</div>
+            <div class="doc-stat-label">Viện phí ca trực</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Patient Queue & Management Section -->
+      <section class="doc-queue-section">
+        <div class="doc-section-header">
+          <div class="doc-section-title-wrap">
+            <h2 class="doc-section-title">
+              <span>📋</span> Danh Sách Bệnh Nhân Tiếp Nhận Theo Số Thứ Tự (STT)
+            </h2>
+            <p class="doc-section-subtitle">
+              Bác sĩ tiến hành khám theo STT, ghi bệnh án, kê đơn thuốc và kết thúc ca khám để đồng bộ tức thì sang Cổng Bệnh nhân & Admin.
+            </p>
+          </div>
+
+          <div class="doc-queue-controls">
+            <!-- Filter Tabs -->
+            <div class="doc-filter-tabs">
+              <button type="button" class="doc-tab-btn active" data-filter="all">Tất cả (<span id="count-tab-all">0</span>)</button>
+              <button type="button" class="doc-tab-btn" data-filter="waiting">⏳ Chờ khám (<span id="count-tab-waiting">0</span>)</button>
+              <button type="button" class="doc-tab-btn" data-filter="completed">✅ Đã khám xong (<span id="count-tab-completed">0</span>)</button>
+            </div>
+
+            <!-- Search & Actions -->
+            <div class="doc-search-wrapper">
+              <input 
+                type="text" 
+                id="doc-patient-search" 
+                placeholder="🔍 Tìm tên bệnh nhân, mã vé, SĐT..." 
+                class="doc-search-input"
+              />
+              <button type="button" id="btn-refresh-queue" class="doc-btn-refresh" title="Làm mới danh sách">
+                🔄 Làm mới
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Patients List / Queue Table -->
+        <div class="doc-queue-container" id="doc-queue-container">
+          <!-- Populated by doctor-portal.js -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Modals Root (Clinical Exam, Prescription, Print Record) -->
+    <div id="doctor-portal-modal-root"></div>
+
+    <!-- Toast Notifications Root -->
+    <div id="doctor-portal-toast" class="doc-toast-container"></div>
+
+    <!-- Doctor Portal Controller Script -->
+    <script type="module" src="/src/pages/doctor-portal.js"></script>
+  </body>
+</html>

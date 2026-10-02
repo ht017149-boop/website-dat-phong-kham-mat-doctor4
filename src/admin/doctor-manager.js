@@ -63,7 +63,7 @@ export const DoctorManager = {
   },
 
   /**
-   * Thêm bác sĩ mới (Create)
+   * Thêm bác sĩ mới (Create) - Đồng thời tạo tài khoản đăng nhập cho bác sĩ
    */
   createDoctor(doctorData) {
     const list = this.getDoctors();
@@ -75,22 +75,30 @@ export const DoctorManager = {
       specialtyCode: doctorData.specialtyCode || 'general',
       experience: Number(doctorData.experience) || 1,
       patientsCount: Number(doctorData.patientsCount) || 0,
-      phone: doctorData.phone.trim() || 'Chưa cập nhật',
-      email: doctorData.email.trim() || 'doctor@doctor4.vn',
+      phone: (doctorData.phone || '').trim() || 'Chưa cập nhật',
+      email: (doctorData.email || '').trim() || 'doctor@doctor4.vn',
       roomId: doctorData.roomId || 'R110',
-      room: doctorData.room.trim() || 'Phòng 110 - Khám Mắt Tổng Quát',
-      schedule: doctorData.schedule.trim() || 'Thứ 2 - Thứ 6 (08:00 - 17:00)',
+      room: (doctorData.room || '').trim() || 'Phòng 110 - Khám Mắt Tổng Quát',
+      schedule: (doctorData.schedule || '').trim() || 'Thứ 2 - Thứ 6 (08:00 - 17:00)',
       status: doctorData.status || 'active',
       rating: Number(doctorData.rating) || 5.0,
       reviewsCount: Number(doctorData.reviewsCount) || 0,
-      avatar: doctorData.avatar.trim() || SAMPLE_AVATARS[0],
-      bio: doctorData.bio.trim() || 'Bác sĩ chuyên khoa tại phòng khám mắt Doctor4.',
+      avatar: (doctorData.avatar || '').trim() || SAMPLE_AVATARS[0],
+      bio: (doctorData.bio || '').trim() || 'Bác sĩ chuyên khoa tại phòng khám mắt Doctor4.',
       createdAt: new Date().toISOString()
     };
 
     list.unshift(newDoc);
     localStorage.setItem(DOCTORS_STORAGE_KEY, JSON.stringify(list));
+
+    // Đồng bộ tài khoản đăng nhập vào Cổng Bác sĩ (doctor4_users_db)
+    syncDoctorLoginUser(newDoc, doctorData.password || '123456');
+
     return newDoc;
+  },
+
+  addDoctor(doctorData) {
+    return this.createDoctor(doctorData);
   },
 
   /**
@@ -108,6 +116,10 @@ export const DoctorManager = {
     };
 
     localStorage.setItem(DOCTORS_STORAGE_KEY, JSON.stringify(list));
+
+    // Đồng bộ cập nhật tài khoản đăng nhập
+    syncDoctorLoginUser(list[index], updatedData.password);
+
     return list[index];
   },
 
@@ -120,6 +132,20 @@ export const DoctorManager = {
     if (filtered.length === list.length) return false;
 
     localStorage.setItem(DOCTORS_STORAGE_KEY, JSON.stringify(filtered));
+
+    // Xóa tài khoản đăng nhập nếu có
+    try {
+      const USERS_KEY = 'doctor4_users_db';
+      const raw = localStorage.getItem(USERS_KEY);
+      if (raw) {
+        let users = JSON.parse(raw);
+        users = users.filter(u => String(u.doctorId) !== String(id) && u.id !== `user_${id}`);
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
     return true;
   },
 
@@ -158,3 +184,52 @@ export const DoctorManager = {
     return result;
   }
 };
+
+/**
+ * Đồng bộ tài khoản bác sĩ vào doctor4_users_db
+ */
+export function syncDoctorLoginUser(doc, password = '123456') {
+  try {
+    const USERS_STORAGE_KEY = 'doctor4_users_db';
+    let users = [];
+    const raw = localStorage.getItem(USERS_STORAGE_KEY);
+    if (raw) {
+      users = JSON.parse(raw);
+    }
+    const cleanEmail = (doc.email || `doc.${doc.id}@doctor4.vn`).toLowerCase();
+    const cleanPhone = doc.phone || '';
+    const index = users.findIndex(u => 
+      u.id === `user_${doc.id}` || 
+      (u.doctorId && String(u.doctorId) === String(doc.id)) ||
+      (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) ||
+      (cleanPhone && u.phone && u.phone === cleanPhone)
+    );
+
+    const docUserData = {
+      id: `user_${doc.id}`,
+      doctorId: doc.id,
+      name: doc.name,
+      email: cleanEmail,
+      phone: cleanPhone || '0988000000',
+      password: password || '123456',
+      role: 'doctor',
+      degree: doc.degree || 'BS. Nhãn khoa',
+      specialty: doc.specialty || 'Chuyên khoa Mắt',
+      room: doc.room || 'Phòng khám Mắt',
+      roomId: doc.roomId || 'R101',
+      schedule: doc.schedule || 'Thứ 2 - Thứ 6 (08:00 - 17:00)',
+      avatar: doc.avatar || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80',
+      updatedAt: new Date().toISOString()
+    };
+
+    if (index >= 0) {
+      users[index] = { ...users[index], ...docUserData, password: password || users[index].password || '123456' };
+    } else {
+      users.push(docUserData);
+    }
+
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+  } catch (err) {
+    console.error('Lỗi khi đồng bộ tài khoản bác sĩ:', err);
+  }
+}
