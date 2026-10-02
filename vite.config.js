@@ -8,6 +8,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         about: resolve(__dirname, 'gioi-thieu.html'),
         lookup: resolve(__dirname, 'lich-kham.html'),
+        doctor: resolve(__dirname, 'bac-si.html'),
         login: resolve(__dirname, 'dang-nhap.html'),
         register: resolve(__dirname, 'dang-ky.html'),
         admin: resolve(__dirname, 'admin/index.html')

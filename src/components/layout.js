@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { id: 'services', label: 'Dịch vụ', href: '/index.html#dich-vu' },
   { id: 'doctors', label: 'Bác sĩ', href: '/index.html#doctors' },
   { id: 'lookup', label: '🎫 Tra cứu phòng khám', href: '/lich-kham.html' },
+  { id: 'doctor', label: '🩺 Cổng Bác sĩ', href: '/bac-si.html' },
   { id: 'contact', label: 'Liên hệ', href: '/index.html#contact' },
 ];
 
@@ -38,6 +39,7 @@ export function renderHeader(active) {
             <div style="color: #94A3B8; font-size: 0.78rem;">${user.email || user.phone}</div>
           </div>
           ${user.role === 'admin' ? `<a href="/admin/index.html" class="nav-dropdown-item">📊 Quản trị Admin</a>` : ''}
+          ${user.role === 'doctor' ? `<a href="/bac-si.html" class="nav-dropdown-item" style="color: #38bdf8; font-weight: 700;">🩺 Cổng Bác Sĩ (Phòng khám)</a>` : ''}
           <a href="javascript:void(0)" class="nav-dropdown-item btn-open-user-lookup" data-phone="${user.phone || ''}">🎫 Xem phòng & vé khám của tôi</a>
           <a href="/index.html#dat-lich" class="nav-dropdown-item">📅 Đặt lịch khám mới</a>
           <div class="nav-dropdown-divider"></div>

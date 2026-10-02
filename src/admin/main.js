@@ -7,7 +7,7 @@
 import '../css/admin.css';
 import { AdminAuth } from './admin-auth.js';
 import { DoctorManager, SAMPLE_AVATARS } from './doctor-manager.js';
-import { AppointmentManager } from './appointment-manager.js';
+import { AppointmentManager, SAMPLE_EYE_DRUGS, SAMPLE_DIAGNOSES } from './appointment-manager.js';
 import { CLINIC_ROOMS, CLINIC_SERVICES } from '../data/clinic-data.js';
 
 // Khởi tạo container chính
@@ -15,6 +15,7 @@ const appRoot = document.getElementById('admin-app') || document.body;
 
 // Trạng thái hiện tại của ứng dụng Admin
 let currentTab = 'doctors'; // 'doctors' | 'appointments' | 'rooms' | 'dashboard' | 'settings'
+let currentRoleMode = 'admin'; // 'admin' | doctorId (e.g. 'doc_1', 'doc_2'...)
 let docFilterState = {
   query: '',
   specialty: 'all',
@@ -23,7 +24,8 @@ let docFilterState = {
 let appFilterState = {
   query: '',
   status: 'all',
-  roomId: 'all'
+  roomId: 'all',
+  doctorId: 'all'
 };
 
 // Khởi chạy ứng dụng
@@ -197,6 +199,11 @@ function renderAdminPortal() {
             <span>Bảng điều khiển KPI</span>
           </div>
 
+          <div class="adm-nav-item ${currentTab === 'accounts' ? 'active' : ''}" data-tab="accounts">
+            <span class="adm-nav-icon">🔑</span>
+            <span>Quản lý Tài khoản</span>
+          </div>
+
           <div class="adm-nav-item ${currentTab === 'settings' ? 'active' : ''}" data-tab="settings">
             <span class="adm-nav-icon">⚙️</span>
             <span>Cài đặt hệ thống</span>
@@ -230,7 +237,22 @@ function renderAdminPortal() {
             </div>
           </div>
 
-          <div class="adm-header-right">
+          <div class="adm-header-right" style="display: flex; align-items: center; gap: 10px;">
+            <!-- Bộ chuyển đổi Vai trò (Super Admin vs 10 Bác Sĩ) -->
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); padding: 5px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12);">
+              <span style="font-size: 12px; color: #94a3b8; font-weight: 600;">🎭 Chế độ:</span>
+              <select id="adm-select-role-mode" style="background: #0f172a; color: #38bdf8; border: 1px solid rgba(56,189,248,0.4); border-radius: 6px; padding: 4px 8px; font-size: 12px; font-weight: 700; cursor: pointer; outline: none;">
+                <option value="admin" ${currentRoleMode === 'admin' ? 'selected' : ''}>👑 Quản Trị Viên (Super Admin - Toàn quyền)</option>
+                <optgroup label="👨‍⚕️ Bác sĩ trực 10 Phòng Khám">
+                  ${allDocs.map(d => `
+                    <option value="${d.id}" ${currentRoleMode === d.id ? 'selected' : ''}>
+                      👨‍⚕️ ${escapeHtml(d.name)} (${escapeHtml(d.room || 'Phòng')})
+                    </option>
+                  `).join('')}
+                </optgroup>
+              </select>
+            </div>
+
             <button class="adm-header-btn" id="btn-reset-db" title="Khôi phục toàn bộ danh sách 10 bác sĩ & lịch hẹn mẫu">
               <span>🔄 Khôi phục mẫu gốc</span>
             </button>
@@ -264,6 +286,7 @@ function getTabTitle(tab) {
     case 'appointments': return 'Quản lý Lịch hẹn & Phân bổ Xếp phòng';
     case 'rooms': return 'Sơ đồ 10 Phòng khám mắt chuyên biệt';
     case 'dashboard': return 'Bảng điều khiển tổng quan';
+    case 'accounts': return 'Quản lý Tài khoản Người dùng & Bác sĩ';
     default: return 'Cài đặt hệ thống';
   }
 }
@@ -276,6 +299,7 @@ function renderTabContent() {
   if (currentTab === 'appointments') return renderAppointmentsManagementView();
   if (currentTab === 'rooms') return renderRoomsDiagramView();
   if (currentTab === 'dashboard') return renderDashboardView();
+  if (currentTab === 'accounts') return renderAccountsManagementView();
   return renderSettingsPlaceholderView();
 }
 
@@ -457,23 +481,58 @@ function renderDoctorRow(doc) {
 // ── TAB 2: QUẢN LÝ LỊCH HẸN & XẾP PHÒNG ──────────────────────
 function renderAppointmentsManagementView() {
   const allApps = AppointmentManager.getAppointments();
-  const filteredApps = AppointmentManager.filterAppointments(allApps, appFilterState);
+  const allDocs = DoctorManager.getDoctors();
+  
+  // Nếu đang ở chế độ 1 Bác sĩ, tự động lọc theo Bác sĩ đó
+  const effectiveFilter = { ...appFilterState };
+  if (currentRoleMode !== 'admin') {
+    effectiveFilter.doctorId = currentRoleMode;
+  }
+
+  const filteredApps = AppointmentManager.filterAppointments(allApps, effectiveFilter);
 
   const pendingCount = allApps.filter(a => a.status === 'pending').length;
   const inProgressCount = allApps.filter(a => a.status === 'in_progress').length;
   const confirmedCount = allApps.filter(a => a.status === 'confirmed').length;
   const completedCount = allApps.filter(a => a.status === 'completed').length;
 
+  const currentDocObj = allDocs.find(d => String(d.id) === String(currentRoleMode));
+
   return `
     <div class="adm-page-header">
       <div class="adm-page-title">
         <h1>Quản lý Lịch Hẹn & Xếp Phòng Khám</h1>
-        <p>Tiếp nhận ca khám, phân bổ 10 phòng khám chuyên biệt (Phòng 101 - 110) và chỉ định bác sĩ phụ trách</p>
+        <p>Tiếp nhận ca khám, phân bổ 10 phòng khám chuyên biệt (Phòng 101 - 110) và cập nhật bệnh án & kê đơn thuốc</p>
       </div>
       <button class="adm-btn-create" id="btn-open-create-app-modal">
         <span>➕ Tạo Lịch Hẹn Mới</span>
       </button>
     </div>
+
+    ${currentRoleMode !== 'admin' && currentDocObj ? `
+    <!-- BANNER BÀN LÀM VIỆC CỦA BÁC SĨ -->
+    <div style="background: linear-gradient(135deg, rgba(56,189,248,0.15) 0%, rgba(37,99,235,0.1) 100%); border: 1.5px solid #38bdf8; border-radius: 14px; padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 32px;">👨‍⚕️</span>
+        <div>
+          <div style="color: #38bdf8; font-weight: 800; font-size: 15px; text-transform: uppercase;">
+            BÀN LÀM VIỆC BÁC SĨ: ${escapeHtml(currentDocObj.name)} (${escapeHtml(currentDocObj.degree)})
+          </div>
+          <div style="color: #cbd5e1; font-size: 13px; margin-top: 2px;">
+            Trực tại: <strong style="color: #fbbf24;">${escapeHtml(currentDocObj.room || 'Phòng khám')}</strong> — Bạn đang xử lý bệnh nhân tại phòng của mình.
+          </div>
+        </div>
+      </div>
+      <button id="btn-switch-to-admin" style="padding: 8px 14px; background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; cursor: pointer; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+        👑 Quay lại Toàn quyền Super Admin
+      </button>
+    </div>
+    ` : `
+    <!-- BANNER TOÀN QUYỀN SUPER ADMIN -->
+    <div style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.15); border-radius: 12px; padding: 10px 16px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--adm-text-muted);">
+      <div>👑 <strong>Quyền hạn cao nhất (Admin):</strong> Điều hành toàn diện 10 bác sĩ & 10 phòng. Admin có quyền xem, chỉnh sửa hồ sơ bệnh án hoặc mở lại ca khám khi cần.</div>
+    </div>
+    `}
 
     <!-- Thống kê trạng thái ca khám -->
     <div class="adm-stats-grid">
@@ -509,7 +568,7 @@ function renderAppointmentsManagementView() {
 
     <!-- Toolbar Lọc lịch hẹn -->
     <div class="adm-toolbar">
-      <div class="adm-filters-left">
+      <div class="adm-filters-left" style="flex-wrap: wrap; gap: 10px;">
         <div class="adm-search-input-wrap">
           <span class="adm-search-icon">🔍</span>
           <input 
@@ -519,6 +578,13 @@ function renderAppointmentsManagementView() {
             value="${escapeHtml(appFilterState.query)}"
           />
         </div>
+
+        <select class="adm-select" id="filter-doctor-app">
+          <option value="all" ${appFilterState.doctorId === 'all' ? 'selected' : ''}>Tất cả 10 Bác sĩ</option>
+          ${allDocs.map(d => `
+            <option value="${d.id}" ${appFilterState.doctorId === d.id ? 'selected' : ''}>👨‍⚕️ ${d.name} (${d.room || 'Phòng'})</option>
+          `).join('')}
+        </select>
 
         <select class="adm-select" id="filter-room-app">
           <option value="all" ${appFilterState.roomId === 'all' ? 'selected' : ''}>Tất cả 10 Phòng khám</option>
@@ -538,7 +604,7 @@ function renderAppointmentsManagementView() {
       </div>
 
       <div style="font-size: 13px; color: var(--adm-text-muted);">
-        Tổng cộng: <strong>${filteredApps.length}</strong> ca hẹn
+        Hiển thị: <strong>${filteredApps.length}</strong> / ${allApps.length} ca hẹn
       </div>
     </div>
 
@@ -610,7 +676,16 @@ function renderAppointmentRow(app) {
         ${statusHtml[app.status] || statusHtml.pending}
       </td>
       <td>
-        <div class="adm-actions" style="justify-content: flex-end;">
+        <div class="adm-actions" style="justify-content: flex-end; gap: 6px;">
+          ${app.status === 'completed' || !!app.medicalRecord ? `
+            <button class="adm-btn-action view btn-exam-record" data-id="${app.id}" title="Bác sĩ & Admin có thể Chỉnh sửa Bệnh Án / Đơn Thuốc / Viện Phí bất kỳ lúc nào" style="background: rgba(34,197,94,0.18); color: #4ade80; border: 1px solid rgba(34,197,94,0.4); font-weight: 700; width: auto; padding: 4px 10px; font-size: 11.5px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+              ✏️ Sửa Bệnh Án & Viện Phí
+            </button>
+          ` : `
+            <button class="adm-btn-action edit btn-exam-record" data-id="${app.id}" title="Bác sĩ Khám, Viết bệnh án & Kê đơn thuốc" style="background: rgba(56,189,248,0.18); color: #38bdf8; border: 1px solid rgba(56,189,248,0.4); font-weight: 700; width: auto; padding: 4px 10px; font-size: 11.5px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+              🩺 Khám & Kê đơn
+            </button>
+          `}
           <button class="adm-btn-action edit btn-assign-room" data-id="${app.id}" title="Xếp / Đổi phòng khám & Bác sĩ">
             🏥
           </button>
@@ -629,6 +704,8 @@ function renderAppointmentRow(app) {
 // ── TAB 3: SƠ ĐỒ & QUẢN LÝ 10 PHÒNG KHÁM CHUYÊN BIỆT ─────────
 function renderRoomsDiagramView() {
   const roomsOverview = AppointmentManager.getRoomsOverview();
+  const allApps = AppointmentManager.getAppointments();
+  const totalPending = allApps.filter(a => a.status === 'pending').length;
 
   return `
     <div class="adm-page-header">
@@ -641,10 +718,34 @@ function renderRoomsDiagramView() {
       </button>
     </div>
 
+    ${totalPending > 0 ? `
+    <!-- Banner cảnh báo chờ duyệt -->
+    <div style="background: linear-gradient(135deg, rgba(234,179,8,0.15), rgba(234,179,8,0.05)); border: 1.5px solid rgba(234,179,8,0.5); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 28px;">⏳</span>
+        <div>
+          <div style="font-weight: 800; color: #fbbf24; font-size: 15px;">Có ${totalPending} lịch hẹn đang chờ Admin xét duyệt & xếp phòng</div>
+          <div style="font-size: 12px; color: var(--adm-text-muted); margin-top: 2px;">Người dùng đã đặt lịch và đang chờ được xác nhận phòng khám</div>
+        </div>
+      </div>
+      <button class="adm-btn-create btn-goto-pending-apps" style="background: linear-gradient(135deg, #d97706, #f59e0b); color: #000; white-space: nowrap;">
+        📋 Xem tất cả lịch chờ duyệt (${totalPending})
+      </button>
+    </div>
+    ` : ''}
+
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
-      ${roomsOverview.map(r => `
-        <div style="background: var(--adm-bg-surface); border: 1px solid ${r.isOccupied ? 'var(--adm-border-active)' : 'var(--adm-border)'}; border-radius: var(--adm-radius-lg); padding: 20px; box-shadow: var(--adm-shadow-sm); position: relative; overflow: hidden;">
-          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: ${r.isOccupied ? 'var(--adm-primary)' : 'var(--adm-border)'};"></div>
+      ${roomsOverview.map(r => {
+        // Đếm lịch pending của phòng này
+        const pendingForRoom = allApps.filter(a =>
+          a.status === 'pending' &&
+          (a.roomId === r.id || (a.roomName && a.roomName.includes(r.number)))
+        );
+        const pendingCount = pendingForRoom.length;
+
+        return `
+        <div style="background: var(--adm-bg-surface); border: 1px solid ${pendingCount > 0 ? 'rgba(234,179,8,0.5)' : r.isOccupied ? 'var(--adm-border-active)' : 'var(--adm-border)'}; border-radius: var(--adm-radius-lg); padding: 20px; box-shadow: var(--adm-shadow-sm); position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: ${pendingCount > 0 ? 'linear-gradient(90deg, #d97706, #fbbf24)' : r.isOccupied ? 'var(--adm-primary)' : 'var(--adm-border)'};"></div>
           
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
             <div>
@@ -654,6 +755,11 @@ function renderRoomsDiagramView() {
               <h3 style="color: #fff; font-size: 17px; margin-top: 6px;">${r.number}: ${r.name}</h3>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
+              ${pendingCount > 0 ? `
+                <span style="background: rgba(234,179,8,0.2); color: #fbbf24; border: 1px solid rgba(234,179,8,0.4); padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700;">
+                  ⏳ ${pendingCount} chờ
+                </span>
+              ` : ''}
               <span class="adm-badge ${r.isOccupied ? 'adm-badge-active' : 'adm-badge-off'}">
                 <span class="adm-badge-dot"></span> ${r.isOccupied ? 'Đang mở' : 'Trống'}
               </span>
@@ -680,14 +786,41 @@ function renderRoomsDiagramView() {
             `).join('') : '<div style="font-size: 12px; color: var(--adm-text-dim);">Chưa phân bổ bác sĩ trực cố định</div>'}
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-            <span style="color: var(--adm-text-muted);">Bệnh nhân đang chờ: <strong style="color: #38bdf8;">${r.activeCount} ca</strong></span>
-            <button class="adm-btn-create btn-room-view-apps" data-room-id="${r.id}" style="padding: 6px 12px; font-size: 12px;">
-              Xem bệnh nhân tại phòng →
-            </button>
+          ${pendingCount > 0 ? `
+          <!-- Danh sách bệnh nhân chờ duyệt -->
+          <div style="background: rgba(234,179,8,0.06); border: 1px solid rgba(234,179,8,0.25); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;">
+            <div style="font-size: 11.5px; font-weight: 700; color: #fbbf24; margin-bottom: 8px;">⏳ Lịch hẹn chờ xét duyệt (${pendingCount}):</div>
+            ${pendingForRoom.slice(0, 3).map(app => `
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,0.06);">
+                <div>
+                  <div style="font-size: 12px; color: #fff; font-weight: 600;">${escapeHtml(app.patientName)}</div>
+                  <div style="font-size: 11px; color: var(--adm-text-muted);">${escapeHtml(app.timeSlot)} · ${escapeHtml(app.date)}</div>
+                </div>
+                <button class="adm-btn-action edit btn-quick-approve" data-id="${app.id}" title="Duyệt & Xếp phòng nhanh" style="font-size: 11px; padding: 3px 8px;">
+                  ✅ Duyệt
+                </button>
+              </div>
+            `).join('')}
+            ${pendingCount > 3 ? `<div style="font-size: 11px; color: var(--adm-text-muted); margin-top: 6px; text-align: center;">... và ${pendingCount - 3} lịch hẹn khác</div>` : ''}
+          </div>
+          ` : ''}
+
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; gap: 8px;">
+            <span style="color: var(--adm-text-muted);">Đang xếp phòng: <strong style="color: #38bdf8;">${r.activeCount} ca</strong></span>
+            <div style="display: flex; gap: 6px;">
+              ${pendingCount > 0 ? `
+                <button class="adm-btn-create btn-room-pending-apps" data-room-id="${r.id}" style="padding: 5px 10px; font-size: 11px; background: linear-gradient(135deg, #d97706, #f59e0b); color: #000;">
+                  ⏳ Duyệt ${pendingCount} chờ
+                </button>
+              ` : ''}
+              <button class="adm-btn-create btn-room-view-apps" data-room-id="${r.id}" style="padding: 5px 10px; font-size: 11px;">
+                Xem tất cả →
+              </button>
+            </div>
           </div>
         </div>
-      `).join('')}
+        `;
+      }).join('')}
     </div>
   `;
 }
@@ -766,7 +899,671 @@ function renderDashboardView() {
   `;
 }
 
+// ── TAB 5: QUẢN LÝ TÀI KHOẢN (ADMIN TOÀN QUYỀN) ──────────────
+let accountTab = 'patients'; // 'patients' | 'doctors'
+let accountSearch = '';
+
+function getAccountUsers() {
+  try {
+    const data = localStorage.getItem('doctor4_users_db');
+    let users = data ? JSON.parse(data) : [];
+
+    // 1. Đảm bảo tài khoản Admin luôn có
+    if (!users.some(u => u.role === 'admin' || u.email === 'admin@doctor4.vn')) {
+      users.unshift({
+        id: 'usr_admin_001',
+        name: 'Quản Trị Viên (Super Admin)',
+        email: 'admin@doctor4.vn',
+        phone: '0912345678',
+        password: '123456',
+        role: 'admin',
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    // 2. Đảm bảo tài khoản Bệnh nhân mẫu luôn có
+    if (!users.some(u => u.email === 'benhnhan@doctor4.vn')) {
+      users.push({
+        id: 'usr_patient_001',
+        name: 'Nguyễn Văn An (Bệnh nhân)',
+        email: 'benhnhan@doctor4.vn',
+        phone: '0987654321',
+        password: '123456',
+        role: 'patient',
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    // 3. Đảm bảo TẤT CẢ 10 Bác sĩ của phòng khám đều có tài khoản đăng nhập (mật khẩu mặc định: 123456)
+    const allDoctors = DoctorManager.getDoctors();
+    allDoctors.forEach(doc => {
+      const cleanEmail = (doc.email || `doc.${doc.id}@doctor4.vn`).trim().toLowerCase();
+      const cleanPhone = (doc.phone || '').replace(/\s+/g, '');
+      const existing = users.find(u => 
+        (u.doctorId && String(u.doctorId) === String(doc.id)) ||
+        (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) ||
+        (cleanPhone && u.phone && u.phone.replace(/\s+/g, '') === cleanPhone)
+      );
+
+      if (!existing) {
+        users.push({
+          id: 'usr_' + doc.id,
+          doctorId: doc.id,
+          name: doc.name,
+          email: cleanEmail,
+          phone: cleanPhone || '0988000000',
+          password: doc.password || '123456',
+          role: 'doctor',
+          degree: doc.degree || 'Bác sĩ chuyên khoa',
+          specialty: doc.specialty || 'Khám Mắt',
+          room: doc.room || 'Phòng 101',
+          roomId: doc.roomId || 'R101',
+          schedule: doc.schedule || 'Thứ 2 - Thứ 6 (08:00 - 17:00)',
+          avatar: doc.avatar,
+          createdAt: new Date().toISOString()
+        });
+      } else {
+        if (!existing.password) existing.password = doc.password || '123456';
+        if (!existing.role) existing.role = 'doctor';
+        if (!existing.doctorId) existing.doctorId = doc.id;
+        if (!existing.room && doc.room) existing.room = doc.room;
+        if (!existing.roomId && doc.roomId) existing.roomId = doc.roomId;
+        if (!existing.specialty && doc.specialty) existing.specialty = doc.specialty;
+      }
+    });
+
+    localStorage.setItem('doctor4_users_db', JSON.stringify(users));
+    return users;
+  } catch (e) {
+    console.error('Lỗi getAccountUsers:', e);
+    return [];
+  }
+}
+
+function saveAccountUsers(users) {
+  localStorage.setItem('doctor4_users_db', JSON.stringify(users));
+}
+
+function renderAccountsManagementView() {
+  const allUsers = getAccountUsers();
+  const patients = allUsers.filter(u => u.role === 'patient');
+  const doctors  = allUsers.filter(u => u.role === 'doctor');
+  const admins   = allUsers.filter(u => u.role === 'admin');
+
+  const searchLC = accountSearch.toLowerCase();
+  const filteredPatients = patients.filter(u =>
+    u.name.toLowerCase().includes(searchLC) ||
+    u.email.toLowerCase().includes(searchLC) ||
+    (u.phone || '').includes(searchLC)
+  );
+  const filteredDoctors = doctors.filter(u =>
+    u.name.toLowerCase().includes(searchLC) ||
+    u.email.toLowerCase().includes(searchLC) ||
+    (u.phone || '').includes(searchLC)
+  );
+
+  const list = accountTab === 'patients' ? filteredPatients : filteredDoctors;
+
+  return `
+    <div class="adm-page-header">
+      <div class="adm-page-title">
+        <h1>🔑 Quản lý Tài khoản Hệ thống</h1>
+        <p>Admin có toàn quyền: xem, sửa, đặt lại mật khẩu và xóa tài khoản người dùng & bác sĩ</p>
+      </div>
+      <button class="adm-btn-create" id="btn-open-create-account">
+        <span>➕ ${accountTab === 'doctors' ? 'Cấp tài khoản Bác sĩ mới' : 'Thêm Bệnh nhân mới'}</span>
+      </button>
+    </div>
+
+    <!-- Stats nhanh -->
+    <div class="adm-stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon primary">👤</div>
+        <div class="adm-stat-meta">
+          <h3>Tài khoản Bệnh nhân</h3>
+          <div class="stat-val">${patients.length}</div>
+        </div>
+      </div>
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon success">🩺</div>
+        <div class="adm-stat-meta">
+          <h3>Tài khoản Bác sĩ</h3>
+          <div class="stat-val">${doctors.length}</div>
+        </div>
+      </div>
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon accent">🛡️</div>
+        <div class="adm-stat-meta">
+          <h3>Tài khoản Admin</h3>
+          <div class="stat-val">${admins.length}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab switch -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;">
+      <button id="acct-tab-patients" class="adm-btn-secondary" style="${accountTab === 'patients' ? 'background:var(--adm-primary);color:#fff;border-color:var(--adm-primary);' : ''}">
+        👤 Bệnh nhân (${patients.length})
+      </button>
+      <button id="acct-tab-doctors" class="adm-btn-secondary" style="${accountTab === 'doctors' ? 'background:#0d9488;color:#fff;border-color:#0d9488;' : ''}">
+        🩺 Bác sĩ (${doctors.length})
+      </button>
+    </div>
+
+    <!-- Toolbar tìm kiếm -->
+    <div class="adm-toolbar" style="margin-bottom:16px;">
+      <div class="adm-search-input-wrap" style="min-width:320px;">
+        <span class="adm-search-icon">🔍</span>
+        <input type="text" id="acct-search" placeholder="Tìm theo tên, email, số điện thoại..."
+          value="${escapeHtml(accountSearch)}" style="width:100%;"/>
+      </div>
+      <div style="font-size:13px;color:var(--adm-text-muted);">
+        Hiển thị: <strong>${list.length}</strong> tài khoản
+      </div>
+    </div>
+
+    <!-- Bảng danh sách tài khoản -->
+    <div class="adm-table-container">
+      ${list.length === 0 ? `
+        <div class="adm-empty-state">
+          <div class="adm-empty-icon">🔎</div>
+          <h3>Không tìm thấy tài khoản nào</h3>
+          <p>Hãy thử thay đổi từ khóa tìm kiếm.</p>
+        </div>
+      ` : `
+        <table class="adm-table">
+          <thead>
+            <tr>
+              <th>${accountTab === 'doctors' ? 'Bác sĩ' : 'Bệnh nhân'}</th>
+              <th>Email / SĐT đăng nhập</th>
+              ${accountTab === 'doctors' ? '<th>Chuyên khoa & Phòng</th>' : '<th>Ngày đăng ký</th>'}
+              <th>Mật khẩu</th>
+              <th style="text-align:right;">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${list.map(u => renderAccountRow(u)).join('')}
+          </tbody>
+        </table>
+      `}
+    </div>
+  `;
+}
+
+function renderAccountRow(u) {
+  const isDoctor = u.role === 'doctor';
+  const maskedPwd = '●●●●●●';
+  return `
+    <tr data-uid="${u.id}">
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;background:rgba(56,189,248,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;">
+            ${u.avatar ? `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${isDoctor ? '🩺' : '👤'}'"/>` : (isDoctor ? '🩺' : '👤')}
+          </div>
+          <div>
+            <div style="font-weight:700;color:#fff;font-size:14px;">${escapeHtml(u.name)}</div>
+            <div style="font-size:11px;color:var(--adm-text-muted);">${isDoctor ? escapeHtml(u.degree || 'Bác sĩ') : 'Bệnh nhân'}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div style="font-weight:600;color:var(--adm-primary);font-size:13px;">${escapeHtml(u.email)}</div>
+        <div style="color:var(--adm-text-muted);font-size:12px;">📞 ${escapeHtml(u.phone || '—')}</div>
+      </td>
+      <td>
+        ${isDoctor
+          ? `<div style="font-size:13px;color:#4ade80;font-weight:600;">${escapeHtml(u.specialty || 'Nhãn khoa')}</div>
+             <div style="font-size:11px;color:var(--adm-text-muted);">📍 ${escapeHtml(u.room || '—')}</div>`
+          : `<div style="font-size:12px;color:var(--adm-text-muted);">${u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : '—'}</div>`
+        }
+      </td>
+      <td>
+        <div class="acct-pwd-cell" data-uid="${u.id}" style="font-family:monospace;font-size:14px;cursor:pointer;color:var(--adm-text-muted);" title="Click để hiện mật khẩu">
+          ${maskedPwd}
+        </div>
+      </td>
+      <td>
+        <div class="adm-actions" style="justify-content:flex-end;gap:6px;">
+          <button class="adm-btn-action edit btn-edit-account" data-uid="${u.id}" title="Sửa thông tin tài khoản">✏️</button>
+          <button class="adm-btn-action edit btn-reset-pwd" data-uid="${u.id}" title="Đặt lại mật khẩu" style="background:rgba(251,191,36,0.15);color:#fbbf24;border-color:rgba(251,191,36,0.4);">🔑</button>
+          <button class="adm-btn-action delete btn-delete-account" data-uid="${u.id}" title="Xóa tài khoản">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+function openAccountModal(user = null) {
+  const isEdit = !!user;
+  const isDoctor = user?.role === 'doctor';
+  const allDocs = DoctorManager.getDoctors();
+  const modalRoot = document.getElementById('adm-modals-root');
+
+  modalRoot.innerHTML = `
+    <div class="adm-modal-overlay" id="adm-modal-overlay">
+      <div class="adm-modal" style="max-width:600px;">
+        <div class="adm-modal-header">
+          <h3>${isEdit ? '✏️ Sửa tài khoản: ' + escapeHtml(user.name) : (accountTab === 'doctors' ? '🩺 Cấp tài khoản Bác sĩ mới' : '👤 Thêm tài khoản Bệnh nhân')}</h3>
+          <button class="adm-modal-close" id="btn-close-acct-modal">✕</button>
+        </div>
+        <form id="adm-account-form">
+          <div class="adm-modal-body">
+
+            ${!isEdit && accountTab === 'doctors' ? `
+            <div class="adm-form-group">
+              <label class="adm-form-label">Chọn Bác sĩ (từ danh sách) hoặc nhập thủ công bên dưới</label>
+              <select id="acct-doctor-select" class="adm-input adm-input-no-icon">
+                <option value="">— Nhập thủ công —</option>
+                ${allDocs.map(d => `<option value="${d.id}">${d.name} (${d.degree}) — ${d.room || ''}</option>`).join('')}
+              </select>
+            </div>
+            ` : ''}
+
+            <div class="adm-grid-2">
+              <div class="adm-form-group">
+                <label class="adm-form-label">Họ và tên *</label>
+                <input type="text" id="acct-name" class="adm-input adm-input-no-icon"
+                  value="${user ? escapeHtml(user.name) : ''}" placeholder="Nguyễn Văn A" required/>
+              </div>
+              <div class="adm-form-group">
+                <label class="adm-form-label">Vai trò</label>
+                <select id="acct-role" class="adm-input adm-input-no-icon" ${isEdit ? 'disabled' : ''}>
+                  <option value="patient" ${(user?.role === 'patient' || accountTab === 'patients') ? 'selected' : ''}>👤 Bệnh nhân</option>
+                  <option value="doctor" ${(user?.role === 'doctor' || accountTab === 'doctors') ? 'selected' : ''}>🩺 Bác sĩ</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="adm-grid-2">
+              <div class="adm-form-group">
+                <label class="adm-form-label">Email đăng nhập *</label>
+                <input type="email" id="acct-email" class="adm-input adm-input-no-icon"
+                  value="${user ? escapeHtml(user.email) : ''}" placeholder="email@doctor4.vn" required/>
+              </div>
+              <div class="adm-form-group">
+                <label class="adm-form-label">Số điện thoại</label>
+                <input type="text" id="acct-phone" class="adm-input adm-input-no-icon"
+                  value="${user ? escapeHtml(user.phone || '') : ''}" placeholder="0912345678"/>
+              </div>
+            </div>
+
+            ${!isEdit ? `
+            <div class="adm-form-group">
+              <label class="adm-form-label">Mật khẩu *</label>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input type="text" id="acct-password" class="adm-input adm-input-no-icon"
+                  value="123456" placeholder="Mật khẩu mặc định: 123456" required style="flex:1;"/>
+                <button type="button" id="btn-gen-pwd" class="adm-btn-secondary" style="white-space:nowrap;">
+                  🎲 Tạo ngẫu nhiên
+                </button>
+              </div>
+            </div>
+            ` : ''}
+
+            <div id="doctor-extra-fields" style="display:${(isDoctor || accountTab === 'doctors') ? 'block' : 'none'}">
+              <div class="adm-grid-2">
+                <div class="adm-form-group">
+                  <label class="adm-form-label">Học vị / Học hàm</label>
+                  <input type="text" id="acct-degree" class="adm-input adm-input-no-icon"
+                    value="${user ? escapeHtml(user.degree || '') : 'BS. Chuyên khoa I'}" placeholder="BS. CKI..."/>
+                </div>
+                <div class="adm-form-group">
+                  <label class="adm-form-label">Chuyên khoa</label>
+                  <input type="text" id="acct-specialty" class="adm-input adm-input-no-icon"
+                    value="${user ? escapeHtml(user.specialty || '') : 'Nhãn khoa'}" placeholder="Nhãn khoa..."/>
+                </div>
+              </div>
+              <div class="adm-grid-2">
+                <div class="adm-form-group">
+                  <label class="adm-form-label">Phòng khám</label>
+                  <select id="acct-room" class="adm-input adm-input-no-icon">
+                    ${CLINIC_ROOMS.map(r => `<option value="${r.id}" ${user?.roomId === r.id ? 'selected' : ''}>${r.number}: ${r.name}</option>`).join('')}
+                  </select>
+                </div>
+                <div class="adm-form-group">
+                  <label class="adm-form-label">Ca làm việc</label>
+                  <input type="text" id="acct-schedule" class="adm-input adm-input-no-icon"
+                    value="${user ? escapeHtml(user.schedule || '') : 'Thứ 2 - Thứ 6 (08:00 - 17:00)'}" placeholder="Lịch trực..."/>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="adm-modal-footer">
+            <button type="button" class="adm-btn-secondary" id="btn-cancel-acct-modal">Hủy</button>
+            <button type="submit" class="adm-btn-create">
+              <span>💾 ${isEdit ? 'Lưu thay đổi' : 'Tạo tài khoản'}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+
+  const closeModal = () => { modalRoot.innerHTML = ''; };
+  document.getElementById('btn-close-acct-modal').addEventListener('click', closeModal);
+  document.getElementById('btn-cancel-acct-modal').addEventListener('click', closeModal);
+
+  // Tạo mật khẩu ngẫu nhiên
+  document.getElementById('btn-gen-pwd')?.addEventListener('click', () => {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let pwd = '';
+    for (let i = 0; i < 8; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
+    document.getElementById('acct-password').value = pwd;
+  });
+
+  // Hiện/ẩn field bác sĩ khi đổi vai trò
+  document.getElementById('acct-role')?.addEventListener('change', (e) => {
+    document.getElementById('doctor-extra-fields').style.display =
+      e.target.value === 'doctor' ? 'block' : 'none';
+  });
+
+  // Điền thông tin bác sĩ từ dropdown (chỉ khi tạo mới bác sĩ)
+  document.getElementById('acct-doctor-select')?.addEventListener('change', (e) => {
+    const docId = e.target.value;
+    if (!docId) return;
+    const doc = allDocs.find(d => d.id === docId);
+    if (!doc) return;
+    document.getElementById('acct-name').value = doc.name || '';
+    document.getElementById('acct-email').value = doc.email || '';
+    document.getElementById('acct-phone').value = (doc.phone || '').replace(/\s+/g, '');
+    document.getElementById('acct-degree').value = doc.degree || '';
+    document.getElementById('acct-specialty').value = doc.specialty || '';
+    document.getElementById('acct-schedule').value = doc.schedule || '';
+    document.getElementById('acct-room').value = doc.roomId || '';
+    document.getElementById('doctor-extra-fields').style.display = 'block';
+  });
+
+  // Submit
+  document.getElementById('adm-account-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const users = getAccountUsers();
+    const role = isEdit ? user.role : (document.getElementById('acct-role').value);
+    const name = document.getElementById('acct-name').value.trim();
+    const email = document.getElementById('acct-email').value.trim().toLowerCase();
+    const phone = document.getElementById('acct-phone').value.trim().replace(/\s+/g, '');
+    const pwd = isEdit ? (user.password || '123456') : document.getElementById('acct-password').value.trim();
+
+    // Kiểm tra email trùng (khi tạo mới hoặc đổi email)
+    if (!isEdit || email !== user.email.toLowerCase()) {
+      if (users.some(u => u.id !== (user?.id) && u.email.toLowerCase() === email)) {
+        showToast('Email này đã được sử dụng bởi tài khoản khác!', 'error');
+        return;
+      }
+    }
+
+    if (isEdit) {
+      const idx = users.findIndex(u => u.id === user.id);
+      if (idx >= 0) {
+        users[idx] = {
+          ...users[idx],
+          name, email, phone,
+          ...(role === 'doctor' ? {
+            degree: document.getElementById('acct-degree').value.trim(),
+            specialty: document.getElementById('acct-specialty').value.trim(),
+            roomId: document.getElementById('acct-room').value,
+            room: CLINIC_ROOMS.find(r => r.id === document.getElementById('acct-room').value)?.number || users[idx].room,
+            schedule: document.getElementById('acct-schedule').value.trim(),
+          } : {}),
+          updatedAt: new Date().toISOString()
+        };
+        saveAccountUsers(users);
+
+        // Đồng bộ cập nhật bác sĩ trong DoctorManager nếu có liên kết
+        if (role === 'doctor' && users[idx].doctorId) {
+          DoctorManager.updateDoctor(users[idx].doctorId, {
+            name, email, phone,
+            degree: document.getElementById('acct-degree').value.trim(),
+            specialty: document.getElementById('acct-specialty').value.trim(),
+            roomId: document.getElementById('acct-room').value,
+            room: CLINIC_ROOMS.find(r => r.id === document.getElementById('acct-room').value)?.number || users[idx].room,
+            schedule: document.getElementById('acct-schedule').value.trim()
+          });
+        }
+        showToast(`Đã cập nhật tài khoản ${name} thành công!`, 'success');
+      }
+    } else {
+      let selectedDocId = document.getElementById('acct-doctor-select')?.value || null;
+      let degree = role === 'doctor' ? document.getElementById('acct-degree').value.trim() : '';
+      let specialty = role === 'doctor' ? document.getElementById('acct-specialty').value.trim() : '';
+      let roomId = role === 'doctor' ? document.getElementById('acct-room').value : '';
+      let roomName = CLINIC_ROOMS.find(r => r.id === roomId)?.number || 'Phòng 101';
+      let schedule = role === 'doctor' ? document.getElementById('acct-schedule').value.trim() : '';
+
+      if (role === 'doctor' && !selectedDocId) {
+        // Tự động tạo hồ sơ bác sĩ trong DoctorManager để hiển thị trên danh mục bác sĩ phòng khám
+        const createdDoc = DoctorManager.createDoctor({
+          name,
+          degree: degree || 'BS. Chuyên khoa',
+          specialty: specialty || 'Khám Mắt',
+          specialtyCode: 'general',
+          roomId: roomId || 'R101',
+          room: roomName,
+          schedule: schedule || 'Thứ 2 - Thứ 6 (08:00 - 17:00)',
+          phone,
+          email,
+          password: pwd
+        });
+        selectedDocId = createdDoc.id;
+      }
+
+      const newUser = {
+        id: 'usr_adm_' + Date.now(),
+        name, email, phone, password: pwd,
+        role,
+        createdAt: new Date().toISOString(),
+        ...(role === 'doctor' ? {
+          doctorId: selectedDocId,
+          degree,
+          specialty,
+          roomId,
+          room: roomName,
+          schedule
+        } : {})
+      };
+      users.push(newUser);
+      saveAccountUsers(users);
+      showToast(`✅ Đã cấp tài khoản cho ${name}! Email: ${email} | MK: ${pwd}`, 'success', 7000);
+    }
+
+    closeModal();
+    refreshMainView();
+  });
+}
+
+function openResetPasswordModal(uid) {
+  const users = getAccountUsers();
+  const user = users.find(u => u.id === uid);
+  if (!user) return;
+  const modalRoot = document.getElementById('adm-modals-root');
+
+  modalRoot.innerHTML = `
+    <div class="adm-modal-overlay" id="adm-modal-overlay">
+      <div class="adm-modal" style="max-width:420px;">
+        <div class="adm-modal-header">
+          <h3>🔑 Đặt lại mật khẩu: ${escapeHtml(user.name)}</h3>
+          <button class="adm-modal-close" id="btn-close-reset-pwd">✕</button>
+        </div>
+        <div class="adm-modal-body">
+          <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;">
+            <div>Email: <strong style="color:var(--adm-primary);">${escapeHtml(user.email)}</strong></div>
+            <div style="margin-top:4px;">Vai trò: <strong>${user.role === 'doctor' ? '🩺 Bác sĩ' : user.role === 'admin' ? '🛡️ Admin' : '👤 Bệnh nhân'}</strong></div>
+          </div>
+          <div class="adm-form-group">
+            <label class="adm-form-label">Mật khẩu mới *</label>
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="new-pwd-input" class="adm-input adm-input-no-icon" value="123456" style="flex:1;"/>
+              <button type="button" id="btn-gen-new-pwd" class="adm-btn-secondary">🎲</button>
+            </div>
+          </div>
+        </div>
+        <div class="adm-modal-footer">
+          <button type="button" class="adm-btn-secondary" id="btn-cancel-reset-pwd">Hủy</button>
+          <button type="button" class="adm-btn-create" id="btn-confirm-reset-pwd">
+            <span>✅ Xác nhận đặt lại</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const closeModal = () => { modalRoot.innerHTML = ''; };
+  document.getElementById('btn-close-reset-pwd').addEventListener('click', closeModal);
+  document.getElementById('btn-cancel-reset-pwd').addEventListener('click', closeModal);
+
+  document.getElementById('btn-gen-new-pwd').addEventListener('click', () => {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let pwd = '';
+    for (let i = 0; i < 8; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
+    document.getElementById('new-pwd-input').value = pwd;
+  });
+
+  document.getElementById('btn-confirm-reset-pwd').addEventListener('click', () => {
+    const newPwd = document.getElementById('new-pwd-input').value.trim();
+    if (!newPwd || newPwd.length < 4) {
+      showToast('Mật khẩu phải có ít nhất 4 ký tự!', 'error');
+      return;
+    }
+    const idx = users.findIndex(u => u.id === uid);
+    if (idx >= 0) {
+      users[idx].password = newPwd;
+      users[idx].updatedAt = new Date().toISOString();
+      saveAccountUsers(users);
+      showToast(`🔑 Đã đặt lại mật khẩu cho ${user.name}! Mật khẩu mới: ${newPwd}`, 'success', 7000);
+      closeModal();
+      refreshMainView();
+    }
+  });
+}
+
+function openDeleteAccountModal(uid) {
+  const users = getAccountUsers();
+  const user = users.find(u => u.id === uid);
+  if (!user) return;
+  const modalRoot = document.getElementById('adm-modals-root');
+
+  modalRoot.innerHTML = `
+    <div class="adm-modal-overlay" id="adm-modal-overlay">
+      <div class="adm-modal" style="max-width:420px;">
+        <div class="adm-modal-header" style="border-bottom-color:rgba(239,68,68,0.4);">
+          <h3 style="color:#f87171;">🗑️ Xóa tài khoản</h3>
+          <button class="adm-modal-close" id="btn-close-del-acct">✕</button>
+        </div>
+        <div class="adm-modal-body" style="text-align:center;padding:24px;">
+          <div style="font-size:3rem;margin-bottom:12px;">⚠️</div>
+          <h3 style="color:#fff;margin-bottom:8px;">Bạn chắc chắn muốn xóa?</h3>
+          <p style="color:var(--adm-text-muted);margin-bottom:16px;">
+            Tài khoản <strong style="color:#f87171;">${escapeHtml(user.name)}</strong> (${escapeHtml(user.email)}) sẽ bị xóa vĩnh viễn và không thể đăng nhập lại.
+          </p>
+          ${user.role === 'admin' ? `<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);border-radius:8px;padding:10px;color:#f87171;font-size:13px;">⛔ Không thể xóa tài khoản Admin!</div>` : ''}
+        </div>
+        <div class="adm-modal-footer">
+          <button type="button" class="adm-btn-secondary" id="btn-cancel-del-acct">Hủy</button>
+          ${user.role !== 'admin' ? `
+          <button type="button" class="adm-btn-delete" id="btn-confirm-del-acct"
+            style="background:rgba(239,68,68,0.2);color:#f87171;border:1px solid rgba(239,68,68,0.4);padding:8px 20px;border-radius:8px;font-weight:700;cursor:pointer;">
+            🗑️ Xóa vĩnh viễn
+          </button>` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+
+  const closeModal = () => { modalRoot.innerHTML = ''; };
+  document.getElementById('btn-close-del-acct').addEventListener('click', closeModal);
+  document.getElementById('btn-cancel-del-acct').addEventListener('click', closeModal);
+
+  document.getElementById('btn-confirm-del-acct')?.addEventListener('click', () => {
+    const updated = users.filter(u => u.id !== uid);
+    saveAccountUsers(updated);
+    // Nếu là bác sĩ, đồng bộ xóa khỏi DoctorManager
+    if (user.role === 'doctor' && user.doctorId) {
+      DoctorManager.deleteDoctor(user.doctorId);
+    }
+    showToast(`🗑️ Đã xóa tài khoản ${user.name}!`, 'success');
+    closeModal();
+    refreshMainView();
+  });
+}
+
+function bindAccountsEvents() {
+  // Tab switch
+  document.getElementById('acct-tab-patients')?.addEventListener('click', () => {
+    accountTab = 'patients';
+    accountSearch = '';
+    refreshMainView();
+  });
+  document.getElementById('acct-tab-doctors')?.addEventListener('click', () => {
+    accountTab = 'doctors';
+    accountSearch = '';
+    refreshMainView();
+  });
+
+  // Search
+  document.getElementById('acct-search')?.addEventListener('input', (e) => {
+    accountSearch = e.target.value;
+    const content = document.getElementById('adm-main-content');
+    if (content) {
+      content.innerHTML = renderAccountsManagementView();
+      bindAccountsEvents();
+      const inp = document.getElementById('acct-search');
+      if (inp) {
+        inp.focus();
+        const v = inp.value;
+        inp.value = '';
+        inp.value = v;
+      }
+    }
+  });
+
+  // Mở modal tạo mới
+  document.getElementById('btn-open-create-account')?.addEventListener('click', () => {
+    openAccountModal(null);
+  });
+
+  // Sửa tài khoản
+  document.querySelectorAll('.btn-edit-account').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const uid = btn.getAttribute('data-uid');
+      const user = getAccountUsers().find(u => u.id === uid);
+      if (user) openAccountModal(user);
+    });
+  });
+
+  // Đặt lại mật khẩu
+  document.querySelectorAll('.btn-reset-pwd').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openResetPasswordModal(btn.getAttribute('data-uid'));
+    });
+  });
+
+  // Xóa tài khoản
+  document.querySelectorAll('.btn-delete-account').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openDeleteAccountModal(btn.getAttribute('data-uid'));
+    });
+  });
+
+  // Toggle hiện mật khẩu
+  document.querySelectorAll('.acct-pwd-cell').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const uid = cell.getAttribute('data-uid');
+      const user = getAccountUsers().find(u => u.id === uid);
+      if (!user) return;
+      if (cell.textContent.includes('●')) {
+        cell.textContent = user.password || '(chưa đặt)';
+        cell.style.color = '#4ade80';
+        setTimeout(() => {
+          cell.textContent = '●●●●●●';
+          cell.style.color = 'var(--adm-text-muted)';
+        }, 3000);
+      }
+    });
+  });
+}
+
 function renderSettingsPlaceholderView() {
+
   return `
     <div class="adm-page-header">
       <div class="adm-page-title">
@@ -891,7 +1688,7 @@ function openDoctorModal(doc = null) {
               </div>
 
               <div class="adm-form-group">
-                <label class="adm-form-label">Email</label>
+                <label class="adm-form-label">Email (Dùng đăng nhập Cổng Bác Sĩ)</label>
                 <input 
                   type="email" 
                   id="doc-form-email" 
@@ -903,6 +1700,18 @@ function openDoctorModal(doc = null) {
 
             <div class="adm-grid-2">
               <div class="adm-form-group">
+                <label class="adm-form-label">🔑 Mật khẩu đăng nhập Cổng Bác sĩ</label>
+                <input 
+                  type="text" 
+                  id="doc-form-password" 
+                  class="adm-input adm-input-no-icon" 
+                  placeholder="Mặc định: 123456" 
+                  value="123456" 
+                />
+                <span style="font-size: 11px; color: var(--adm-text-muted);">Bác sĩ dùng Email/SĐT & mật khẩu này để đăng nhập vào Cổng Bác Sĩ</span>
+              </div>
+
+              <div class="adm-form-group">
                 <label class="adm-form-label">Lịch làm việc</label>
                 <input 
                   type="text" 
@@ -911,6 +1720,7 @@ function openDoctorModal(doc = null) {
                   value="${doc ? escapeHtml(doc.schedule) : 'Thứ 2 - Thứ 6 (08:00 - 17:00)'}" 
                 />
               </div>
+            </div>
 
               <div class="adm-form-group">
                 <label class="adm-form-label">Trạng thái hiện tại</label>
@@ -996,6 +1806,7 @@ function openDoctorModal(doc = null) {
       experience: document.getElementById('doc-form-exp').value,
       phone: document.getElementById('doc-form-phone').value,
       email: document.getElementById('doc-form-email').value,
+      password: document.getElementById('doc-form-password')?.value || '123456',
       schedule: document.getElementById('doc-form-schedule').value,
       status: document.getElementById('doc-form-status').value,
       avatar: document.getElementById('doc-form-avatar').value,
@@ -1004,10 +1815,10 @@ function openDoctorModal(doc = null) {
 
     if (isEdit) {
       DoctorManager.updateDoctor(doc.id, docData);
-      showToast(`Đã cập nhật bác sĩ ${docData.name}!`, 'success');
+      showToast(`Đã cập nhật bác sĩ ${docData.name} và tài khoản đăng nhập!`, 'success');
     } else {
       DoctorManager.createDoctor(docData);
-      showToast(`Đã thêm bác sĩ mới: ${docData.name}!`, 'success');
+      showToast(`Đã thêm bác sĩ mới: ${docData.name} & cấp tài khoản đăng nhập thành công!`, 'success');
     }
 
     closeModal();
@@ -1120,6 +1931,476 @@ function openAssignRoomModal(app) {
     closeModal();
     refreshMainView();
   });
+}
+
+// Modal Khám Bệnh, Viết Bệnh Án, Kê Đơn Thuốc & Tính Viện Phí (Bác sĩ & Super Admin toàn quyền)
+function openMedicalExamModal(app) {
+  const modalRoot = document.getElementById('adm-modals-root');
+  const allDocs = DoctorManager.getDoctors();
+  const isAdmin = currentRoleMode === 'admin';
+  const isCompleted = app.status === 'completed';
+
+  const existingRecord = app.medicalRecord || {};
+  const existingBilling = app.billing || {};
+
+  let currentPrescriptions = Array.isArray(existingRecord.prescriptions) && existingRecord.prescriptions.length > 0
+    ? JSON.parse(JSON.stringify(existingRecord.prescriptions))
+    : [
+        { name: 'Systane Ultra (Lọ 10ml)', quantity: 1, price: 95000, dosage: 'Nhỏ 1 giọt x 3 lần/ngày khi khô mắt' }
+      ];
+
+  let examFee = existingBilling.examFee ?? 200000;
+  let serviceFee = existingBilling.serviceFee ?? 0;
+  let discount = existingBilling.discount ?? 0;
+  let paymentStatus = existingBilling.paymentStatus || 'paid';
+  let paymentMethod = existingBilling.paymentMethod || 'Tiền mặt / Thẻ tại quầy';
+
+  function formatMoney(num) {
+    return Number(num || 0).toLocaleString('vi-VN') + ' đ';
+  }
+
+  function calculateTotals() {
+    const list = modalRoot.querySelectorAll('.drug-row');
+    let medicineTotal = 0;
+    list.forEach(row => {
+      const q = Number(row.querySelector('.drug-qty')?.value || 1);
+      const p = Number(row.querySelector('.drug-price')?.value || 0);
+      const amount = q * p;
+      medicineTotal += amount;
+      const amountEl = row.querySelector('.drug-amount-display');
+      if (amountEl) amountEl.textContent = formatMoney(amount);
+    });
+
+    const exFee = Number(document.getElementById('exam-fee-input')?.value || 0);
+    const svFee = Number(document.getElementById('service-fee-input')?.value || 0);
+    const disc = Number(document.getElementById('discount-input')?.value || 0);
+
+    const total = Math.max(0, exFee + medicineTotal + svFee - disc);
+
+    const medEl = document.getElementById('billing-medicine-fee');
+    if (medEl) medEl.textContent = formatMoney(medicineTotal);
+
+    const totalEl = document.getElementById('billing-total-amount');
+    if (totalEl) totalEl.textContent = formatMoney(total);
+
+    return { medicineTotal, total };
+  }
+
+  function renderExamModalHtml() {
+    modalRoot.innerHTML = `
+      <div class="adm-modal-overlay" id="adm-modal-overlay">
+        <div class="adm-modal" style="max-width: 840px; width: 96%;">
+          
+          <div class="adm-modal-header" style="background: linear-gradient(135deg, rgba(56,189,248,0.12), rgba(37,99,235,0.08)); border-bottom: 1px solid rgba(56,189,248,0.25);">
+            <div>
+              <div style="font-size: 11px; text-transform: uppercase; color: #38bdf8; font-weight: 800; letter-spacing: 0.5px;">
+                🏥 HỒ SƠ Y KHOA & HÓA ĐƠN VIỆN PHÍ — PHÒNG KHÁM MẮT DOCTOR4
+              </div>
+              <h3 style="margin-top: 2px;">
+                ${isAdmin ? '👑 Quản Trị Viên: Hiệu Chỉnh Toàn Bộ Bệnh Án & Viện Phí' : '🩺 Bác Sĩ: Khám Bệnh, Viết Bệnh Án & Kê Đơn Thuốc'}
+              </h3>
+            </div>
+            <button class="adm-modal-close" id="btn-close-exam-modal">✕</button>
+          </div>
+
+          <form id="adm-exam-form">
+            <div class="adm-modal-body" style="max-height: 76vh; overflow-y: auto; padding: 22px;">
+              
+              ${isAdmin ? `
+              <!-- BANNER QUYỀN SUPER ADMIN TOÀN QUYỀN -->
+              <div style="background: rgba(234,179,8,0.12); border: 1.5px solid rgba(234,179,8,0.4); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; font-size: 12.5px; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">👑</span>
+                <div>
+                  <strong>Quyền Super Admin cao nhất:</strong> Bạn có quyền xem và sửa mọi thông tin chẩn đoán, thị lực, thêm bớt thuốc, điều chỉnh đơn giá, viện phí và đổi bác sĩ/phòng khám.
+                </div>
+              </div>
+              ` : `
+              <!-- BANNER BÁC SĨ -->
+              <div style="background: rgba(56,189,248,0.1); border: 1.5px solid rgba(56,189,248,0.3); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; font-size: 12.5px; color: #38bdf8; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">👨‍⚕️</span>
+                <div>
+                  <strong>Bàn làm việc Bác sĩ:</strong> Sau khi hoàn tất khám và kê đơn, bấm <em>"Báo Xong"</em> để đồng bộ hồ sơ bệnh án & viện phí về Admin và Bệnh nhân.
+                </div>
+              </div>
+              `}
+
+              <!-- Patient Banner -->
+              <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 18px; margin-bottom: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
+                <div>
+                  <div style="color: var(--adm-text-muted);">Mã lịch hẹn: <strong style="font-family: monospace; color: #38bdf8; font-size: 14px;">${app.id}</strong></div>
+                  <div style="margin-top: 4px;">Bệnh nhân: <strong style="color: #fff; font-size: 15px;">${escapeHtml(app.patientName)}</strong> (📞 ${escapeHtml(app.patientPhone)})</div>
+                  <div style="color: var(--adm-text-dim); margin-top: 4px;">Nhu cầu khám: <em>${escapeHtml(app.symptoms || app.serviceName)}</em></div>
+                </div>
+                <div>
+                  <div>Phòng khám: <strong style="color: #fbbf24;">${escapeHtml(app.roomName || 'Phòng 101')}</strong></div>
+                  <div style="margin-top: 4px;">
+                    Bác sĩ điều trị: 
+                    ${isAdmin ? `
+                      <select id="exam-doctor-select" class="adm-select" style="padding: 2px 6px; font-size: 12.5px; height: auto; margin-left: 4px;">
+                        ${allDocs.map(d => `
+                          <option value="${d.id}" ${d.name === app.doctorName || d.id === app.doctorId ? 'selected' : ''}>
+                            ${d.name} (${d.degree})
+                          </option>
+                        `).join('')}
+                      </select>
+                    ` : `<strong style="color: #38bdf8;">${escapeHtml(app.doctorName)}</strong>`}
+                  </div>
+                  <div style="color: var(--adm-text-muted); margin-top: 4px;">Trạng thái: 
+                    <span style="font-weight: 700; color: ${isCompleted ? '#4ade80' : '#fbbf24'};">
+                      ${isCompleted ? '✅ Đã hoàn thành ca khám' : '⏳ Đang tiếp nhận khám'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Presets -->
+              <div style="background: rgba(56,189,248,0.05); border: 1px solid rgba(56,189,248,0.15); border-radius: 10px; padding: 12px; margin-bottom: 18px;">
+                <div style="font-size: 11.5px; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 6px;">
+                  ⚡ Chọn nhanh mẫu bệnh lý mắt thường gặp (Tự điền nhanh thị lực & tiền khám):
+                </div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  ${SAMPLE_DIAGNOSES.map((diag, idx) => `
+                    <button type="button" class="btn-quick-diag" data-idx="${idx}" style="padding: 4px 9px; font-size: 11px; background: rgba(255,255,255,0.06); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; cursor: pointer;">
+                      ${escapeHtml(diag.label.split('(')[0])}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- SECTION 1: ĐO KHÁM CHUYÊN KHOA MẮT -->
+              <div style="margin-bottom: 20px;">
+                <div style="font-size: 12.5px; font-weight: 700; color: #fff; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                  <span>👁️</span> 1. Kết Quả Đo Khám Thị Lực & Bệnh Án
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                  <div class="adm-form-group">
+                    <label class="adm-form-label">Thị lực Mắt Phải (OD) *</label>
+                    <input type="text" id="exam-vision-r" class="adm-input adm-input-no-icon" placeholder="VD: 10/10 hoặc -2.50 D" value="${escapeHtml(existingRecord.visionRight || '10/10')}" required/>
+                  </div>
+
+                  <div class="adm-form-group">
+                    <label class="adm-form-label">Thị lực Mắt Trái (OS) *</label>
+                    <input type="text" id="exam-vision-l" class="adm-input adm-input-no-icon" placeholder="VD: 10/10 hoặc -2.00 D" value="${escapeHtml(existingRecord.visionLeft || '10/10')}" required/>
+                  </div>
+
+                  <div class="adm-form-group">
+                    <label class="adm-form-label">Nhãn Áp (IOP)</label>
+                    <input type="text" id="exam-iop" class="adm-input adm-input-no-icon" placeholder="VD: 15 mmHg" value="${escapeHtml(existingRecord.intraocularPressure || '15 mmHg')}"/>
+                  </div>
+                </div>
+
+                <div class="adm-form-group" style="margin-top: 10px;">
+                  <label class="adm-form-label">Chẩn Đoán Xác Định (Kết luận bệnh lý) *</label>
+                  <input type="text" id="exam-diagnosis" class="adm-input adm-input-no-icon" placeholder="VD: Cận thị học đường, Đục thủy tinh thể, Viêm kết mạc..." value="${escapeHtml(existingRecord.diagnosis || app.serviceName || '')}" required/>
+                </div>
+
+                <div class="adm-form-group">
+                  <label class="adm-form-label">Ghi chú lâm sàng / Đáy mắt / Giác mạc</label>
+                  <textarea id="exam-notes" class="adm-input adm-input-no-icon" rows="2" placeholder="Ghi chú chi tiết hình ảnh đáy mắt, giác mạc hoặc diễn tiến...">${escapeHtml(existingRecord.clinicalNotes || '')}</textarea>
+                </div>
+              </div>
+
+              <!-- SECTION 2: KÊ ĐƠN THUỐC ĐIỆN TỬ KÈM GIÁ TIỀN -->
+              <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <div style="font-size: 12.5px; font-weight: 700; color: #fff; text-transform: uppercase;">
+                    💊 2. Đơn Thuốc Điều Trị & Giá Thuốc
+                  </div>
+                  <button type="button" id="btn-add-drug-row" style="padding: 4px 10px; font-size: 11.5px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    ➕ Thêm thuốc
+                  </button>
+                </div>
+
+                <!-- Quick Drugs -->
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
+                  <span style="font-size: 11px; color: var(--adm-text-muted); align-self: center;">Thuốc mẫu:</span>
+                  ${SAMPLE_EYE_DRUGS.slice(0, 5).map((dr, idx) => `
+                    <button type="button" class="btn-quick-drug" data-idx="${idx}" style="padding: 3px 8px; font-size: 11px; background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; cursor: pointer;">
+                      + ${escapeHtml(dr.name.split(' (')[0])} (${formatMoney(dr.price)})
+                    </button>
+                  `).join('')}
+                </div>
+
+                <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px;">
+                  <div style="display: flex; gap: 8px; font-size: 11px; color: var(--adm-text-muted); text-transform: uppercase; font-weight: 700; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 8px;">
+                    <span style="flex: 3;">Tên Thuốc / Quy Cách</span>
+                    <span style="width: 65px; text-align: center;">SL</span>
+                    <span style="width: 100px;">Đơn Giá (đ)</span>
+                    <span style="flex: 3;">Cách Dùng / Liều Lượng</span>
+                    <span style="width: 90px; text-align: right;">Thành Tiền</span>
+                    <span style="width: 32px;"></span>
+                  </div>
+
+                  <div id="exam-prescription-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    ${currentPrescriptions.map((p, idx) => {
+                      const qty = Number(p.quantity || 1);
+                      const price = Number(p.price || 95000);
+                      const amount = qty * price;
+                      return `
+                        <div class="drug-row" style="display: flex; gap: 8px; align-items: center;" data-row-idx="${idx}">
+                          <input type="text" class="adm-input adm-input-no-icon drug-name" style="flex: 3;" placeholder="Tên thuốc" value="${escapeHtml(p.name)}" required/>
+                          <input type="number" min="1" max="50" class="adm-input adm-input-no-icon drug-qty" style="width: 65px; text-align: center;" value="${qty}" required/>
+                          <input type="number" min="0" step="1000" class="adm-input adm-input-no-icon drug-price" style="width: 100px;" value="${price}" required/>
+                          <input type="text" class="adm-input adm-input-no-icon drug-dosage" style="flex: 3;" placeholder="Cách dùng" value="${escapeHtml(p.dosage)}" required/>
+                          <span class="drug-amount-display" style="width: 90px; text-align: right; font-weight: 700; color: #38bdf8; font-size: 12.5px;">${formatMoney(amount)}</span>
+                          <button type="button" class="btn-remove-drug" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; width: 32px; height: 36px; border-radius: 6px; cursor: pointer;">✕</button>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              </div>
+
+              <!-- SECTION 3: BẢNG KÊ CHI PHÍ & VIỆN PHÍ (HOSPITAL BILLING) -->
+              <div style="background: linear-gradient(135deg, rgba(30,41,59,0.7), rgba(15,23,42,0.9)); border: 1.5px solid rgba(56,189,248,0.3); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+                <div style="font-size: 13px; font-weight: 800; color: #38bdf8; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                  <span>💳 3. Bảng Kê Chi Phí & Hóa Đơn Viện Phí</span>
+                  <span style="font-size: 11px; color: var(--adm-text-muted); font-weight: 500;">
+                    ${isAdmin ? '👑 Admin có quyền sửa mọi khoản phí' : 'Bác sĩ nhập chi phí ca khám'}
+                  </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                  <div>
+                    <label class="adm-form-label">Tiền khám chuyên khoa (VNĐ)</label>
+                    <input type="number" id="exam-fee-input" class="adm-input adm-input-no-icon" value="${examFee}" min="0" step="10000"/>
+                  </div>
+                  <div>
+                    <label class="adm-form-label">Tiền thuốc (Tự động cộng dồn)</label>
+                    <div id="billing-medicine-fee" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 9px 12px; font-weight: 700; color: #38bdf8; font-size: 14px;">
+                      0 đ
+                    </div>
+                  </div>
+                  <div>
+                    <label class="adm-form-label">Phí dịch vụ / Cận lâm sàng (VNĐ)</label>
+                    <input type="number" id="service-fee-input" class="adm-input adm-input-no-icon" value="${serviceFee}" min="0" step="10000"/>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                  <div>
+                    <label class="adm-form-label">Miễn giảm / BHYT chi trả (VNĐ)</label>
+                    <input type="number" id="discount-input" class="adm-input adm-input-no-icon" value="${discount}" min="0" step="10000"/>
+                  </div>
+                  <div>
+                    <label class="adm-form-label">Trạng thái thanh toán</label>
+                    <select id="exam-payment-status" class="adm-select" style="width: 100%;">
+                      <option value="paid" ${paymentStatus === 'paid' ? 'selected' : ''}>✅ Đã thanh toán viện phí</option>
+                      <option value="unpaid" ${paymentStatus === 'unpaid' ? 'selected' : ''}>⏳ Chờ thanh toán tại quầy</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="adm-form-label">Hình thức thanh toán</label>
+                    <select id="exam-payment-method" class="adm-select" style="width: 100%;">
+                      <option value="Tiền mặt / Thẻ tại quầy" ${paymentMethod.includes('Tiền mặt') ? 'selected' : ''}>💵 Tiền mặt tại quầy</option>
+                      <option value="Chuyển khoản QR Napas" ${paymentMethod.includes('QR') ? 'selected' : ''}>📱 Quét mã QR Ngân hàng</option>
+                      <option value="Thẻ tín dụng / POS" ${paymentMethod.includes('Thẻ') ? 'selected' : ''}>💳 Thẻ Visa / Master</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25); border-radius: 10px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 14px; font-weight: 700; color: #fff;">TỔNG TIỀN BỆNH NHÂN THANH TOÁN:</span>
+                  <span id="billing-total-amount" style="font-size: 20px; font-weight: 800; color: #38bdf8;">0 đ</span>
+                </div>
+              </div>
+
+              <!-- SECTION 4: LỜI DẶN & TÁI KHÁM -->
+              <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                <div class="adm-form-group">
+                  <label class="adm-form-label">Lời dặn của Bác sĩ chuyên khoa</label>
+                  <input type="text" id="exam-advice" class="adm-input adm-input-no-icon" placeholder="VD: Hạn chế dùng máy tính, chớp mắt thường xuyên..." value="${escapeHtml(existingRecord.doctorAdvice || 'Hạn chế nhìn màn hình liên tục > 45 phút. Đeo kính râm khi ra đường.')}"/>
+                </div>
+
+                <div class="adm-form-group">
+                  <label class="adm-form-label">Hẹn ngày tái khám</label>
+                  <input type="date" id="exam-reexam" class="adm-input adm-input-no-icon" value="${existingRecord.reExamDate || ''}"/>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="adm-modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="adm-btn-secondary" id="btn-cancel-exam">Đóng</button>
+                ${isCompleted ? `
+                  <button type="button" id="btn-print-exam-now" class="adm-btn-secondary" style="border-color: #38bdf8; color: #38bdf8;">
+                    🖨️ In Bệnh Án & Viện Phí
+                  </button>
+                  <button type="button" id="btn-reopen-app" style="padding: 8px 12px; background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600;" title="Mở lại trạng thái đang khám nếu cần kiểm tra thêm hoặc làm xét nghiệm bổ sung">
+                    🔄 Khám bổ sung / Mở lại
+                  </button>
+                ` : ''}
+              </div>
+
+              <button type="submit" class="adm-btn-create" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff;">
+                <span>✅ ${isCompleted ? '💾 Cập Nhật Bệnh Án & Viện Phí' : 'Báo Xong & Gửi Kết Quả Cho Bệnh Nhân'}</span>
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    `;
+
+    bindModalEvents();
+    calculateTotals();
+  }
+
+  function bindModalEvents() {
+    const closeModal = () => { modalRoot.innerHTML = ''; };
+    document.getElementById('btn-close-exam-modal')?.addEventListener('click', closeModal);
+    document.getElementById('btn-cancel-exam')?.addEventListener('click', closeModal);
+
+    // Lắng nghe thay đổi tiền để tính tổng realtime
+    ['exam-fee-input', 'service-fee-input', 'discount-input'].forEach(id => {
+      document.getElementById(id)?.addEventListener('input', calculateTotals);
+    });
+
+    const bindRowEvents = (row) => {
+      row.querySelectorAll('.drug-qty, .drug-price').forEach(inp => {
+        inp.addEventListener('input', calculateTotals);
+      });
+      row.querySelector('.btn-remove-drug')?.addEventListener('click', () => {
+        row.remove();
+        calculateTotals();
+      });
+    };
+
+    modalRoot.querySelectorAll('.drug-row').forEach(bindRowEvents);
+
+    // Mẫu chẩn đoán nhanh
+    modalRoot.querySelectorAll('.btn-quick-diag').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-idx'), 10);
+        const diag = SAMPLE_DIAGNOSES[idx];
+        if (diag) {
+          document.getElementById('exam-diagnosis').value = diag.label;
+          document.getElementById('exam-vision-r').value = diag.visionR;
+          document.getElementById('exam-vision-l').value = diag.visionL;
+          document.getElementById('exam-iop').value = diag.iop;
+          document.getElementById('exam-advice').value = diag.advice;
+          if (diag.examFee) {
+            document.getElementById('exam-fee-input').value = diag.examFee;
+          }
+          calculateTotals();
+        }
+      });
+    });
+
+    // Thêm dòng thuốc
+    document.getElementById('btn-add-drug-row')?.addEventListener('click', () => {
+      const list = document.getElementById('exam-prescription-list');
+      const row = document.createElement('div');
+      row.className = 'drug-row';
+      row.style = 'display: flex; gap: 8px; align-items: center;';
+      row.innerHTML = `
+        <input type="text" class="adm-input adm-input-no-icon drug-name" style="flex: 3;" placeholder="Tên thuốc / Quy cách" required/>
+        <input type="number" min="1" max="50" class="adm-input adm-input-no-icon drug-qty" style="width: 65px; text-align: center;" value="1" required/>
+        <input type="number" min="0" step="1000" class="adm-input adm-input-no-icon drug-price" style="width: 100px;" value="80000" required/>
+        <input type="text" class="adm-input adm-input-no-icon drug-dosage" style="flex: 3;" placeholder="Cách dùng" value="Nhỏ 1 giọt x 3 lần/ngày" required/>
+        <span class="drug-amount-display" style="width: 90px; text-align: right; font-weight: 700; color: #38bdf8; font-size: 12.5px;">80.000 đ</span>
+        <button type="button" class="btn-remove-drug" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; width: 32px; height: 36px; border-radius: 6px; cursor: pointer;">✕</button>
+      `;
+      bindRowEvents(row);
+      list.appendChild(row);
+      calculateTotals();
+    });
+
+    // Mẫu thuốc nhanh
+    modalRoot.querySelectorAll('.btn-quick-drug').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-idx'), 10);
+        const dr = SAMPLE_EYE_DRUGS[idx];
+        if (dr) {
+          const list = document.getElementById('exam-prescription-list');
+          const row = document.createElement('div');
+          row.className = 'drug-row';
+          row.style = 'display: flex; gap: 8px; align-items: center;';
+          row.innerHTML = `
+            <input type="text" class="adm-input adm-input-no-icon drug-name" style="flex: 3;" value="${escapeHtml(dr.name)}" required/>
+            <input type="number" min="1" max="50" class="adm-input adm-input-no-icon drug-qty" style="width: 65px; text-align: center;" value="${dr.quantity || 1}" required/>
+            <input type="number" min="0" step="1000" class="adm-input adm-input-no-icon drug-price" style="width: 100px;" value="${dr.price || 95000}" required/>
+            <input type="text" class="adm-input adm-input-no-icon drug-dosage" style="flex: 3;" value="${escapeHtml(dr.dosage)}" required/>
+            <span class="drug-amount-display" style="width: 90px; text-align: right; font-weight: 700; color: #38bdf8; font-size: 12.5px;">${formatMoney((dr.quantity || 1) * (dr.price || 95000))}</span>
+            <button type="button" class="btn-remove-drug" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; width: 32px; height: 36px; border-radius: 6px; cursor: pointer;">✕</button>
+          `;
+          bindRowEvents(row);
+          list.appendChild(row);
+          calculateTotals();
+        }
+      });
+    });
+
+    // In đơn thuốc & viện phí
+    document.getElementById('btn-print-exam-now')?.addEventListener('click', () => {
+      window.print();
+    });
+
+    // Mở lại ca khám (Admin Only)
+    document.getElementById('btn-reopen-app')?.addEventListener('click', () => {
+      if (confirm(`Admin muốn mở lại ca khám ${app.id} để bác sĩ kiểm tra lại?`)) {
+        AppointmentManager.reopenAppointment(app.id);
+        showToast(`Đã mở lại ca khám ${app.id}!`, 'info');
+        closeModal();
+        refreshMainView();
+      }
+    });
+
+    // Submit Báo Xong / Cập nhật bệnh án & viện phí
+    document.getElementById('adm-exam-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const drugRows = modalRoot.querySelectorAll('.drug-row');
+      const prescriptions = [];
+      drugRows.forEach(row => {
+        const name = row.querySelector('.drug-name')?.value.trim();
+        const quantity = Number(row.querySelector('.drug-qty')?.value || 1);
+        const price = Number(row.querySelector('.drug-price')?.value || 0);
+        const dosage = row.querySelector('.drug-dosage')?.value.trim();
+        if (name) {
+          prescriptions.push({ name, quantity, price, dosage: dosage || 'Theo chỉ định' });
+        }
+      });
+
+      // Nếu Admin có đổi bác sĩ
+      let assignedDocName = app.doctorName;
+      let assignedDocId = app.doctorId;
+      const docSelect = document.getElementById('exam-doctor-select');
+      if (docSelect) {
+        assignedDocId = docSelect.value;
+        const foundDoc = allDocs.find(d => String(d.id) === String(assignedDocId));
+        if (foundDoc) assignedDocName = foundDoc.name;
+      }
+
+      const examData = {
+        visionRight: document.getElementById('exam-vision-r').value.trim(),
+        visionLeft: document.getElementById('exam-vision-l').value.trim(),
+        intraocularPressure: document.getElementById('exam-iop').value.trim(),
+        diagnosis: document.getElementById('exam-diagnosis').value.trim(),
+        clinicalNotes: document.getElementById('exam-notes').value.trim(),
+        doctorAdvice: document.getElementById('exam-advice').value.trim(),
+        reExamDate: document.getElementById('exam-reexam').value,
+        prescriptions: prescriptions,
+        examFee: Number(document.getElementById('exam-fee-input').value || 0),
+        serviceFee: Number(document.getElementById('service-fee-input').value || 0),
+        discount: Number(document.getElementById('discount-input').value || 0),
+        paymentStatus: document.getElementById('exam-payment-status').value,
+        paymentMethod: document.getElementById('exam-payment-method').value,
+        doctorId: assignedDocId,
+        doctorName: assignedDocName
+      };
+
+      AppointmentManager.completeMedicalExam(app.id, examData);
+      showToast(`🎉 Đã lưu bệnh án & viện phí cho ${app.patientName}! Thông tin đã đồng bộ về Admin & Bệnh nhân.`, 'success');
+      closeModal();
+      refreshMainView();
+    });
+  }
+
+  renderExamModalHtml();
 }
 
 // Modal Thêm Lịch Hẹn Thủ Công từ Admin
@@ -1382,6 +2663,24 @@ function bindPortalEvents() {
     }
   });
 
+  // Thay đổi Chế độ Vai trò (Super Admin vs Bác sĩ trực phòng)
+  document.getElementById('adm-select-role-mode')?.addEventListener('change', (e) => {
+    const val = e.target.value;
+    currentRoleMode = val;
+    if (val !== 'admin') {
+      appFilterState.doctorId = val;
+      const doc = DoctorManager.getDoctorById(val);
+      showToast(`Đã chuyển sang Bàn làm việc Bác sĩ: ${doc ? doc.name : val}`, 'info');
+      currentTab = 'appointments';
+      document.querySelectorAll('.adm-nav-item').forEach(el => el.classList.remove('active'));
+      document.querySelector('[data-tab="appointments"]')?.classList.add('active');
+    } else {
+      appFilterState.doctorId = 'all';
+      showToast('Đã chuyển về Quyền Super Admin (Toàn quyền điều hành)', 'info');
+    }
+    refreshMainView();
+  });
+
   bindViewSpecificEvents();
 }
 
@@ -1463,6 +2762,30 @@ function bindViewSpecificEvents() {
     });
   });
 
+  // Bác sĩ khám bệnh, kê đơn & viết bệnh án
+  document.querySelectorAll('.btn-exam-record').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const app = AppointmentManager.getAppointmentById(btn.getAttribute('data-id'));
+      if (app) openMedicalExamModal(app);
+    });
+  });
+
+  // Lọc theo Bác sĩ trong Tab Lịch Hẹn
+  document.getElementById('filter-doctor-app')?.addEventListener('change', (e) => {
+    appFilterState.doctorId = e.target.value;
+    refreshAppointmentTableOnly();
+  });
+
+  // Nút quay lại Super Admin từ Banner Bác sĩ
+  document.getElementById('btn-switch-to-admin')?.addEventListener('click', () => {
+    currentRoleMode = 'admin';
+    appFilterState.doctorId = 'all';
+    const roleSelect = document.getElementById('adm-select-role-mode');
+    if (roleSelect) roleSelect.value = 'admin';
+    showToast('Đã quay về Toàn quyền Super Admin', 'info');
+    refreshMainView();
+  });
+
   document.querySelectorAll('.btn-edit-app').forEach(btn => {
     btn.addEventListener('click', () => {
       const app = AppointmentManager.getAppointmentById(btn.getAttribute('data-id'));
@@ -1502,6 +2825,11 @@ function bindViewSpecificEvents() {
       refreshMainView();
     });
   });
+
+  // Events cho Tab Accounts (Quản lý Tài Khoản)
+  if (currentTab === 'accounts') {
+    bindAccountsEvents();
+  }
 }
 
 // Modal Thêm / Chỉnh Sửa Phòng Khám (Admin)
