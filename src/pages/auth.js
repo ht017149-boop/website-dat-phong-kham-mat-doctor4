@@ -7,6 +7,9 @@ import '../css/style.css';
 import '../css/auth.css';
 import { renderHeader, renderFooter, setupHeaderEvents } from '../components/layout.js';
 
+import { INITIAL_10_DOCTORS } from '../data/clinic-data.js';
+import { compressImageFile, getDefaultPatientPhotos } from '../utils/patient-profile.js';
+
 // Keys lưu trữ
 const USERS_STORAGE_KEY = 'doctor4_users_db';
 const SESSION_STORAGE_KEY = 'doctor4_session';
@@ -14,8 +17,8 @@ const SESSION_STORAGE_KEY = 'doctor4_session';
 // Dữ liệu tài khoản mẫu ban đầu
 const INITIAL_DEMO_USERS = [
   {
-    id: 'usr_001',
-    name: 'BS. Quản Trị Viên',
+    id: 'usr_admin_001',
+    name: 'Quản Trị Viên (Super Admin)',
     email: 'admin@doctor4.vn',
     phone: '0912345678',
     password: '123456',
@@ -29,8 +32,8 @@ const INITIAL_DEMO_USERS = [
     createdAt: new Date().toISOString()
   },
   {
-    id: 'usr_002',
-    name: 'Nguyễn Văn An',
+    id: 'usr_patient_001',
+    name: 'Nguyễn Văn An (Bệnh nhân)',
     email: 'benhnhan@doctor4.vn',
     phone: '0987654321',
     password: '123456',
@@ -63,11 +66,14 @@ const INITIAL_DEMO_USERS = [
 export const AuthService = {
   getUsers() {
     try {
+      let users = [];
       const stored = localStorage.getItem(USERS_STORAGE_KEY);
       if (!stored) {
-        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(INITIAL_DEMO_USERS));
-        return INITIAL_DEMO_USERS;
+        users = [...INITIAL_DEMO_USERS];
+      } else {
+        users = JSON.parse(stored);
       }
+
       const users = JSON.parse(stored);
       // Đảm bảo usr_002 có đầy đủ thông tin mẫu nếu đã lưu trước đó
       const demoPatient = users.find(u => u.id === 'usr_002' || u.email === 'benhnhan@doctor4.vn');
@@ -83,11 +89,103 @@ export const AuthService = {
         });
         localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
       }
+
+
+      // Đảm bảo cả 10 bác sĩ đều luôn có tài khoản đăng nhập (mật khẩu mặc định: 123456)
+      const doctorsFromStorage = localStorage.getItem('doctor4_doctors_db');
+      let doctorsList = INITIAL_10_DOCTORS;
+      try {
+        if (doctorsFromStorage) {
+          const parsed = JSON.parse(doctorsFromStorage);
+          if (Array.isArray(parsed) && parsed.length >= 10) doctorsList = parsed;
+        }
+      } catch (err) {}
+
+      doctorsList.forEach(doc => {
+        const cleanEmail = (doc.email || `doc.${doc.id}@doctor4.vn`).trim().toLowerCase();
+        const cleanPhone = (doc.phone || '').replace(/\s+/g, '');
+        const exists = users.find(u => 
+          (u.doctorId && String(u.doctorId) === String(doc.id)) || 
+          (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) ||
+          (cleanPhone && u.phone && u.phone.replace(/\s+/g, '') === cleanPhone)
+        );
+
+        if (!exists) {
+          users.push({
+            id: 'usr_' + doc.id,
+            doctorId: doc.id,
+            name: doc.name,
+            email: cleanEmail,
+            phone: cleanPhone,
+            password: doc.password || '123456',
+            role: 'doctor',
+            degree: doc.degree || 'Bác sĩ chuyên khoa',
+            specialty: doc.specialty || 'Khám Mắt',
+            room: doc.room || 'Phòng 101',
+            roomId: doc.roomId || 'R101',
+            schedule: doc.schedule || 'Thứ 2 - Thứ 6 (08:00 - 17:00)',
+            avatar: doc.avatar,
+            createdAt: new Date().toISOString()
+          });
+        } else {
+          // Luôn đảm bảo tài khoản bác sĩ có mật khẩu (nếu chưa có thì là 123456), vai trò doctor và đúng phòng khám
+          if (!exists.password) exists.password = doc.password || '123456';
+          if (!exists.role) exists.role = 'doctor';
+          if (!exists.doctorId) exists.doctorId = doc.id;
+          if (!exists.room && doc.room) exists.room = doc.room;
+          if (!exists.roomId && doc.roomId) exists.roomId = doc.roomId;
+          if (!exists.specialty && doc.specialty) exists.specialty = doc.specialty;
+        }
+      });
+
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+ 
       return users;
     } catch (e) {
       console.error('Error reading users db', e);
       return INITIAL_DEMO_USERS;
     }
+  },
+
+  /**
+   * Cung cấp / Cập nhật tài khoản Bác sĩ mới (Được gọi khi Admin thêm/sửa Bác sĩ)
+   */
+  createOrUpdateDoctorUser(doc, password = '123456') {
+    const users = this.getUsers();
+    const cleanEmail = (doc.email || '').trim().toLowerCase();
+    const cleanPhone = (doc.phone || '').replace(/\s+/g, '');
+
+    const index = users.findIndex(u => 
+      (u.doctorId && String(u.doctorId) === String(doc.id)) || 
+      (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) ||
+      (cleanPhone && u.phone && u.phone.replace(/\s+/g, '') === cleanPhone)
+    );
+
+    const docUserData = {
+      id: doc.userId || ('usr_doc_' + (doc.id || Date.now())),
+      doctorId: doc.id,
+      name: doc.name,
+      email: cleanEmail,
+      phone: cleanPhone,
+      password: password || '123456',
+      role: 'doctor',
+      degree: doc.degree || 'Bác sĩ chuyên khoa',
+      specialty: doc.specialty || 'Khám Mắt',
+      room: doc.room || 'Phòng 101',
+      roomId: doc.roomId || 'R101',
+      schedule: doc.schedule || 'Thứ 2 - Thứ 6 (08:00 - 17:00)',
+      avatar: doc.avatar || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80',
+      updatedAt: new Date().toISOString()
+    };
+
+    if (index >= 0) {
+      users[index] = { ...users[index], ...docUserData, password: password || users[index].password || '123456' };
+    } else {
+      users.push(docUserData);
+    }
+
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    return docUserData;
   },
 
   saveUsers(users) {
@@ -115,6 +213,7 @@ export const AuthService = {
       email: user.email,
       phone: user.phone,
       role: user.role || 'patient',
+
       avatar: user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.name)}`,
       birthday: user.birthday || '',
       gender: user.gender || 'Nam',
@@ -123,7 +222,31 @@ export const AuthService = {
       emergencyContact: user.emergencyContact || '',
       eyeProfile: user.eyeProfile || null,
       createdAt: user.createdAt || new Date().toISOString()
+
+      doctorId: user.doctorId || null,
+      room: user.room || null,
+      roomId: user.roomId || null,
+      degree: user.degree || null,
+      specialty: user.specialty || null,
+      schedule: user.schedule || null,
+      avatar: user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.name)}`
+ 
     };
+
+    // Nếu là admin, đồng bộ sang cả session của admin portal
+    if (user.role === 'admin') {
+      const adminSession = {
+        isLoggedIn: true,
+        username: user.email.split('@')[0],
+        email: user.email,
+        displayName: user.name,
+        role: 'Super Admin',
+        avatar: user.avatar,
+        loginAt: new Date().toISOString()
+      };
+      localStorage.setItem('doctor4_admin_session', JSON.stringify(adminSession));
+    }
+
     if (remember) {
       localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(userSafe));
       sessionStorage.removeItem(SESSION_STORAGE_KEY);
@@ -131,6 +254,7 @@ export const AuthService = {
       sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(userSafe));
       localStorage.removeItem(SESSION_STORAGE_KEY);
     }
+
     return userSafe;
   },
 
@@ -177,11 +301,16 @@ export const AuthService = {
 
   login(identifier, password, remember = true) {
     const users = this.getUsers();
-    const cleanId = identifier.trim().toLowerCase();
+    const cleanId = (identifier || '').trim().toLowerCase();
+    const cleanPhoneInput = (identifier || '').trim().replace(/\s+/g, '');
     
-    const matchedUser = users.find(u => 
-      (u.email.toLowerCase() === cleanId || u.phone === cleanId) && u.password === password
-    );
+    const matchedUser = users.find(u => {
+      const uEmail = (u.email || '').trim().toLowerCase();
+      const uPhone = (u.phone || '').trim().replace(/\s+/g, '');
+      const uDocId = (u.doctorId || '').trim().toLowerCase();
+      const pwdMatch = String(u.password || '123456') === String(password);
+      return (uEmail === cleanId || uPhone === cleanPhoneInput || uDocId === cleanId) && pwdMatch;
+    });
 
     if (!matchedUser) {
       throw new Error('Email/Số điện thoại hoặc mật khẩu không chính xác.');
@@ -212,6 +341,7 @@ export const AuthService = {
       phone: cleanPhone,
       password: userData.password,
       role: 'patient',
+
       birthday: '',
       gender: 'Nam',
       address: '',
@@ -232,6 +362,10 @@ export const AuthService = {
         nextCheckup: '',
         notes: 'Hồ sơ mới khởi tạo.'
       },
+
+      patientProfile: userData.patientProfile || null,
+      avatar: (userData.patientProfile && userData.patientProfile.photo4x6) || undefined,
+
       createdAt: new Date().toISOString()
     };
 
@@ -401,7 +535,17 @@ function setupLoginPage() {
 
       // Lấy query param redirect nếu có
       const urlParams = new URLSearchParams(window.location.search);
-      const redirectUrl = urlParams.get('redirect') || '/index.html';
+      let redirectUrl = urlParams.get('redirect');
+
+      if (!redirectUrl || redirectUrl === '/index.html') {
+        if (user.role === 'admin') {
+          redirectUrl = '/admin/index.html';
+        } else if (user.role === 'doctor') {
+          redirectUrl = '/bac-si.html';
+        } else {
+          redirectUrl = '/lich-kham.html';
+        }
+      }
 
       setTimeout(() => {
         window.location.href = redirectUrl;
@@ -419,6 +563,36 @@ function setupLoginPage() {
 function setupRegisterPage() {
   const form = document.getElementById('formRegister');
   if (!form) return;
+
+  // Xử lý upload và xem trước 3 ảnh (4x6, CCCD trước, CCCD sau)
+  let photo4x6Data = '';
+  let cccdFrontData = '';
+  let cccdBackData = '';
+
+  const bindImageUpload = (fileInputId, previewBoxId, onCompressed) => {
+    const input = document.getElementById(fileInputId);
+    const box = document.getElementById(previewBoxId);
+    if (!input || !box) return;
+
+    input.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        try {
+          box.innerHTML = `<span style="font-size: 11px; color: #0284c7;">⏳ Đang nén...</span>`;
+          const base64 = await compressImageFile(file, 600, 600, 0.75);
+          onCompressed(base64);
+          box.innerHTML = `<img src="${base64}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+          showToast('success', 'Đã tải ảnh thành công', `Đã chọn ảnh ${file.name}`);
+        } catch (err) {
+          box.innerHTML = `<span style="font-size: 11px; color: red;">Lỗi tải ảnh</span>`;
+        }
+      }
+    });
+  };
+
+  bindImageUpload('filePhoto4x6', 'preview-photo4x6-box', (data) => { photo4x6Data = data; });
+  bindImageUpload('fileCccdFront', 'preview-cccd-front-box', (data) => { cccdFrontData = data; });
+  bindImageUpload('fileCccdBack', 'preview-cccd-back-box', (data) => { cccdBackData = data; });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -438,6 +612,14 @@ function setupRegisterPage() {
     const password = pwdInput ? pwdInput.value : '';
     const confirmPassword = confirmPwdInput ? confirmPwdInput.value : '';
     const agreed = agreeTerms ? agreeTerms.checked : false;
+
+    // Các trường profile bổ sung
+    const dob = document.getElementById('regDob')?.value || '1995-05-20';
+    const gender = document.getElementById('regGender')?.value || 'Nam';
+    const cccdNumber = document.getElementById('regCccd')?.value.trim() || '079203018899';
+    const address = document.getElementById('regAddress')?.value.trim() || '123 Nguyễn Tri Phương, Q.5, TP.HCM';
+
+    const defaults = getDefaultPatientPhotos(name, gender);
 
     let hasError = false;
 
@@ -479,14 +661,27 @@ function setupRegisterPage() {
     try {
       await new Promise(res => setTimeout(res, 700));
 
+      const patientProfile = {
+        dob,
+        gender,
+        cccdNumber,
+        address,
+        photo4x6: photo4x6Data || defaults.photo4x6,
+        cccdFront: cccdFrontData || defaults.cccdFront,
+        cccdBack: cccdBackData || defaults.cccdBack,
+        verified: true,
+        updatedAt: new Date().toISOString()
+      };
+
       const newUser = AuthService.register({
         name,
         phone,
         email,
-        password
+        password,
+        patientProfile
       }, true);
 
-      showToast('success', 'Đăng ký thành công!', `Tài khoản của ${newUser.name} đã được tạo thành công.`);
+      showToast('success', 'Đăng ký thành công!', `Hồ sơ bệnh nhân trực tuyến của ${newUser.name} đã tạo thành công!`);
 
       const urlParams = new URLSearchParams(window.location.search);
       const redirectUrl = urlParams.get('redirect') || '/profile.html';

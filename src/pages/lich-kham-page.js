@@ -7,6 +7,7 @@ import '../css/style.css';
 import '../css/home.css';
 import { renderHeader, renderFooter, setupHeaderEvents } from '../components/layout.js';
 import { CLINIC_ROOMS } from '../data/clinic-data.js';
+import { openPatientMedicalRecordModal } from './my-appointments.js';
 
 const APPOINTMENTS_STORAGE_KEY = 'doctor4_appointments_db';
 
@@ -126,6 +127,18 @@ function setupLookupPage() {
         }
       });
     });
+
+    // Gắn sự kiện Xem Hồ Sơ Bệnh Án & Đơn Thuốc
+    resultsContainer.querySelectorAll('.btn-view-medical-record').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const all = getAppointments();
+        const app = all.find(a => a.id === id);
+        if (app) {
+          openPatientMedicalRecordModal(app);
+        }
+      });
+    });
   }
 
   function cancelAppt(id) {
@@ -149,7 +162,7 @@ function renderTicketCard(app) {
 
   const statusBadge = {
     pending: '<span style="background: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">🟡 Chờ xác nhận</span>',
-    confirmed: '<span style="background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">🟢 Đã xếp phòng khám</span>',
+    confirmed: '<span style="background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">🟢 Đã xác nhận lịch khám</span>',
     in_progress: '<span style="background: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">🩺 Đang khám tại phòng</span>',
     completed: '<span style="background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">✅ Đã hoàn thành</span>',
     cancelled: '<span style="background: #fee2e2; color: #b91c1c; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">❌ Đã hủy</span>'
@@ -198,13 +211,20 @@ function renderTicketCard(app) {
         </div>
 
         <!-- Trạng thái & Thao tác -->
-        <div style="border-top: 1px solid #f1f5f9; padding-top: 14px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="border-top: 1px solid #f1f5f9; padding-top: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
           <div>${statusBadge[app.status] || statusBadge.confirmed}</div>
-          ${app.status !== 'cancelled' && app.status !== 'completed' ? `
-            <button class="btn-cancel-appt" data-id="${app.id}" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-              Hủy lịch
-            </button>
-          ` : ''}
+          <div style="display: flex; gap: 6px;">
+            ${(app.status === 'completed' || app.medicalRecord) ? `
+              <button class="btn-view-medical-record" data-id="${app.id}" style="background: linear-gradient(135deg, #0284c7, #0ea5e9); color: #ffffff; border: none; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(2,132,199,0.25);">
+                <span>📄 Bệnh Án & Đơn Thuốc</span>
+              </button>
+            ` : ''}
+            ${app.status !== 'cancelled' && app.status !== 'completed' ? `
+              <button class="btn-cancel-appt" data-id="${app.id}" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                Hủy lịch
+              </button>
+            ` : ''}
+          </div>
         </div>
       </div>
     </div>
