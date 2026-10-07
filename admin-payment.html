@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý thanh toán - Doctor4</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0369a1, #2563eb);
+            color: white;
+            padding: 22px 30px;
+        }
+
+        .header h1 {
+            margin: 0 0 5px;
+            font-size: 26px;
+        }
+
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+
+        .stat-card .icon {
+            font-size: 28px;
+        }
+
+        .stat-card h3 {
+            margin: 12px 0 5px;
+            font-size: 25px;
+        }
+
+        .stat-card p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .table-box {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .table-header h2 {
+            margin: 0;
+        }
+
+        .btn-back {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            background: #e2e8f0;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1050px;
+        }
+
+        th {
+            background: #f8fafc;
+            text-align: left;
+            padding: 13px;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .payment-id {
+            font-family: monospace;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .amount {
+            font-weight: bold;
+            color: #16a34a;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.cancel {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 7px;
+            padding: 8px 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .btn-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-delete {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: #64748b;
+        }
+
+        @media (max-width: 900px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 0 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>💳 Quản lý thanh toán</h1>
+        <p>Doctor4 Eye Clinic - Quản lý giao dịch thanh toán của khách hàng</p>
+    </div>
+
+    <div class="container">
+
+        <!-- THỐNG KÊ -->
+        <div class="stats">
+
+            <div class="stat-card">
+                <div class="icon">💳</div>
+                <h3 id="totalPayments">0</h3>
+                <p>Tổng giao dịch</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">⏳</div>
+                <h3 id="pendingPayments">0</h3>
+                <p>Chờ xác nhận</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">✅</div>
+                <h3 id="successPayments">0</h3>
+                <p>Đã thanh toán</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">💰</div>
+                <h3 id="totalMoney">0đ</h3>
+                <p>Tổng tiền đã thanh toán</p>
+            </div>
+
+        </div>
+
+
+        <!-- DANH SÁCH THANH TOÁN -->
+        <div class="table-box">
+
+            <div class="table-header">
+                <h2>Danh sách giao dịch</h2>
+
+                <button class="btn-back" onclick="window.history.back()">
+                    ← Quay lại
+                </button>
+            </div>
+
+            <div id="paymentTable"></div>
+
+        </div>
+
+    </div>
+
+
+<script>
+
+const PAYMENT_KEY = "payments";
+
+
+/* =========================
+   LẤY DANH SÁCH THANH TOÁN
+========================= */
+
+function getPayments() {
+
+    try {
+
+        const data = localStorage.getItem(PAYMENT_KEY);
+
+        if (!data) {
+            return [];
+        }
+
+        const payments = JSON.parse(data);
+
+        return Array.isArray(payments) ? payments : [];
+
+    } catch (error) {
+
+        console.error("Lỗi đọc dữ liệu thanh toán:", error);
+
+        return [];
+
+    }
+
+}
+
+
+/* =========================
+   LƯU DANH SÁCH
+========================= */
+
+function savePayments(payments) {
+
+    localStorage.setItem(
+        PAYMENT_KEY,
+        JSON.stringify(payments)
+    );
+
+}
+
+
+/* =========================
+   FORMAT TIỀN
+========================= */
+
+function formatMoney(amount) {
+
+    return Number(amount || 0).toLocaleString("vi-VN") + "đ";
+
+}
+
+
+/* =========================
+   FORMAT TRẠNG THÁI
+========================= */
+
+function getStatus(status) {
+
+    if (status === "success") {
+
+        return `
+            <span class="status success">
+                ✅ Đã thanh toán
+            </span>
+        `;
+
+    }
+
+    if (status === "cancel") {
+
+        return `
+            <span class="status cancel">
+                ❌ Đã hủy
+            </span>
+        `;
+
+    }
+
+    return `
+        <span class="status pending">
+            ⏳ Chờ xác nhận
+        </span>
+    `;
+
+}
+
+
+/* =========================
+   CẬP NHẬT THỐNG KÊ
+========================= */
+
+function updateStats(payments) {
+
+    const total = payments.length;
+
+    const pending = payments.filter(
+        payment => payment.status === "pending"
+    ).length;
+
+    const success = payments.filter(
+        payment => payment.status === "success"
+    ).length;
+
+    const totalMoney = payments
+        .filter(payment => payment.status === "success")
+        .reduce(
+            (sum, payment) =>
+                sum + Number(payment.amount || 0),
+            0
+        );
+
+
+    document.getElementById("totalPayments").textContent = total;
+
+    document.getElementById("pendingPayments").textContent = pending;
+
+    document.getElementById("successPayments").textContent = success;
+
+    document.getElementById("totalMoney").textContent =
+        formatMoney(totalMoney);
+
+}
+
+
+/* =========================
+   HIỂN THỊ DANH SÁCH
+========================= */
+
+function renderPayments() {
+
+    const payments = getPayments();
+
+    updateStats(payments);
+
+    const container =
+        document.getElementById("paymentTable");
+
+
+    if (payments.length === 0) {
+
+        container.innerHTML = `
+            <div class="empty">
+
+                <div style="font-size:50px;">
+                    💳
+                </div>
+
+                <h3>Chưa có giao dịch thanh toán</h3>
+
+                <p>
+                    Khi khách hàng thanh toán QR,
+                    giao dịch sẽ xuất hiện ở đây.
+                </p>
+
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML = `
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Mã thanh toán</th>
+
+                    <th>Khách hàng</th>
+
+                    <th>Bác sĩ</th>
+
+                    <th>Ngày khám</th>
+
+                    <th>Giờ khám</th>
+
+                    <th>Số tiền</th>
+
+                    <th>Trạng thái</th>
+
+                    <th>Thao tác</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                ${payments.map((payment, index) => `
+
+                    <tr>
+
+                        <td>
+                            <span class="payment-id">
+                                ${payment.paymentId || "N/A"}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${payment.name || "Chưa cập nhật"}
+                        </td>
+
+                        <td>
+                            ${payment.doctor || "Chưa cập nhật"}
+                        </td>
+
+                        <td>
+                            ${payment.date || "N/A"}
+                        </td>
+
+                        <td>
+                            ${payment.time || "N/A"}
+                        </td>
+
+                        <td>
+                            <span class="amount">
+                                ${formatMoney(payment.amount)}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${getStatus(payment.status)}
+                        </td>
+
+                        <td>
+
+                            <div class="actions">
+
+                                ${
+                                    payment.status === "pending"
+                                    ?
+                                    `
+                                    <button
+                                        class="btn btn-success"
+                                        onclick="confirmPayment(${index})"
+                                    >
+                                        ✅ Xác nhận
+                                    </button>
+
+                                    <button
+                                        class="btn btn-danger"
+                                        onclick="cancelPayment(${index})"
+                                    >
+                                        ❌ Hủy
+                                    </button>
+                                    `
+                                    :
+                                    ""
+                                }
+
+                                <button
+                                    class="btn btn-delete"
+                                    onclick="deletePayment(${index})"
+                                >
+                                    🗑️ Xóa
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                `).join("")}
+
+            </tbody>
+
+        </table>
+
+    `;
+
+}
+
+
+/* =========================
+   XÁC NHẬN THANH TOÁN
+========================= */
+
+function confirmPayment(index) {
+
+    const payments = getPayments();
+
+    if (!payments[index]) {
+        return;
+    }
+
+
+    const payment = payments[index];
+
+
+    const ok = confirm(
+        "Xác nhận giao dịch này đã thanh toán?"
+    );
+
+
+    if (!ok) {
+        return;
+    }
+
+
+    payment.status = "success";
+
+    payment.confirmedAt =
+        new Date().toISOString();
+
+
+    savePayments(payments);
+
+    renderPayments();
+
+}
+
+
+/* =========================
+   HỦY THANH TOÁN
+========================= */
+
+function cancelPayment(index) {
+
+    const payments = getPayments();
+
+    if (!payments[index]) {
+        return;
+    }
+
+
+    const ok = confirm(
+        "Bạn có chắc muốn hủy giao dịch này?"
+    );
+
+
+    if (!ok) {
+        return;
+    }
+
+
+    payments[index].status = "cancel";
+
+    payments[index].cancelledAt =
+        new Date().toISOString();
+
+
+    savePayments(payments);
+
+    renderPayments();
+
+}
+
+
+/* =========================
+   XÓA THANH TOÁN
+========================= */
+
+function deletePayment(index) {
+
+    const payments = getPayments();
+
+    if (!payments[index]) {
+        return;
+    }
+
+
+    const ok = confirm(
+        "Bạn có chắc muốn xóa giao dịch này?"
+    );
+
+
+    if (!ok) {
+        return;
+    }
+
+
+    payments.splice(index, 1);
+
+    savePayments(payments);
+
+    renderPayments();
+
+}
+
+
+/* =========================
+   KHỞI ĐỘNG
+========================= */
+
+renderPayments();
+
+</script>
+
+</body>
+</html>
