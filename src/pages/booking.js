@@ -1007,29 +1007,6 @@ function showBookingSuccessModal(
 
           <div>
 
-            <div
-              style="
-                font-weight: 700;
-                color: #92400e;
-                font-size: 13px;
-              "
-            >
-              Đang chờ Admin xét duyệt
-              & xếp phòng
-            </div>
-
-
-            <div
-              style="
-                font-size: 12px;
-                color: #b45309;
-              "
-            >
-              Phòng khám sẽ xác nhận lịch
-              hẹn trong vòng 30 phút –
-              2 giờ làm việc.
-            </div>
-
           </div>
 
         </div>

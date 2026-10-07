@@ -183,7 +183,7 @@ function renderAdminPortal() {
 
           <div class="adm-nav-item ${currentTab === 'appointments' ? 'active' : ''}" data-tab="appointments">
             <span class="adm-nav-icon">📅</span>
-            <span>Lịch hẹn & Xếp phòng</span>
+            <span>Lịch hẹn & Đặt lịch</span>
             <span class="adm-nav-tag" style="background: var(--adm-warning); color: #000;" id="nav-app-count">${allApps.length}</span>
           </div>
 
@@ -295,7 +295,7 @@ function renderAdminPortal() {
 function getTabTitle(tab) {
   switch (tab) {
     case 'doctors': return 'Quản lý Đội ngũ 10 Bác sĩ mắt';
-    case 'appointments': return 'Quản lý Lịch hẹn & Phân bổ Xếp phòng';
+    case 'appointments': return 'Quản lý Lịch hẹn & Đặt lịch khám';
     case 'rooms': return 'Sơ đồ 10 Phòng khám mắt chuyên biệt';
     case 'dashboard': return 'Bảng điều khiển tổng quan';
     case 'comments': return 'Quản lý Bình Luận & Đánh giá';
@@ -632,7 +632,7 @@ function renderDoctorRow(doc) {
   `;
 }
 
-// ── TAB 2: QUẢN LÝ LỊCH HẸN & XẾP PHÒNG ──────────────────────
+// ── TAB 2: QUẢN LÝ LỊCH HẸN & ĐẶT LỊCH ──────────────────────
 function renderAppointmentsManagementView() {
   const allApps = AppointmentManager.getAppointments();
   const allDocs = DoctorManager.getDoctors();
@@ -655,7 +655,7 @@ function renderAppointmentsManagementView() {
   return `
     <div class="adm-page-header">
       <div class="adm-page-title">
-        <h1>Quản lý Lịch Hẹn & Xếp Phòng Khám</h1>
+        <h1>Quản lý Lịch Hẹn & Đặt Lịch Khám</h1>
         <p>Tiếp nhận ca khám, phân bổ 10 phòng khám chuyên biệt (Phòng 101 - 110) và cập nhật bệnh án & kê đơn thuốc</p>
       </div>
       <button class="adm-btn-create" id="btn-open-create-app-modal">
@@ -693,14 +693,14 @@ function renderAppointmentsManagementView() {
       <div class="adm-stat-card">
         <div class="adm-stat-icon warning">⏳</div>
         <div class="adm-stat-meta">
-          <h3>Chờ xếp phòng / duyệt</h3>
+          <h3>Chờ duyệt lịch</h3>
           <div class="stat-val">${pendingCount}</div>
         </div>
       </div>
       <div class="adm-stat-card">
         <div class="adm-stat-icon primary">📅</div>
         <div class="adm-stat-meta">
-          <h3>Đã xếp phòng & giờ</h3>
+          <h3>Đã xác nhận lịch</h3>
           <div class="stat-val">${confirmedCount}</div>
         </div>
       </div>
@@ -749,8 +749,8 @@ function renderAppointmentsManagementView() {
 
         <select class="adm-select" id="filter-status-app">
           <option value="all" ${appFilterState.status === 'all' ? 'selected' : ''}>Tất cả trạng thái</option>
-          <option value="pending" ${appFilterState.status === 'pending' ? 'selected' : ''}>Chờ duyệt / Chờ xếp phòng</option>
-          <option value="confirmed" ${appFilterState.status === 'confirmed' ? 'selected' : ''}>Đã xếp phòng & xác nhận</option>
+          <option value="pending" ${appFilterState.status === 'pending' ? 'selected' : ''}>Chờ duyệt lịch</option>
+          <option value="confirmed" ${appFilterState.status === 'confirmed' ? 'selected' : ''}>Đã xác nhận lịch</option>
           <option value="in_progress" ${appFilterState.status === 'in_progress' ? 'selected' : ''}>Đang khám tại phòng</option>
           <option value="completed" ${appFilterState.status === 'completed' ? 'selected' : ''}>Đã hoàn thành khám</option>
           <option value="cancelled" ${appFilterState.status === 'cancelled' ? 'selected' : ''}>Đã hủy hẹn</option>
@@ -780,7 +780,7 @@ function renderAppointmentsManagementView() {
               <th>Phòng khám (101-110)</th>
               <th>Ngày & Giờ khám</th>
               <th>Trạng thái</th>
-              <th style="text-align: right;">Hành động & Xếp phòng</th>
+              <th style="text-align: right;">Hành động</th>
             </tr>
           </thead>
           <tbody>
@@ -794,8 +794,8 @@ function renderAppointmentsManagementView() {
 
 function renderAppointmentRow(app) {
   const statusHtml = {
-    pending: '<span class="adm-badge adm-badge-busy"><span class="adm-badge-dot"></span> Chờ xếp phòng</span>',
-    confirmed: '<span class="adm-badge adm-badge-active"><span class="adm-badge-dot"></span> Đã xếp phòng</span>',
+    pending: '<span class="adm-badge adm-badge-busy"><span class="adm-badge-dot"></span> Chờ duyệt</span>',
+    confirmed: '<span class="adm-badge adm-badge-active"><span class="adm-badge-dot"></span> Đã xác nhận</span>',
     in_progress: '<span class="adm-badge" style="background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3);"><span class="adm-badge-dot" style="background:#818cf8;"></span> Đang khám</span>',
     completed: '<span class="adm-badge adm-badge-active"><span class="adm-badge-dot"></span> Đã khám xong</span>',
     cancelled: '<span class="adm-badge adm-badge-off"><span class="adm-badge-dot"></span> Đã hủy</span>'
@@ -878,7 +878,7 @@ function renderRoomsDiagramView() {
       <div style="display: flex; align-items: center; gap: 12px;">
         <span style="font-size: 28px;">⏳</span>
         <div>
-          <div style="font-weight: 800; color: #fbbf24; font-size: 15px;">Có ${totalPending} lịch hẹn đang chờ Admin xét duyệt & xếp phòng</div>
+          <div style="font-weight: 800; color: #fbbf24; font-size: 15px;">Có ${totalPending} lịch hẹn đang chờ Admin xét duyệt</div>
           <div style="font-size: 12px; color: var(--adm-text-muted); margin-top: 2px;">Người dùng đã đặt lịch và đang chờ được xác nhận phòng khám</div>
         </div>
       </div>
@@ -950,7 +950,7 @@ function renderRoomsDiagramView() {
                   <div style="font-size: 12px; color: #fff; font-weight: 600;">${escapeHtml(app.patientName)}</div>
                   <div style="font-size: 11px; color: var(--adm-text-muted);">${escapeHtml(app.timeSlot)} · ${escapeHtml(app.date)}</div>
                 </div>
-                <button class="adm-btn-action edit btn-quick-approve" data-id="${app.id}" title="Duyệt & Xếp phòng nhanh" style="font-size: 11px; padding: 3px 8px;">
+                <button class="adm-btn-action edit btn-quick-approve" data-id="${app.id}" title="Duyệt & Xác nhận lịch nhanh" style="font-size: 11px; padding: 3px 8px;">
                   ✅ Duyệt
                 </button>
               </div>
@@ -960,7 +960,7 @@ function renderRoomsDiagramView() {
           ` : ''}
 
           <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; gap: 8px;">
-            <span style="color: var(--adm-text-muted);">Đang xếp phòng: <strong style="color: #38bdf8;">${r.activeCount} ca</strong></span>
+            <span style="color: var(--adm-text-muted);">Đang có: <strong style="color: #38bdf8;">${r.activeCount} ca</strong></span>
             <div style="display: flex; gap: 6px;">
               ${pendingCount > 0 ? `
                 <button class="adm-btn-create btn-room-pending-apps" data-room-id="${r.id}" style="padding: 5px 10px; font-size: 11px; background: linear-gradient(135deg, #d97706, #f59e0b); color: #000;">
@@ -1039,7 +1039,7 @@ function renderDashboardView() {
         <h3 style="color: #fff; margin-bottom: 16px;">⚡ Thao tác nhanh</h3>
         <div style="display: flex; flex-direction: column; gap: 10px;">
           <button class="adm-btn-create" onclick="document.querySelector('[data-tab=\\'appointments\\']').click()">
-            📅 Quản lý Lịch Hẹn & Xếp Phòng
+            📅 Quản lý Lịch Hẹn & Đặt Lịch
           </button>
           <button class="adm-btn-secondary" onclick="document.querySelector('[data-tab=\\'doctors\\']').click()">
             👨‍⚕️ Quản lý Đội ngũ Bác Sĩ
@@ -2071,7 +2071,7 @@ function renderSettingsPlaceholderView() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 4. MODALS (THÊM/SỬA BÁC SĨ, XẾP PHÒNG LỊCH HẸN)
+// 4. MODALS (THÊM/SỬA BÁC SĨ, ĐẶT LỊCH)
 // ─────────────────────────────────────────────────────────────
 function openDoctorModal(doc = null) {
   const isEdit = !!doc;
@@ -2313,7 +2313,7 @@ function openDoctorModal(doc = null) {
   });
 }
 
-// Modal Xếp phòng & Đổi Bác Sĩ cho Lịch Hẹn
+// Modal Đặt lịch & Đổi Bác Sĩ cho Lịch Hẹn
 function openAssignRoomModal(app) {
   const modalRoot = document.getElementById('adm-modals-root');
   const allDocs = DoctorManager.getDoctors();
@@ -2379,8 +2379,8 @@ function openAssignRoomModal(app) {
             <div class="adm-form-group">
               <label class="adm-form-label">Trạng thái ca khám</label>
               <select id="assign-status" class="adm-input adm-input-no-icon">
-                <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>⏳ Chờ xếp phòng</option>
-                <option value="confirmed" ${app.status === 'confirmed' ? 'selected' : ''}>📅 Đã xếp phòng & xác nhận</option>
+                <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>⏳ Chờ duyệt lịch</option>
+                <option value="confirmed" ${app.status === 'confirmed' ? 'selected' : ''}>📅 Đã xác nhận lịch</option>
                 <option value="in_progress" ${app.status === 'in_progress' ? 'selected' : ''}>🩺 Đang khám tại phòng</option>
                 <option value="completed" ${app.status === 'completed' ? 'selected' : ''}>✅ Đã hoàn thành khám</option>
                 <option value="cancelled" ${app.status === 'cancelled' ? 'selected' : ''}>❌ Hủy lịch hẹn</option>
@@ -2391,7 +2391,7 @@ function openAssignRoomModal(app) {
           <div class="adm-modal-footer">
             <button type="button" class="adm-btn-secondary" id="btn-cancel-assign">Hủy</button>
             <button type="submit" class="adm-btn-create">
-              <span>💾 Lưu & Xếp Phòng Khám</span>
+              <span>💾 Lưu & Xác Nhận Lịch Khám</span>
             </button>
           </div>
         </form>
@@ -2414,7 +2414,7 @@ function openAssignRoomModal(app) {
     };
 
     AppointmentManager.updateAppointment(app.id, updateData);
-    showToast(`Đã xếp phòng & cập nhật ca hẹn ${app.id}!`, 'success');
+    showToast(`Đã xác nhận lịch & cập nhật ca hẹn ${app.id}!`, 'success');
     closeModal();
     refreshMainView();
   });
