@@ -9,6 +9,7 @@ import { AdminAuth } from './admin-auth.js';
 import { DoctorManager, SAMPLE_AVATARS } from './doctor-manager.js';
 import { AppointmentManager, SAMPLE_EYE_DRUGS, SAMPLE_DIAGNOSES } from './appointment-manager.js';
 import { CLINIC_ROOMS, CLINIC_SERVICES } from '../data/clinic-data.js';
+import { getComments, hideComment, showComment, deleteComment } from './comment-manager.js';
 
 // Khởi tạo container chính
 const appRoot = document.getElementById('admin-app') || document.body;
@@ -199,6 +200,12 @@ function renderAdminPortal() {
             <span>Bảng điều khiển KPI</span>
           </div>
 
+          <div class="adm-nav-item ${currentTab === 'comments' ? 'active' : ''}" data-tab="comments">
+            <span class="adm-nav-icon">💬</span>
+            <span>Quản lý Bình Luận</span>
+            <span class="adm-nav-tag" style="background:#7c3aed;color:#fff;" id="nav-comment-count">${getComments().length}</span>
+          </div>
+
           <div class="adm-nav-item ${currentTab === 'accounts' ? 'active' : ''}" data-tab="accounts">
             <span class="adm-nav-icon">🔑</span>
             <span>Quản lý Tài khoản</span>
@@ -286,6 +293,7 @@ function getTabTitle(tab) {
     case 'appointments': return 'Quản lý Lịch hẹn & Phân bổ Xếp phòng';
     case 'rooms': return 'Sơ đồ 10 Phòng khám mắt chuyên biệt';
     case 'dashboard': return 'Bảng điều khiển tổng quan';
+    case 'comments': return 'Quản lý Bình Luận & Đánh giá';
     case 'accounts': return 'Quản lý Tài khoản Người dùng & Bác sĩ';
     default: return 'Cài đặt hệ thống';
   }
@@ -299,8 +307,145 @@ function renderTabContent() {
   if (currentTab === 'appointments') return renderAppointmentsManagementView();
   if (currentTab === 'rooms') return renderRoomsDiagramView();
   if (currentTab === 'dashboard') return renderDashboardView();
+  if (currentTab === 'comments') return renderCommentsManagementView();
   if (currentTab === 'accounts') return renderAccountsManagementView();
   return renderSettingsPlaceholderView();
+}
+
+// ── TAB: QUẢN LÝ BÌNH LUẬN ─────────────────────────────────────
+let commentFilterQuery = '';
+let commentFilterStatus = 'all';
+
+function renderCommentsManagementView() {
+  const allComments = getComments();
+  const visibleCount = allComments.filter(c => c.status === 'visible').length;
+  const hiddenCount  = allComments.filter(c => c.status === 'hidden').length;
+
+  let filtered = allComments;
+  if (commentFilterStatus === 'visible') filtered = allComments.filter(c => c.status === 'visible');
+  if (commentFilterStatus === 'hidden')  filtered = allComments.filter(c => c.status === 'hidden');
+  if (commentFilterQuery) {
+    const q = commentFilterQuery.toLowerCase();
+    filtered = filtered.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.content.toLowerCase().includes(q) ||
+      (c.email || '').toLowerCase().includes(q)
+    );
+  }
+
+  return `
+    <div class="adm-page-header">
+      <div class="adm-page-title">
+        <h1>💬 Quản lý Bình Luận & Đánh giá (${allComments.length})</h1>
+        <p>Xem, ẩn, hiện hoặc xóa bình luận từ bệnh nhân trên trang chủ</p>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="adm-stats-grid" style="grid-template-columns: repeat(3,1fr); margin-bottom:20px;">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon" style="background:rgba(124,58,237,0.15);">💬</div>
+        <div class="adm-stat-meta">
+          <h3>Tổng bình luận</h3>
+          <div class="stat-val">${allComments.length}</div>
+        </div>
+      </div>
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon success">✅</div>
+        <div class="adm-stat-meta">
+          <h3>Đang hiển thị</h3>
+          <div class="stat-val">${visibleCount}</div>
+        </div>
+      </div>
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon" style="background:rgba(239,68,68,0.15);">🙈</div>
+        <div class="adm-stat-meta">
+          <h3>Đã ẩn</h3>
+          <div class="stat-val">${hiddenCount}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="adm-toolbar" style="margin-bottom:16px;">
+      <div class="adm-filters-left">
+        <div class="adm-search-input-wrap">
+          <span class="adm-search-icon">🔍</span>
+          <input
+            type="text"
+            id="filter-search-comment"
+            placeholder="Tìm theo tên, email, nội dung..."
+            value="${escapeHtml(commentFilterQuery)}"
+          />
+        </div>
+        <select class="adm-select" id="filter-status-comment">
+          <option value="all"     ${commentFilterStatus === 'all'     ? 'selected' : ''}>Tất cả</option>
+          <option value="visible" ${commentFilterStatus === 'visible' ? 'selected' : ''}>Đang hiển thị</option>
+          <option value="hidden"  ${commentFilterStatus === 'hidden'  ? 'selected' : ''}>Đã ẩn</option>
+        </select>
+      </div>
+      <div style="font-size:13px;color:var(--adm-text-muted);">
+        Hiển thị: <strong>${filtered.length}</strong> / ${allComments.length} bình luận
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="adm-table-container">
+      ${filtered.length === 0 ? `
+        <div class="adm-empty-state">
+          <div class="adm-empty-icon">💬</div>
+          <h3>Không tìm thấy bình luận nào</h3>
+          <p>Chưa có bình luận phù hợp với bộ lọc hiện tại.</p>
+        </div>
+      ` : `
+        <table class="adm-table">
+          <thead>
+            <tr>
+              <th>Người gửi</th>
+              <th>Email</th>
+              <th>Sao</th>
+              <th>Nội dung</th>
+              <th>Ngày gửi</th>
+              <th>Trạng thái</th>
+              <th style="text-align:right;">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.map(c => {
+              const stars = '★'.repeat(c.rating) + '☆'.repeat(5 - c.rating);
+              const date  = new Date(c.createdAt).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' });
+              const statusBadge = c.status === 'visible'
+                ? '<span class="adm-badge adm-badge-active"><span class="adm-badge-dot"></span> Hiển thị</span>'
+                : '<span class="adm-badge adm-badge-off"><span class="adm-badge-dot"></span> Đã ẩn</span>';
+              const toggleBtn = c.status === 'visible'
+                ? `<button class="adm-btn-secondary" style="padding:4px 10px;font-size:12px;" onclick="adminHideComment(${c.id})">🙈 Ẩn</button>`
+                : `<button class="adm-btn-secondary" style="padding:4px 10px;font-size:12px;background:var(--adm-success);border-color:var(--adm-success);color:#000;" onclick="adminShowComment(${c.id})">👁 Hiện</button>`;
+              return `
+                <tr>
+                  <td><strong>${escapeHtml(c.name)}</strong></td>
+                  <td style="color:var(--adm-text-muted);font-size:12px;">${escapeHtml(c.email || '—')}</td>
+                  <td style="color:#f59e0b;font-size:15px;letter-spacing:-1px;">${stars}</td>
+                  <td style="max-width:260px;">
+                    <div style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+                      ${escapeHtml(c.content)}
+                    </div>
+                  </td>
+                  <td style="font-size:12px;color:var(--adm-text-muted);white-space:nowrap;">${date}</td>
+                  <td>${statusBadge}</td>
+                  <td style="text-align:right;">
+                    <div style="display:flex;gap:6px;justify-content:flex-end;">
+                      ${toggleBtn}
+                      <button class="adm-btn-secondary" style="padding:4px 10px;font-size:12px;background:var(--adm-danger);border-color:var(--adm-danger);color:#fff;" onclick="adminDeleteComment(${c.id})">🗑 Xóa</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `}
+    </div>
+  `;
 }
 
 // ── TAB 1: QUẢN LÝ 10 BÁC SĨ (CRUD) ──────────────────────────
@@ -2920,12 +3065,53 @@ function refreshMainView() {
   if (contentEl) {
     contentEl.innerHTML = renderTabContent();
     bindViewSpecificEvents();
+    if (currentTab === 'comments') bindCommentEvents();
   }
   const countTag = document.getElementById('nav-doc-count');
   if (countTag) countTag.textContent = DoctorManager.getDoctors().length;
   const appTag = document.getElementById('nav-app-count');
   if (appTag) appTag.textContent = AppointmentManager.getAppointments().length;
+  const cTag = document.getElementById('nav-comment-count');
+  if (cTag) cTag.textContent = getComments().length;
 }
+
+function bindCommentEvents() {
+  const searchEl = document.getElementById('filter-search-comment');
+  const statusEl = document.getElementById('filter-status-comment');
+
+  if (searchEl) {
+    searchEl.addEventListener('input', () => {
+      commentFilterQuery = searchEl.value;
+      refreshMainView();
+    });
+  }
+  if (statusEl) {
+    statusEl.addEventListener('change', () => {
+      commentFilterStatus = statusEl.value;
+      refreshMainView();
+    });
+  }
+}
+
+window.adminHideComment = function(id) {
+  if (!confirm('Bạn có chắc muốn ẩn bình luận này?')) return;
+  hideComment(id);
+  showToast('Đã ẩn bình luận.', 'info');
+  refreshMainView();
+};
+
+window.adminShowComment = function(id) {
+  showComment(id);
+  showToast('Đã hiện bình luận.', 'success');
+  refreshMainView();
+};
+
+window.adminDeleteComment = function(id) {
+  if (!confirm('Bạn có chắc muốn xóa vĩnh viễn bình luận này?')) return;
+  deleteComment(id);
+  showToast('Đã xóa bình luận.', 'success');
+  refreshMainView();
+};
 
 function refreshDoctorTableOnly() {
   if (currentTab !== 'doctors') return;

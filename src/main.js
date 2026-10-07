@@ -2,6 +2,7 @@ import './css/style.css';
 import './css/home.css';
 import { renderHeader, renderFooter, setupHeaderEvents } from './components/layout.js';
 import { setupBookingSystem } from './pages/booking.js';
+import { initComments } from './pages/comments.js';
 
 function init() {
   const header = document.getElementById('header-container');
@@ -19,6 +20,7 @@ function init() {
 
   setupHeaderEvents();
   setupBookingSystem();
+  initComments();
 }
 
 init();
