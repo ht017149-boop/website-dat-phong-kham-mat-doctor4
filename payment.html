@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Thanh toán</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .payment-container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 40px auto;
+        }
+
+        .payment-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .payment-header h1 {
+            margin-bottom: 10px;
+            color: #111827;
+        }
+
+        .payment-header p {
+            color: #6b7280;
+        }
+
+        .payment-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .payment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .info-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .info-box h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #6b7280;
+        }
+
+        .info-value {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .amount {
+            color: #dc2626;
+            font-size: 20px;
+        }
+
+        .qr-box {
+            text-align: center;
+        }
+
+        .qr-box h2 {
+            margin-top: 0;
+        }
+
+        #qrCode {
+            width: 280px;
+            height: 280px;
+            object-fit: contain;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px;
+            background: white;
+        }
+
+        .bank-info {
+            margin-top: 20px;
+            text-align: left;
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .bank-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+
+        .bank-row span:first-child {
+            color: #6b7280;
+        }
+
+        .bank-row span:last-child {
+            font-weight: 600;
+        }
+
+        .transfer-content {
+            margin-top: 15px;
+            padding: 12px;
+            background: #eff6ff;
+            border-radius: 8px;
+            color: #1d4ed8;
+            font-weight: 700;
+            word-break: break-word;
+        }
+
+        .payment-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .payment-status.waiting {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .payment-status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .payment-status.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .payment-status.cancel {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        button {
+            border: none;
+            border-radius: 10px;
+            padding: 13px 22px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #confirmButton {
+            background: #16a34a;
+            color: white;
+        }
+
+        #confirmButton:hover {
+            background: #15803d;
+        }
+
+        #confirmButton:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .back-button {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .back-button:hover {
+            background: #d1d5db;
+        }
+
+        .note {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 10px;
+            color: #9a3412;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+
+            .payment-container {
+                width: 95%;
+                margin: 20px auto;
+            }
+
+            .payment-card {
+                padding: 20px;
+            }
+
+            .payment-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #qrCode {
+                width: 240px;
+                height: 240px;
+            }
+
+            .info-row {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .info-value {
+                text-align: left;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="payment-container">
+
+        <div class="payment-header">
+
+            <h1>💳 Thanh toán lịch khám</h1>
+
+            <p>
+                Vui lòng quét mã QR để thanh toán
+            </p>
+
+        </div>
+
+
+        <div class="payment-card">
+
+            <div class="payment-grid">
+
+
+                <!-- THÔNG TIN LỊCH KHÁM -->
+
+                <div class="info-box">
+
+                    <h2>📋 Thông tin lịch khám</h2>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Bệnh nhân
+                        </span>
+
+                        <span
+                            class="info-value"
+                            id="patientName">
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Bác sĩ
+                        </span>
+
+                        <span
+                            class="info-value"
+                            id="doctorName">
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Ngày khám
+                        </span>
+
+                        <span
+                            class="info-value"
+                            id="appointmentDate">
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Giờ khám
+                        </span>
+
+                        <span
+                            class="info-value"
+                            id="appointmentTime">
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+                            Số tiền
+                        </span>
+
+                        <span
+                            class="info-value amount"
+                            id="paymentAmount">
+                            -
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- THANH TOÁN QR -->
+
+                <div class="info-box qr-box">
+
+                    <h2>📱 Quét mã QR</h2>
+
+
+                    <img
+                        id="qrCode"
+                        src=""
+                        alt="QR thanh toán">
+
+
+                    <div class="bank-info">
+
+                        <div class="bank-row">
+
+                            <span>Ngân hàng</span>
+
+                            <span id="bankName">
+                                -
+                            </span>
+
+                        </div>
+
+
+                        <div class="bank-row">
+
+                            <span>Số tài khoản</span>
+
+                            <span id="accountNumber">
+                                -
+                            </span>
+
+                        </div>
+
+
+                        <div class="bank-row">
+
+                            <span>Chủ tài khoản</span>
+
+                            <span id="accountName">
+                                -
+                            </span>
+
+                        </div>
+
+
+                        <div class="transfer-content">
+
+                            Nội dung chuyển khoản:
+
+                            <div id="transferContent">
+                                -
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- TRẠNG THÁI THANH TOÁN -->
+
+            <div
+                id="paymentStatus"
+                class="payment-status waiting">
+
+                ⏳ Đang chờ thanh toán
+
+            </div>
+
+
+            <!-- NÚT -->
+
+            <div class="button-group">
+
+                <button
+                    id="confirmButton"
+                    onclick="confirmPayment()">
+
+                    Tôi đã thanh toán
+
+                </button>
+
+
+                <button
+                    class="back-button"
+                    onclick="goBack()">
+
+                    ← Quay lại
+
+                </button>
+
+            </div>
+
+
+            <div class="note">
+
+                <strong>⚠️ Lưu ý:</strong>
+
+                Sau khi chuyển khoản, hãy bấm
+                <strong>"Tôi đã thanh toán"</strong>.
+
+                Giao dịch sẽ chuyển sang trạng thái
+                <strong>chờ xác nhận</strong>.
+
+                Admin sẽ kiểm tra và xác nhận thanh toán.
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="payment.js"></script>
+
+</body>
+
+</html>
