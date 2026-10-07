@@ -1,6 +1,6 @@
 /* ============================================================
    src/admin/appointment-manager.js — Doctor4 Eye Clinic
-   Quản lý Đặt Lịch Khám & Xếp Phòng (10 Phòng - 10 Bác Sĩ)
+   Quản lý Đặt Lịch Khám (10 Phòng - 10 Bác Sĩ)
    ============================================================ */
 
 import { CLINIC_ROOMS, CLINIC_SERVICES, INITIAL_APPOINTMENTS } from '../data/clinic-data.js';

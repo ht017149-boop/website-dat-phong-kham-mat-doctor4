@@ -179,7 +179,7 @@ function renderAppointmentCard(app) {
 
   const statusBadge = {
     pending: '<span style="background: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;">⏳ Chờ xác nhận</span>',
-    confirmed: '<span style="background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;">🟢 Đã xếp phòng khám</span>',
+    confirmed: '<span style="background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;">🟢 Đã xác nhận lịch khám</span>',
     in_progress: '<span style="background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;">🩺 Đang trong phòng khám</span>',
     completed: '<span style="background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;">✅ Đã khám xong</span>',
     cancelled: '<span style="background: #fee2e2; color: #b91c1c; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;">❌ Đã hủy</span>'

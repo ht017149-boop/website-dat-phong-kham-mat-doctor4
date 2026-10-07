@@ -263,7 +263,7 @@ function showBookingSuccessModal(app) {
         <div style="background: #fef3c7; border: 1.5px solid #fcd34d; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; text-align: left;">
           <span style="font-size: 22px;">⏳</span>
           <div>
-            <div style="font-weight: 700; color: #92400e; font-size: 13px;">Đang chờ Admin xét duyệt & xếp phòng</div>
+            <div style="font-weight: 700; color: #92400e; font-size: 13px;">Đang chờ Admin xét duyệt & xác nhận lịch</div>
             <div style="font-size: 12px; color: #b45309;">Phòng khám sẽ xác nhận lịch hẹn trong vòng 30 phút – 2 giờ làm việc.</div>
           </div>
         </div>
