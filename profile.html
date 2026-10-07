@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hồ Sơ Bệnh Nhân & Quản Lý Tài Khoản - Doctor4 Phòng Khám Mắt</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <!-- Global Header -->
+    <div id="header-container"></div>
+
+    <main class="profile-page">
+      <!-- 1. Màn hình bảo vệ: Khi người dùng chưa đăng nhập -->
+      <section id="profile-auth-guard" class="profile-auth-guard" style="display: none;">
+        <div class="auth-guard-icon">🔐</div>
+        <h1 class="auth-guard-title">Yêu Cầu Đăng Nhập</h1>
+        <p class="auth-guard-desc">
+          Vui lòng đăng nhập vào tài khoản Doctor4 của bạn để tra cứu hồ sơ bệnh án nhãn khoa, theo dõi thị lực và quản lý lịch khám mắt.
+        </p>
+
+        <div class="auth-guard-actions">
+          <a href="/dang-nhap.html?redirect=/profile.html" class="btn-guard-login">
+            <span>🔑 Đăng Nhập Tài Khoản</span>
+            <span>→</span>
+          </a>
+          <a href="/dang-ky.html" class="btn-guard-register">
+            <span>📝 Đăng Ký Tài Khoản Mới</span>
+          </a>
+          <button type="button" class="btn-guard-demo" id="btn-guard-quick-demo">
+            <span>⚡ Đăng nhập thử nghiệm nhanh bằng tài khoản Bệnh nhân mẫu</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. Giao diện chính: Khi người dùng đã đăng nhập -->
+      <div id="profile-main-wrapper" style="display: none;">
+        <!-- Hero Profile Banner -->
+        <section class="profile-hero">
+          <div class="profile-hero-inner">
+            <nav class="profile-breadcrumbs" aria-label="Breadcrumb">
+              <a href="/index.html">🏠 Trang chủ</a>
+              <span>/</span>
+              <a href="/index.html#dich-vu">Dịch vụ</a>
+              <span>/</span>
+              <span style="color: #38bdf8;">Hồ sơ bệnh nhân</span>
+            </nav>
+
+            <div class="profile-hero-card">
+              <div class="hero-user-meta">
+                <div class="hero-avatar-box">
+                  <img
+                    id="hero-avatar-img"
+                    class="hero-avatar-img"
+                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80"
+                    alt="Ảnh đại diện bệnh nhân"
+                  />
+                  <span class="hero-avatar-badge" title="Đã xác thực hồ sơ">✓</span>
+                  <button type="button" class="btn-change-avatar-quick" id="btn-trigger-change-avatar">
+                    📷 Đổi ảnh
+                  </button>
+                  <input type="file" id="input-file-avatar" accept="image/*" style="display: none;" />
+                </div>
+
+                <div class="hero-info-box">
+                  <h1>
+                    <span id="hero-user-name">Nguyễn Văn An</span>
+                    <span class="badge-role" id="hero-user-role">👤 Bệnh nhân</span>
+                  </h1>
+
+                  <div class="hero-tags">
+                    <span class="hero-tag-item">
+                      <span>🏷️</span>
+                      <strong id="hero-patient-code" style="color: #38bdf8;">Mã BN: BN-2026-002</strong>
+                    </span>
+                    <span class="hero-tag-item">
+                      <span>📧</span>
+                      <span id="hero-user-email">benhnhan@doctor4.vn</span>
+                    </span>
+                    <span class="hero-tag-item">
+                      <span>📞</span>
+                      <span id="hero-user-phone">0987 654 321</span>
+                    </span>
+                    <span class="hero-tag-item">
+                      <span>📍</span>
+                      <span id="hero-user-address">TP. Hồ Chí Minh</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="hero-actions">
+                <a href="/index.html#dat-lich" class="btn-hero-book">
+                  <span>📅 Đặt lịch khám mới</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Dashboard Body Layout -->
+        <section class="profile-dashboard-layout">
+          <!-- Left Navigation Sidebar -->
+          <aside class="profile-sidebar">
+            <ul class="profile-nav-menu">
+              <li class="profile-nav-item">
+                <button type="button" class="profile-tab-btn active" data-tab="info">
+                  <div class="nav-item-left">
+                    <span>👤</span>
+                    <span>Thông tin cá nhân</span>
+                  </div>
+                  <span>›</span>
+                </button>
+              </li>
+
+              <li class="profile-nav-item">
+                <button type="button" class="profile-tab-btn" data-tab="eye">
+                  <div class="nav-item-left">
+                    <span>👁️</span>
+                    <span>Hồ sơ thị lực & Mắt</span>
+                  </div>
+                  <span>›</span>
+                </button>
+              </li>
+
+              <li class="profile-nav-item">
+                <button type="button" class="profile-tab-btn" data-tab="appointments">
+                  <div class="nav-item-left">
+                    <span>📅</span>
+                    <span>Lịch khám của tôi</span>
+                  </div>
+                  <span class="nav-badge-count" id="badge-appt-count">1</span>
+                </button>
+              </li>
+
+              <li class="profile-nav-item">
+                <button type="button" class="profile-tab-btn" data-tab="security">
+                  <div class="nav-item-left">
+                    <span>🔒</span>
+                    <span>Đổi mật khẩu</span>
+                  </div>
+                  <span>›</span>
+                </button>
+              </li>
+            </ul>
+
+            <div class="profile-nav-divider"></div>
+
+            <div class="sidebar-support-card">
+              <h4>📞 Tổng đài Y tế 24/7</h4>
+              <p>Tư vấn chuyên khoa & Hỗ trợ khẩn cấp</p>
+              <span class="hotline">1800 1234</span>
+            </div>
+
+            <button type="button" class="btn-sidebar-logout" id="btn-profile-logout">
+              <span>🚪 Đăng xuất</span>
+            </button>
+          </aside>
+
+          <!-- Main Content Panel -->
+          <div class="profile-main-panel">
+            <!-- TAB 1: THÔNG TIN CÁ NHÂN -->
+            <div class="profile-tab-content active" id="tab-info">
+              <div class="profile-card">
+                <div class="profile-card-header">
+                  <div class="profile-card-title-group">
+                    <h2><span>👤</span> Thông Tin Cá Nhân & Liên Hệ Y Tế</h2>
+                    <p>Thông tin dùng để định danh khi đến phòng khám và liên hệ kết quả xét nghiệm</p>
+                  </div>
+
+                  <div class="profile-action-btns">
+                    <button type="button" class="btn-profile-edit" id="btn-edit-personal">
+                      <span>✏️ Chỉnh sửa</span>
+                    </button>
+                    <button type="button" class="btn-profile-cancel" id="btn-cancel-personal" style="display: none;">
+                      <span>✕ Hủy bỏ</span>
+                    </button>
+                    <button type="button" class="btn-profile-save" id="btn-save-personal" style="display: none;">
+                      <span>💾 Lưu thay đổi</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="profile-card-body">
+                  <div class="form-grid-2">
+                    <div class="profile-form-group">
+                      <label for="info-name">Họ và tên <span class="required">*</span></label>
+                      <input type="text" id="info-name" class="profile-input personal-input-field" disabled />
+                    </div>
+
+                    <div class="profile-form-group">
+                      <label for="info-phone">Số điện thoại <span class="required">*</span></label>
+                      <input type="tel" id="info-phone" class="profile-input personal-input-field" disabled />
+                    </div>
+
+                    <div class="profile-form-group">
+                      <label for="info-email">Địa chỉ Email</label>
+                      <input type="email" id="info-email" class="profile-input personal-input-field" disabled />
+                    </div>
+
+                    <div class="profile-form-group">
+                      <label for="info-birthday">Ngày sinh</label>
+                      <input type="date" id="info-birthday" class="profile-input personal-input-field" disabled />
+                    </div>
+
+                    <div class="profile-form-group">
+                      <label for="info-gender">Giới tính</label>
+                      <select id="info-gender" class="profile-select personal-input-field" disabled>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                      </select>
+                    </div>
+
+                    <div class="profile-form-group">
+                      <label for="info-bhyt">Mã thẻ BHYT / CCCD</label>
+                      <input type="text" id="info-bhyt" class="profile-input personal-input-field" placeholder="VD: DN4791234567890" disabled />
+                    </div>
+
+                    <div class="profile-form-group form-group-full">
+                      <label for="info-address">Địa chỉ thường trú</label>
+                      <input type="text" id="info-address" class="profile-input personal-input-field" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố" disabled />
+                    </div>
+
+                    <div class="profile-form-group form-group-full">
+                      <label for="info-emergency">Người liên hệ khẩn cấp (Họ tên & SĐT người thân)</label>
+                      <input type="text" id="info-emergency" class="profile-input personal-input-field" placeholder="VD: Chị Nguyễn Mai Hương (0909 111 222)" disabled />
+                    </div>
+                  </div>
+
+                  <div style="margin-top: 1.5rem; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.85rem; color: #64748b; display: flex; align-items: center; gap: 8px;">
+                    <span>🛡️</span>
+                    <span>Dữ liệu y tế của bạn được mã hóa an toàn theo tiêu chuẩn bảo mật y khoa HIPAA.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: HỒ SƠ THỊ LỰC & SỨC KHỎE MẮT -->
+            <div class="profile-tab-content" id="tab-eye">
+              <div class="profile-card">
+                <div class="profile-card-header">
+                  <div class="profile-card-title-group">
+                    <h2><span>👁️</span> Hồ Sơ Thị Lực & Sức Khỏe Mắt</h2>
+                    <p>Chỉ số đo khúc xạ và hồ sơ nhãn khoa qua các lần kiểm tra tại phòng khám</p>
+                  </div>
+
+                  <div class="profile-action-btns">
+                    <button type="button" class="btn-profile-edit" id="btn-edit-eye">
+                      <span>✏️ Cập nhật chỉ số</span>
+                    </button>
+                    <button type="button" class="btn-profile-cancel" id="btn-cancel-eye" style="display: none;">
+                      <span>✕ Hủy</span>
+                    </button>
+                    <button type="button" class="btn-profile-save" id="btn-save-eye" style="display: none;">
+                      <span>💾 Lưu chỉ số mắt</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="profile-card-body">
+                  <!-- Chế độ xem chỉ số trực quan -->
+                  <div id="eye-view-spec-box">
+                    <div class="eye-spec-grid">
+                      <!-- Mắt phải OD -->
+                      <div class="eye-card-box">
+                        <div class="eye-card-header">
+                          <span class="eye-card-title">
+                            <span>👁️</span> Mắt Phải (Oculus Dexter)
+                          </span>
+                          <span class="eye-badge badge-od">OD</span>
+                        </div>
+
+                        <div class="eye-metrics-grid">
+                          <div class="metric-item">
+                            <span class="metric-label">Độ cầu (SPH / Cận thị)</span>
+                            <span class="metric-val blue" id="metric-od-sph">-2.50 D</span>
+                          </div>
+                          <div class="metric-item">
+                            <span class="metric-label">Độ trụ (CYL / Loạn thị)</span>
+                            <span class="metric-val blue" id="metric-od-cyl">-0.75 D</span>
+                          </div>
+                          <div class="metric-item">
+                            <span class="metric-label">Trục loạn (AXIS)</span>
+                            <span class="metric-val" id="metric-od-axis">175°</span>
+                          </div>
+                          <div class="metric-item">
+                            <span class="metric-label">Nhãn áp (IOP)</span>
+                            <span class="metric-val" id="metric-od-iop">14 mmHg</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Mắt trái OS -->
+                      <div class="eye-card-box">
+                        <div class="eye-card-header">
+                          <span class="eye-card-title">
+                            <span>👁️</span> Mắt Trái (Oculus Sinister)
+                          </span>
+                          <span class="eye-badge badge-os">OS</span>
+                        </div>
+
+                        <div class="eye-metrics-grid">
+                          <div class="metric-item">
+                            <span class="metric-label">Độ cầu (SPH / Cận thị)</span>
+                            <span class="metric-val pink" id="metric-os-sph">-2.25 D</span>
+                          </div>
+                          <div class="metric-item">
+                            <span class="metric-label">Độ trụ (CYL / Loạn thị)</span>
+                            <span class="metric-val pink" id="metric-os-cyl">-0.50 D</span>
+                          </div>
+                          <div class="metric-item">
+                            <span class="metric-label">Trục loạn (AXIS)</span>
+                            <span class="metric-val" id="metric-os-axis">180°</span>
+                          </div>
+                          <div class="metric-item">
+                            <span class="metric-label">Nhãn áp (IOP)</span>
+                            <span class="metric-val" id="metric-os-iop">15 mmHg</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Tình trạng & Lời dặn -->
+                    <div class="eye-extra-info-banner">
+                      <div class="eye-extra-icon">🩺</div>
+                      <div class="eye-extra-text">
+                        <h4>Đơn kính hiện tại: <span id="eye-view-glasses" style="font-weight: normal; color: #0f172a;">Kính gọng chống ánh sáng xanh</span></h4>
+                        <p>
+                          Lần khám gần nhất: <strong id="eye-view-last-checkup">15/09/2026</strong> &nbsp;|&nbsp;
+                          Hẹn tái khám định kỳ: <strong id="eye-view-next-checkup">15/12/2026</strong>
+                        </p>
+                        <p style="margin-top: 4px; color: #334155;" id="eye-view-notes">
+                          Thị lực sau chỉnh kính đạt 10/10 hai mắt. Cần hạn chế nhìn màn hình liên tục > 45 phút, tra nước mắt nhân tạo khi mỏi khô.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Form chỉnh sửa chỉ số mắt (Mặc định ẩn) -->
+                  <div id="eye-edit-form-box" style="display: none;">
+                    <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem;">
+                      <h4 style="margin: 0 0 1rem; color: #0f172a; font-size: 0.95rem;">👁️ Mắt Phải (OD)</h4>
+                      <div class="form-grid-2">
+                        <div class="profile-form-group">
+                          <label>Độ cầu SPH (VD: -2.50)</label>
+                          <input type="text" id="eye-input-od-sph" class="profile-input" placeholder="-2.50" />
+                        </div>
+                        <div class="profile-form-group">
+                          <label>Độ trụ CYL (VD: -0.75)</label>
+                          <input type="text" id="eye-input-od-cyl" class="profile-input" placeholder="-0.75" />
+                        </div>
+                        <div class="profile-form-group">
+                          <label>Trục AXIS (VD: 175)</label>
+                          <input type="text" id="eye-input-od-axis" class="profile-input" placeholder="175" />
+                        </div>
+                        <div class="profile-form-group">
+                          <label>Nhãn áp IOP (mmHg)</label>
+                          <input type="text" id="eye-input-od-iop" class="profile-input" placeholder="14" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem;">
+                      <h4 style="margin: 0 0 1rem; color: #0f172a; font-size: 0.95rem;">👁️ Mắt Trái (OS)</h4>
+                      <div class="form-grid-2">
+                        <div class="profile-form-group">
+                          <label>Độ cầu SPH (VD: -2.25)</label>
+                          <input type="text" id="eye-input-os-sph" class="profile-input" placeholder="-2.25" />
+                        </div>
+                        <div class="profile-form-group">
+                          <label>Độ trụ CYL (VD: -0.50)</label>
+                          <input type="text" id="eye-input-os-cyl" class="profile-input" placeholder="-0.50" />
+                        </div>
+                        <div class="profile-form-group">
+                          <label>Trục AXIS (VD: 180)</label>
+                          <input type="text" id="eye-input-os-axis" class="profile-input" placeholder="180" />
+                        </div>
+                        <div class="profile-form-group">
+                          <label>Nhãn áp IOP (mmHg)</label>
+                          <input type="text" id="eye-input-os-iop" class="profile-input" placeholder="15" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                      <div class="profile-form-group">
+                        <label>Loại kính đang dùng</label>
+                        <input type="text" id="eye-glasses-type" class="profile-input" placeholder="Kính gọng / Kính áp tròng Ortho-K..." />
+                      </div>
+                      <div class="profile-form-group">
+                        <label>Ngày khám gần nhất</label>
+                        <input type="date" id="eye-last-checkup" class="profile-input" />
+                      </div>
+                      <div class="profile-form-group">
+                        <label>Ngày hẹn tái khám</label>
+                        <input type="date" id="eye-next-checkup" class="profile-input" />
+                      </div>
+                      <div class="profile-form-group form-group-full">
+                        <label>Lời dặn & Ghi chú từ bác sĩ</label>
+                        <textarea id="eye-notes" rows="2" class="profile-textarea" placeholder="Nhập ghi chú hoặc đơn thuốc nhỏ mắt..."></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Khuyến cáo nhãn khoa -->
+                  <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 1rem 1.25rem; font-size: 0.86rem; color: #1e40af;">
+                    💡 <strong>Quy tắc 20-20-20:</strong> Cứ mỗi 20 phút nhìn vào màn hình máy tính, hãy nhìn xa 20 feet (khoảng 6 mét) trong ít nhất 20 giây để các cơ điều tiết của mắt được thư giãn tối đa.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: LỊCH KHÁM CỦA TÔI -->
+            <div class="profile-tab-content" id="tab-appointments">
+              <div class="profile-card">
+                <div class="profile-card-header">
+                  <div class="profile-card-title-group">
+                    <h2><span>📅</span> Lịch Khám Của Tôi & Phiếu Khám Bệnh</h2>
+                    <p>Kiểm tra thông tin chi tiết số phòng khám (101 - 110), bác sĩ và thời gian hẹn</p>
+                  </div>
+
+                  <div class="appt-filters">
+                    <button type="button" class="btn-filter-appt active" data-filter="all">Tất cả</button>
+                    <button type="button" class="btn-filter-appt" data-filter="upcoming">Sắp tới</button>
+                    <button type="button" class="btn-filter-appt" data-filter="completed">Đã hoàn thành</button>
+                    <button type="button" class="btn-filter-appt" data-filter="cancelled">Đã hủy</button>
+                  </div>
+                </div>
+
+                <div class="profile-card-body">
+                  <!-- Highlight lịch hẹn sắp tới gần nhất -->
+                  <div id="upcoming-highlight-card"></div>
+
+                  <!-- Danh sách thẻ lịch khám -->
+                  <div id="user-appointments-list">
+                    <!-- Được render tự động bởi profile.js -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 4: ĐỔI MẬT KHẨU & BẢO MẬT -->
+            <div class="profile-tab-content" id="tab-security">
+              <div class="profile-card">
+                <div class="profile-card-header">
+                  <div class="profile-card-title-group">
+                    <h2><span>🔒</span> Bảo Mật & Đổi Mật Khẩu</h2>
+                    <p>Bảo vệ tài khoản và lịch sử hồ sơ bệnh án điện tử của bạn</p>
+                  </div>
+                </div>
+
+                <div class="profile-card-body">
+                  <form id="form-change-password" style="max-width: 520px;">
+                    <div class="profile-form-group" style="margin-bottom: 1.25rem;">
+                      <label for="pwd-current">Mật khẩu hiện tại <span class="required">*</span></label>
+                      <input type="password" id="pwd-current" class="profile-input" placeholder="Nhập mật khẩu đang dùng" required />
+                    </div>
+
+                    <div class="profile-form-group" style="margin-bottom: 1.25rem;">
+                      <label for="pwd-new">Mật khẩu mới <span class="required">*</span></label>
+                      <input type="password" id="pwd-new" class="profile-input" placeholder="Tối thiểu 6 ký tự" required />
+                    </div>
+
+                    <div class="profile-form-group" style="margin-bottom: 1.5rem;">
+                      <label for="pwd-confirm">Xác nhận mật khẩu mới <span class="required">*</span></label>
+                      <input type="password" id="pwd-confirm" class="profile-input" placeholder="Nhập lại mật khẩu mới" required />
+                    </div>
+
+                    <button type="submit" class="btn-guard-login" style="border: none; cursor: pointer; width: auto; padding: 12px 24px;">
+                      <span>🔒 Cập nhật mật khẩu mới</span>
+                    </button>
+                  </form>
+
+                  <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px dashed #e2e8f0;">
+                    <h4 style="font-size: 0.95rem; color: #0f172a; margin: 0 0 8px;">🛡️ Trạng thái bảo mật phiên làm việc:</h4>
+                    <p style="font-size: 0.85rem; color: #64748b; margin: 0 0 6px;">
+                      • Chuẩn mã hóa: SSL/TLS 256-bit bảo mật đường truyền.
+                    </p>
+                    <p style="font-size: 0.85rem; color: #64748b; margin: 0;">
+                      • Quản lý phiên: Tự động lưu trữ an toàn trên thiết bị của bạn.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Global Footer -->
+    <div id="footer-container"></div>
+
+    <!-- Script Page Controller -->
+    <script type="module" src="/src/pages/profile.js"></script>
+  </body>
+</html>

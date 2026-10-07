@@ -10,6 +10,7 @@ export default defineConfig({
         lookup: resolve(__dirname, 'lich-kham.html'),
         login: resolve(__dirname, 'dang-nhap.html'),
         register: resolve(__dirname, 'dang-ky.html'),
+        profile: resolve(__dirname, 'profile.html'),
         admin: resolve(__dirname, 'admin/index.html')
       }
     }

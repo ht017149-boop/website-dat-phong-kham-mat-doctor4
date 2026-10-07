@@ -38,6 +38,7 @@ export function renderHeader(active) {
             <div style="color: #94A3B8; font-size: 0.78rem;">${user.email || user.phone}</div>
           </div>
           ${user.role === 'admin' ? `<a href="/admin/index.html" class="nav-dropdown-item">📊 Quản trị Admin</a>` : ''}
+          <a href="/profile.html" class="nav-dropdown-item">👤 Thông tin tài khoản</a>
           <a href="javascript:void(0)" class="nav-dropdown-item btn-open-user-lookup" data-phone="${user.phone || ''}">🎫 Xem phòng & vé khám của tôi</a>
           <a href="/index.html#dat-lich" class="nav-dropdown-item">📅 Đặt lịch khám mới</a>
           <div class="nav-dropdown-divider"></div>

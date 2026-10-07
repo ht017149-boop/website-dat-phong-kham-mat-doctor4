@@ -189,6 +189,20 @@ export function setupBookingForm() {
   // Lần đầu khởi tạo options
   updateDoctorAndRoomOptions(srvSelect.value);
 
+  // Tự động điền thông tin nếu người dùng đã đăng nhập
+  try {
+    const sessionStr = localStorage.getItem('doctor4_session') || sessionStorage.getItem('doctor4_session');
+    if (sessionStr) {
+      const u = JSON.parse(sessionStr);
+      const nameInput = document.getElementById('book-name');
+      const phoneInput = document.getElementById('book-phone');
+      const emailInput = document.getElementById('book-email');
+      if (nameInput && !nameInput.value && u.name) nameInput.value = u.name;
+      if (phoneInput && !phoneInput.value && u.phone) phoneInput.value = u.phone;
+      if (emailInput && !emailInput.value && u.email) emailInput.value = u.email;
+    }
+  } catch (e) {}
+
   // Khi người dùng chọn bệnh lý khác: tự động đổi danh sách bác sĩ & phòng phù hợp
   srvSelect.addEventListener('change', () => {
     updateDoctorAndRoomOptions(srvSelect.value);

@@ -4,7 +4,7 @@
    (Nằm hoàn toàn ở phía Người Dùng / Client)
    ============================================================ */
 
-import { CLINIC_ROOMS } from '../data/clinic-data.js';
+import { CLINIC_ROOMS, INITIAL_APPOINTMENTS } from '../data/clinic-data.js';
 
 const APPOINTMENTS_STORAGE_KEY = 'doctor4_appointments_db';
 
@@ -13,9 +13,14 @@ const APPOINTMENTS_STORAGE_KEY = 'doctor4_appointments_db';
  */
 export function getUserAppointments(phoneOrCode = '') {
   try {
+    let list = [];
     const data = localStorage.getItem(APPOINTMENTS_STORAGE_KEY);
-    if (!data) return [];
-    const list = JSON.parse(data);
+    if (!data) {
+      list = INITIAL_APPOINTMENTS;
+      localStorage.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(list));
+    } else {
+      list = JSON.parse(data);
+    }
     if (!phoneOrCode || !phoneOrCode.trim()) return list;
 
     const query = phoneOrCode.trim().toLowerCase();

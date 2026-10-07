@@ -20,6 +20,12 @@ const INITIAL_DEMO_USERS = [
     phone: '0912345678',
     password: '123456',
     role: 'admin',
+    birthday: '1985-08-20',
+    gender: 'Nam',
+    address: '123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh',
+    bhyt: 'GD4799876543210',
+    emergencyContact: 'BS. CKII Nguyễn Minh Quân (0918 123 456)',
+    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=200&auto=format&fit=crop&q=80',
     createdAt: new Date().toISOString()
   },
   {
@@ -29,6 +35,26 @@ const INITIAL_DEMO_USERS = [
     phone: '0987654321',
     password: '123456',
     role: 'patient',
+    birthday: '1998-05-15',
+    gender: 'Nam',
+    address: 'Số 72 Lê Thánh Tôn, Bến Nghé, Quận 1, TP. Hồ Chí Minh',
+    bhyt: 'DN4791234567890',
+    emergencyContact: 'Chị Nguyễn Mai Hương (0909 111 222)',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
+    eyeProfile: {
+      odSphere: '-2.50',
+      odCyl: '-0.75',
+      odAxis: '175',
+      odIop: '14',
+      osSphere: '-2.25',
+      osCyl: '-0.50',
+      osAxis: '180',
+      osIop: '15',
+      glassesType: 'Kính gọng chống ánh sáng xanh & UV400',
+      lastCheckup: '2026-09-15',
+      nextCheckup: '2026-12-15',
+      notes: 'Thị lực chỉnh kính đạt 10/10 hai mắt. Cần hạn chế nhìn màn hình liên tục > 45 phút, tra nước mắt nhân tạo Systane Ultra khi mỏi khô.'
+    },
     createdAt: new Date().toISOString()
   }
 ];
@@ -42,7 +68,22 @@ export const AuthService = {
         localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(INITIAL_DEMO_USERS));
         return INITIAL_DEMO_USERS;
       }
-      return JSON.parse(stored);
+      const users = JSON.parse(stored);
+      // Đảm bảo usr_002 có đầy đủ thông tin mẫu nếu đã lưu trước đó
+      const demoPatient = users.find(u => u.id === 'usr_002' || u.email === 'benhnhan@doctor4.vn');
+      if (demoPatient && (!demoPatient.eyeProfile || !demoPatient.address)) {
+        Object.assign(demoPatient, {
+          birthday: demoPatient.birthday || '1998-05-15',
+          gender: demoPatient.gender || 'Nam',
+          address: demoPatient.address || 'Số 72 Lê Thánh Tôn, Bến Nghé, Quận 1, TP. Hồ Chí Minh',
+          bhyt: demoPatient.bhyt || 'DN4791234567890',
+          emergencyContact: demoPatient.emergencyContact || 'Chị Nguyễn Mai Hương (0909 111 222)',
+          avatar: demoPatient.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
+          eyeProfile: demoPatient.eyeProfile || INITIAL_DEMO_USERS[1].eyeProfile
+        });
+        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+      }
+      return users;
     } catch (e) {
       console.error('Error reading users db', e);
       return INITIAL_DEMO_USERS;
@@ -51,6 +92,11 @@ export const AuthService = {
 
   saveUsers(users) {
     localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+  },
+
+  getUserById(userId) {
+    const users = this.getUsers();
+    return users.find(u => u.id === userId) || null;
   },
 
   getCurrentUser() {
@@ -69,7 +115,14 @@ export const AuthService = {
       email: user.email,
       phone: user.phone,
       role: user.role || 'patient',
-      avatar: user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.name)}`
+      avatar: user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.name)}`,
+      birthday: user.birthday || '',
+      gender: user.gender || 'Nam',
+      address: user.address || '',
+      bhyt: user.bhyt || '',
+      emergencyContact: user.emergencyContact || '',
+      eyeProfile: user.eyeProfile || null,
+      createdAt: user.createdAt || new Date().toISOString()
     };
     if (remember) {
       localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(userSafe));
@@ -79,6 +132,42 @@ export const AuthService = {
       localStorage.removeItem(SESSION_STORAGE_KEY);
     }
     return userSafe;
+  },
+
+  updateUserProfile(userId, data) {
+    const users = this.getUsers();
+    const index = users.findIndex(u => u.id === userId);
+    if (index === -1) throw new Error('Không tìm thấy tài khoản người dùng.');
+
+    // Cập nhật các trường
+    users[index] = { ...users[index], ...data };
+    this.saveUsers(users);
+
+    // Đồng bộ session nếu là user hiện tại
+    const current = this.getCurrentUser();
+    if (current && current.id === userId) {
+      const isRemember = !!localStorage.getItem(SESSION_STORAGE_KEY);
+      this.setCurrentUser(users[index], isRemember);
+    }
+    return users[index];
+  },
+
+  changePassword(userId, oldPassword, newPassword) {
+    const users = this.getUsers();
+    const index = users.findIndex(u => u.id === userId);
+    if (index === -1) throw new Error('Không tìm thấy thông tin tài khoản.');
+
+    if (users[index].password !== oldPassword) {
+      throw new Error('Mật khẩu hiện tại không chính xác.');
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error('Mật khẩu mới phải có tối thiểu 6 ký tự.');
+    }
+
+    users[index].password = newPassword;
+    this.saveUsers(users);
+    return true;
   },
 
   logout() {
@@ -123,6 +212,26 @@ export const AuthService = {
       phone: cleanPhone,
       password: userData.password,
       role: 'patient',
+      birthday: '',
+      gender: 'Nam',
+      address: '',
+      bhyt: '',
+      emergencyContact: '',
+      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(userData.name)}`,
+      eyeProfile: {
+        odSphere: '-1.50',
+        odCyl: '-0.50',
+        odAxis: '180',
+        odIop: '15',
+        osSphere: '-1.50',
+        osCyl: '-0.50',
+        osAxis: '180',
+        osIop: '15',
+        glassesType: 'Kính gọng thông thường',
+        lastCheckup: new Date().toISOString().split('T')[0],
+        nextCheckup: '',
+        notes: 'Hồ sơ mới khởi tạo.'
+      },
       createdAt: new Date().toISOString()
     };
 
@@ -379,8 +488,11 @@ function setupRegisterPage() {
 
       showToast('success', 'Đăng ký thành công!', `Tài khoản của ${newUser.name} đã được tạo thành công.`);
 
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectUrl = urlParams.get('redirect') || '/profile.html';
+
       setTimeout(() => {
-        window.location.href = '/index.html';
+        window.location.href = redirectUrl;
       }, 1200);
     } catch (err) {
       submitBtn.classList.remove('loading');
