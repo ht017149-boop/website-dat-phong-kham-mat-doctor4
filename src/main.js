@@ -36,8 +36,11 @@ function init() {
   setupHeaderEvents();
   setupBookingSystem();
 
+
   // Khởi động chức năng bình luận
   initComments();
 }
 
 init();
+
+
