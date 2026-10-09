@@ -1,0 +1,532 @@
+/* ============================================================
+   css/user-profile.css — Doctor4 Eye Clinic
+   Giao diện trang "Thông Tin Người Dùng" (Hồ sơ bệnh nhân)
+   ============================================================ */
+
+/* ── Hero ────────────────────────────────────────────────────── */
+.profile-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0c1a3a 100%);
+  color: #ffffff;
+  padding: 4.5rem 1.5rem 3.5rem;
+  text-align: center;
+}
+
+.profile-hero-inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.profile-hero-badge {
+  display: inline-block;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 1.25rem;
+}
+
+.profile-hero-title {
+  font-family: var(--font-heading);
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin: 0 0 1rem;
+  line-height: 1.2;
+}
+
+.profile-hero-title span {
+  color: #38bdf8;
+}
+
+.profile-hero-desc {
+  color: #94a3b8;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Body ────────────────────────────────────────────────────── */
+.profile-body {
+  background: #f8fafc;
+  padding: 3rem 1.5rem 4rem;
+  min-height: 40vh;
+}
+
+.profile-container {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Chưa đăng nhập ──────────────────────────────────────────── */
+.profile-login-required {
+  text-align: center;
+  padding: 3.5rem 2rem !important;
+}
+
+.profile-login-icon {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+}
+
+.profile-login-required h2 {
+  font-size: 1.35rem;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+.profile-login-required p {
+  color: #64748b;
+  font-size: 0.95rem;
+  max-width: 420px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.6;
+}
+
+.profile-login-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── Card chung ──────────────────────────────────────────────── */
+.profile-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 1.75rem 2rem;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05);
+}
+
+.profile-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.profile-card-head h2 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.profile-edit-hint {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+/* ── Thẻ tóm tắt trên cùng ───────────────────────────────────── */
+.profile-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  color: #ffffff;
+  border-radius: 20px;
+  padding: 1.75rem 2rem;
+  box-shadow: 0 12px 32px rgba(2, 132, 199, 0.25);
+}
+
+.profile-summary-avatar {
+  width: 92px;
+  height: 118px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.profile-summary-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-summary-info {
+  flex: 1;
+  min-width: 220px;
+}
+
+.profile-summary-name {
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.profile-verified-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.profile-summary-role {
+  font-size: 0.92rem;
+  opacity: 0.92;
+  margin-top: 0.25rem;
+}
+
+.profile-summary-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  font-size: 0.87rem;
+  opacity: 0.95;
+}
+
+.profile-summary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 180px;
+}
+
+/* ── Bảng thông tin ──────────────────────────────────────────── */
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem 2rem;
+}
+
+.profile-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px dashed #f1f5f9;
+  font-size: 0.92rem;
+}
+
+.profile-info-label {
+  color: #64748b;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.profile-info-label span {
+  margin-right: 4px;
+}
+
+.profile-info-value {
+  color: #0f172a;
+  font-weight: 600;
+  text-align: right;
+  word-break: break-word;
+}
+
+.profile-empty {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+/* ── Ảnh 4x6 & CCCD ──────────────────────────────────────────── */
+.profile-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.25rem;
+}
+
+.profile-photo-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.profile-photo-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.profile-photo-frame {
+  width: 100%;
+  height: 165px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.profile-photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-uploading {
+  color: #0284c7;
+  font-size: 0.85rem;
+}
+
+.profile-upload-error {
+  color: #ef4444;
+  font-size: 0.85rem;
+}
+
+.profile-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0284c7;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.profile-upload-btn:hover {
+  background: #e0f2fe;
+  border-color: #7dd3fc;
+}
+
+.profile-note {
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* ── Hồ sơ khúc xạ ───────────────────────────────────────────── */
+.profile-eye-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.profile-eye-col {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  font-size: 0.88rem;
+  line-height: 2;
+  color: #334155;
+}
+
+.profile-eye-title {
+  font-weight: 800;
+  color: #0284c7;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.4px;
+}
+
+.profile-eye-extra {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  color: #334155;
+}
+
+/* ── Form chỉnh sửa ──────────────────────────────────────────── */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+}
+
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.profile-field-full {
+  grid-column: 1 / -1;
+}
+
+.profile-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.profile-field .req {
+  color: #ef4444;
+}
+
+.profile-field input,
+.profile-field select {
+  width: 100%;
+  padding: 0.72rem 1rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  color: #0f172a;
+  background: #ffffff;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.profile-field input:focus,
+.profile-field select:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.profile-form-section-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.profile-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ── Nút ─────────────────────────────────────────────────────── */
+.btn-profile-primary,
+.btn-profile-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.7rem 1.35rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-profile-primary {
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+}
+
+.btn-profile-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(2, 132, 199, 0.4);
+}
+
+.profile-summary-actions .btn-profile-outline {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: none;
+}
+
+.profile-summary-actions .btn-profile-primary {
+  background: #ffffff;
+  color: #0369a1;
+  border: 1px solid #ffffff;
+  box-shadow: none;
+}
+
+.profile-summary-actions .btn-profile-primary:hover,
+.profile-summary-actions .btn-profile-outline:hover {
+  transform: translateY(-1px);
+}
+
+.btn-profile-outline {
+  background: #ffffff;
+  color: #0369a1;
+  border: 1.5px solid #bae6fd;
+}
+
+.btn-profile-outline:hover {
+  background: #f0f9ff;
+  border-color: #7dd3fc;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .profile-hero-title {
+    font-size: 1.9rem;
+  }
+
+  .profile-card {
+    padding: 1.4rem 1.25rem;
+  }
+
+  .profile-info-grid,
+  .profile-form-grid,
+  .profile-eye-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-info-row {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .profile-info-value {
+    text-align: left;
+  }
+
+  .profile-summary-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-summary-name,
+  .profile-summary-meta {
+    justify-content: center;
+  }
+
+  .profile-summary-actions {
+    width: 100%;
+    flex-direction: row;
+    min-width: 0;
+  }
+
+  .profile-summary-actions > * {
+    flex: 1;
+  }
+}
