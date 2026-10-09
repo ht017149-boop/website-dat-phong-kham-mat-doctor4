@@ -40,6 +40,7 @@ export function renderHeader(active) {
           </div>
           ${user.role === 'admin' ? `<a href="/admin/index.html" class="nav-dropdown-item">📊 Quản trị Admin</a>` : ''}
           ${user.role === 'doctor' ? `<a href="/bac-si.html" class="nav-dropdown-item" style="color: #38bdf8; font-weight: 700;">🩺 Cổng Bác Sĩ (Phòng khám)</a>` : ''}
+          <a href="javascript:void(0)" class="nav-dropdown-item btn-open-patient-profile" style="color: #38bdf8; font-weight: 600;">📋 Hồ sơ bệnh nhân & Tải ảnh CCCD</a>
           <a href="javascript:void(0)" class="nav-dropdown-item btn-open-user-lookup" data-phone="${user.phone || ''}">🎫 Xem phòng & vé khám của tôi</a>
           <a href="/index.html#dat-lich" class="nav-dropdown-item">📅 Đặt lịch khám mới</a>
           <div class="nav-dropdown-divider"></div>
@@ -142,6 +143,16 @@ export function setupHeaderEvents() {
       const phone = el.getAttribute('data-phone') || '';
       import('../pages/my-appointments.js').then(module => {
         module.openLookupAppointmentModal(phone);
+      });
+    });
+  });
+
+  // Mở modal quản lý hồ sơ & tải ảnh CCCD/4x6 bệnh nhân
+  document.querySelectorAll('.btn-open-patient-profile').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      import('../utils/patient-profile.js').then(module => {
+        module.openPatientProfileModal();
       });
     });
   });

@@ -5,6 +5,7 @@
    ============================================================ */
 
 import { INITIAL_10_DOCTORS, CLINIC_ROOMS, CLINIC_SERVICES } from '../data/clinic-data.js';
+import { compressImageFile, getDefaultPatientPhotos, getPatientProfileData } from '../utils/patient-profile.js';
 
 const DOCTORS_STORAGE_KEY = 'doctor4_doctors_db';
 const APPOINTMENTS_STORAGE_KEY = 'doctor4_appointments_db';
@@ -52,6 +53,7 @@ function saveAppointment(data) {
     date: data.date,
     timeSlot: data.timeSlot,
     symptoms: data.symptoms || 'Khám mắt định kỳ theo yêu cầu',
+    patientProfile: data.patientProfile || null,
     status: 'pending',
     createdAt: new Date().toISOString()
   };
@@ -186,6 +188,77 @@ export function setupBookingForm() {
   const srvSelect = document.getElementById('book-service');
   if (!form || !srvSelect) return;
 
+  // Biến lưu Base64 ảnh upload từ form đặt lịch
+  let uploadedPhoto4x6 = '';
+  let uploadedCccdFront = '';
+  let uploadedCccdBack = '';
+
+  // Auto-fill thông tin nếu người dùng đã đăng nhập
+  try {
+    const session = localStorage.getItem('doctor4_session') || sessionStorage.getItem('doctor4_session');
+    if (session) {
+      const user = JSON.parse(session);
+      const nameInput = document.getElementById('book-name');
+      const phoneInput = document.getElementById('book-phone');
+      const emailInput = document.getElementById('book-email');
+      
+      if (nameInput && user.name) nameInput.value = user.name;
+      if (phoneInput && user.phone) phoneInput.value = user.phone;
+      if (emailInput && user.email) emailInput.value = user.email;
+
+      // Auto-fill patient profile fields if exist
+      if (user.patientProfile) {
+        const prof = user.patientProfile;
+        if (prof.dob && document.getElementById('book-patient-dob')) document.getElementById('book-patient-dob').value = prof.dob;
+        if (prof.gender && document.getElementById('book-patient-gender')) document.getElementById('book-patient-gender').value = prof.gender;
+        if (prof.cccdNumber && document.getElementById('book-patient-cccd')) document.getElementById('book-patient-cccd').value = prof.cccdNumber;
+        if (prof.address && document.getElementById('book-patient-address')) document.getElementById('book-patient-address').value = prof.address;
+        if (prof.bhytCode && document.getElementById('book-patient-bhyt')) document.getElementById('book-patient-bhyt').value = prof.bhytCode;
+
+        if (prof.photo4x6) {
+          uploadedPhoto4x6 = prof.photo4x6;
+          const box = document.getElementById('preview-book-photo4x6');
+          if (box) box.innerHTML = `<img src="${prof.photo4x6}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+        }
+        if (prof.cccdFront) {
+          uploadedCccdFront = prof.cccdFront;
+          const box = document.getElementById('preview-book-cccd-front');
+          if (box) box.innerHTML = `<img src="${prof.cccdFront}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+        }
+        if (prof.cccdBack) {
+          uploadedCccdBack = prof.cccdBack;
+          const box = document.getElementById('preview-book-cccd-back');
+          if (box) box.innerHTML = `<img src="${prof.cccdBack}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+        }
+      }
+    }
+  } catch (e) {}
+
+  // Xử lý upload 3 ảnh trong form đặt lịch
+  const bindBookUpload = (inputId, boxId, cb) => {
+    const input = document.getElementById(inputId);
+    const box = document.getElementById(boxId);
+    if (!input || !box) return;
+
+    input.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        try {
+          box.innerHTML = `<span style="font-size: 10px; color: #38bdf8;">⏳ Đang nén...</span>`;
+          const b64 = await compressImageFile(file, 600, 600, 0.75);
+          cb(b64);
+          box.innerHTML = `<img src="${b64}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+        } catch (err) {
+          box.innerHTML = `<span style="font-size: 10px; color: #ef4444;">Lỗi ảnh</span>`;
+        }
+      }
+    });
+  };
+
+  bindBookUpload('file-book-photo4x6', 'preview-book-photo4x6', (b64) => { uploadedPhoto4x6 = b64; });
+  bindBookUpload('file-book-cccd-front', 'preview-book-cccd-front', (b64) => { uploadedCccdFront = b64; });
+  bindBookUpload('file-book-cccd-back', 'preview-book-cccd-back', (b64) => { uploadedCccdBack = b64; });
+
   // Lần đầu khởi tạo options
   updateDoctorAndRoomOptions(srvSelect.value);
 
@@ -216,12 +289,39 @@ export function setupBookingForm() {
     const timeSlot = document.getElementById('book-time').value;
     const symptoms = document.getElementById('book-symptoms')?.value.trim() || '';
 
+    // Lấy thông tin bệnh nhân bổ sung
+    const dob = document.getElementById('book-patient-dob')?.value || '1995-05-20';
+    const gender = document.getElementById('book-patient-gender')?.value || 'Nam';
+    const cccdNumber = document.getElementById('book-patient-cccd')?.value.trim() || '079203018899';
+    const address = document.getElementById('book-patient-address')?.value.trim() || 'TP. Hồ Chí Minh';
+    const bhytCode = document.getElementById('book-patient-bhyt')?.value.trim() || '';
+
     if (!name || !phone || !date) {
       alert('Vui lòng điền đầy đủ Họ tên, Số điện thoại và Ngày khám.');
       return;
     }
 
-    // Lưu lịch hẹn vào DB dùng chung
+    const defaultPhotos = getDefaultPatientPhotos(name, gender);
+
+    const patientProfile = {
+      fullName: name,
+      phone: phone,
+      email: email,
+      gender: gender,
+      dob: dob,
+      cccdNumber: cccdNumber,
+      address: address,
+      bhytCode: bhytCode,
+      medicalHistory: symptoms || 'Khám mắt định kỳ theo yêu cầu',
+      allergies: 'Không có dị ứng',
+      photo4x6: uploadedPhoto4x6 || defaultPhotos.photo4x6,
+      cccdFront: uploadedCccdFront || defaultPhotos.cccdFront,
+      cccdBack: uploadedCccdBack || defaultPhotos.cccdBack,
+      verified: true,
+      updatedAt: new Date().toISOString()
+    };
+
+    // Lưu lịch hẹn vào DB dùng chung kèm patientProfile
     const newApp = saveAppointment({
       patientName: name,
       patientPhone: phone,
@@ -234,7 +334,8 @@ export function setupBookingForm() {
       roomName: roomName,
       date: date,
       timeSlot: timeSlot,
-      symptoms: symptoms
+      symptoms: symptoms,
+      patientProfile: patientProfile
     });
 
     // Hiển thị modal thông báo thành công

@@ -164,6 +164,15 @@ export function openLookupAppointmentModal(initialQuery = '') {
         }
       });
     });
+
+    modalRoot.querySelectorAll('.btn-view-patient-profile').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const phone = btn.getAttribute('data-phone');
+        import('../utils/patient-profile.js').then(module => {
+          module.openPatientProfileModal(phone);
+        });
+      });
+    });
   };
 
   renderModal(initialQuery);
@@ -257,15 +266,20 @@ function renderAppointmentCard(app) {
       ` : ''}
 
       <!-- Actions -->
-      <div style="display: flex; justify-content: space-between; align-items: center; pt: 10px; border-top: 1px dashed #e2e8f0; padding-top: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #e2e8f0; padding-top: 12px; gap: 8px; flex-wrap: wrap;">
         <span style="font-size: 12px; color: #64748b;">
           ${hasRecord ? '✅ Bạn có thể lưu hoặc in đơn thuốc điện tử ở trên.' : `💡 Xuất trình mã này tại quầy lễ tân tầng 1 để vào ${room.number}`}
         </span>
-        ${app.status !== 'cancelled' && app.status !== 'completed' ? `
-          <button type="button" class="btn-cancel-my-app" data-id="${app.id}" style="padding: 6px 12px; font-size: 12px; color: #ef4444; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; cursor: pointer; font-weight: 600;">
-            Hủy lịch hẹn
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn-view-patient-profile" data-phone="${app.patientPhone || ''}" style="padding: 6px 12px; font-size: 12px; color: #0284c7; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 6px; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+            📋 Hồ sơ & Ảnh CCCD
           </button>
-        ` : ''}
+          ${app.status !== 'cancelled' && app.status !== 'completed' ? `
+            <button type="button" class="btn-cancel-my-app" data-id="${app.id}" style="padding: 6px 12px; font-size: 12px; color: #ef4444; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; cursor: pointer; font-weight: 600;">
+              Hủy lịch hẹn
+            </button>
+          ` : ''}
+        </div>
       </div>
     </div>
   `;
