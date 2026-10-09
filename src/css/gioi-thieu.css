@@ -1,0 +1,839 @@
+```css
+/* =========================================
+   CSS TRANG GIỚI THIỆU - DOCTOR4
+   File: src/css/gioi-thieu.css
+========================================= */
+
+#page-about {
+    background: #f5f9ff;
+    color: #1e293b;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+}
+
+#page-about * {
+    box-sizing: border-box;
+}
+
+#page-about section {
+    padding: 80px 6%;
+}
+
+/* ===== 1. PHẦN BANNER ===== */
+#page-about .page-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 440px;
+    padding: 100px 6%;
+    text-align: center;
+    background: linear-gradient(135deg, #071b42, #124ca5, #0891b2);
+    overflow: hidden;
+}
+
+#page-about .page-hero::before,
+#page-about .page-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+#page-about .page-hero::before {
+    width: 350px;
+    height: 350px;
+    top: -130px;
+    left: -80px;
+    background: rgba(56, 189, 248, 0.18);
+    filter: blur(5px);
+}
+
+#page-about .page-hero::after {
+    width: 300px;
+    height: 300px;
+    right: -70px;
+    bottom: -130px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+#page-about .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+}
+
+#page-about .page-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    animation: aboutFadeIn .8s ease both;
+}
+
+#page-about .page-hero .badge {
+    margin: 0 auto 24px;
+    padding: 10px 20px;
+    color: #dbeafe;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 30px;
+}
+
+#page-about .page-hero-title {
+    margin: 0 0 24px;
+    color: #fff;
+    font-size: clamp(30px, 4.5vw, 52px);
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -1px;
+}
+
+#page-about .page-hero-title .highlight {
+    color: #67e8f9;
+}
+
+#page-about .page-hero-desc {
+    max-width: 720px;
+    margin: auto;
+    color: #dbeafe;
+    font-size: 17px;
+    line-height: 1.9;
+}
+
+/* ===== 2. TIÊU ĐỀ CÁC PHẦN ===== */
+#page-about .section-header {
+    max-width: 760px;
+    margin: 0 auto 45px;
+    text-align: center;
+}
+
+#page-about .section-header.align-left {
+    margin: 0 0 25px;
+    text-align: left;
+}
+
+#page-about .section-tag {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: #0879d9;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+#page-about .section-title {
+    margin: 0 0 18px;
+    color: #10264a;
+    font-size: clamp(27px, 3vw, 38px);
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+#page-about .section-title span {
+    color: #0879d9;
+}
+
+#page-about .section-desc {
+    color: #64748b;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+/* ===== 3. CÂU CHUYỆN DOCTOR4 ===== */
+#page-about .about-intro {
+    background: #fff;
+}
+
+#page-about .about-intro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 65px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+#page-about .story-visual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 390px;
+    border-radius: 28px;
+    background: linear-gradient(145deg, #dbeafe, #cffafe);
+    box-shadow: 0 20px 50px rgba(37, 99, 235, .12);
+    overflow: hidden;
+}
+
+#page-about .story-visual::before,
+#page-about .story-visual::after {
+    content: "";
+    position: absolute;
+    border: 1px solid rgba(37, 99, 235, .15);
+    border-radius: 50%;
+}
+
+#page-about .story-visual::before {
+    width: 300px;
+    height: 300px;
+}
+
+#page-about .story-visual::after {
+    width: 220px;
+    height: 220px;
+}
+
+#page-about .story-eye {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.75);
+    font-size: 85px;
+    box-shadow: 0 15px 40px rgba(37,99,235,.12);
+    animation: aboutFloat 4s ease-in-out infinite;
+}
+
+#page-about .story-float {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 18px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 12px 35px rgba(15, 23, 42, .12);
+}
+
+#page-about .story-float-1 {
+    top: 35px;
+    left: 20px;
+}
+
+#page-about .story-float-2 {
+    right: 20px;
+    bottom: 35px;
+}
+
+#page-about .badge-emoji {
+    font-size: 28px;
+}
+
+#page-about .badge-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#page-about .badge-info strong {
+    color: #10264a;
+    font-size: 14px;
+}
+
+#page-about .badge-info span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+#page-about .about-text {
+    min-width: 0;
+}
+
+#page-about .about-paragraph {
+    margin: 0 0 18px;
+    color: #64748b;
+    font-size: 15px;
+    line-height: 1.9;
+}
+
+#page-about .about-points {
+    display: grid;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+#page-about .about-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 17px;
+    border: 1px solid #e5eefb;
+    border-radius: 14px;
+    background: #f8fbff;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+}
+
+#page-about .about-point:hover {
+    transform: translateX(5px);
+    border-color: #93c5fd;
+    box-shadow: 0 8px 22px rgba(37, 99, 235, .08);
+}
+
+#page-about .point-icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #dbeafe;
+    font-size: 23px;
+}
+
+#page-about .about-point div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#page-about .about-point strong {
+    color: #10264a;
+    font-size: 15px;
+}
+
+#page-about .about-point div span {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* ===== 4. DÒNG THỜI GIAN ===== */
+#page-about .timeline {
+    background: #f1f7ff;
+}
+
+#page-about .timeline-list {
+    position: relative;
+    max-width: 850px;
+    margin: auto;
+}
+
+#page-about .timeline-list::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    left: 85px;
+    width: 3px;
+    border-radius: 3px;
+    background: linear-gradient(#2563eb, #06b6d4);
+}
+
+#page-about .timeline-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 65px 1fr;
+    gap: 45px;
+    padding-bottom: 28px;
+}
+
+#page-about .timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+#page-about .timeline-dot {
+    position: absolute;
+    top: 8px;
+    left: 77px;
+    z-index: 1;
+    width: 19px;
+    height: 19px;
+    border: 4px solid #fff;
+    border-radius: 50%;
+    background: #0879d9;
+    box-shadow: 0 0 0 3px #bfdbfe;
+}
+
+#page-about .timeline-year {
+    padding-top: 8px;
+    color: #0879d9;
+    font-size: 19px;
+    font-weight: 800;
+}
+
+#page-about .timeline-card {
+    padding: 23px 26px;
+    border: 1px solid #e2eaf5;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 5px 20px rgba(15, 23, 42, .04);
+    transition: transform .25s, box-shadow .25s;
+}
+
+#page-about .timeline-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, .10);
+}
+
+#page-about .timeline-title {
+    margin: 0 0 10px;
+    color: #10264a;
+    font-size: 17px;
+}
+
+#page-about .timeline-desc {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+/* ===== 5. THỐNG KÊ ===== */
+#page-about .about-stats {
+    background: linear-gradient(120deg, #0f2e65, #075985);
+}
+
+#page-about .about-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+    max-width: 1150px;
+    margin: auto;
+}
+
+#page-about .about-stat {
+    padding: 30px 15px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 18px;
+    background: rgba(255,255,255,.07);
+    transition: transform .25s, background .25s;
+}
+
+#page-about .about-stat:hover {
+    transform: translateY(-6px);
+    background: rgba(255,255,255,.13);
+}
+
+#page-about .about-stat-num {
+    display: block;
+    margin-bottom: 12px;
+    color: #fff;
+    font-size: clamp(30px, 3.5vw, 42px);
+    font-weight: 800;
+}
+
+#page-about .about-stat-num span {
+    color: #67e8f9;
+}
+
+#page-about .about-stat-label {
+    color: #dbeafe;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* ===== 6. VÌ SAO CHỌN DOCTOR4 ===== */
+#page-about .why-us {
+    background: #fff;
+}
+
+#page-about .why-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 22px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+#page-about .why-card {
+    padding: 30px 22px;
+    border: 1px solid #e5edf8;
+    border-radius: 20px;
+    background: #fff;
+    text-align: center;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, .035);
+    transition: transform .3s, box-shadow .3s, border-color .3s;
+}
+
+#page-about .why-card:hover {
+    transform: translateY(-8px);
+    border-color: #93c5fd;
+    box-shadow: 0 18px 40px rgba(37, 99, 235, .12);
+}
+
+#page-about .why-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 20px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #dbeafe, #cffafe);
+    font-size: 32px;
+}
+
+#page-about .why-title {
+    margin: 0 0 12px;
+    color: #10264a;
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+#page-about .why-desc {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+/* ===== 7. CƠ SỞ VẬT CHẤT ===== */
+#page-about .facility {
+    background: #f1f7ff;
+}
+
+#page-about .facility-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 55px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+#page-about .facility-text {
+    min-width: 0;
+}
+
+#page-about .facility-list {
+    display: grid;
+    gap: 15px;
+    margin: 25px 0;
+    padding: 0;
+    list-style: none;
+}
+
+#page-about .facility-list li {
+    color: #475569;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+#page-about .facility-visual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 350px;
+    border-radius: 25px;
+    background: linear-gradient(145deg, #bfdbfe, #a5f3fc);
+    overflow: hidden;
+}
+
+#page-about .facility-visual .story-eye {
+    width: 170px;
+    height: 170px;
+    font-size: 85px;
+}
+
+#page-about .facility-tags {
+    position: absolute;
+    right: 15px;
+    bottom: 18px;
+    left: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#page-about .facility-tag {
+    padding: 9px 13px;
+    color: #075985;
+    background: rgba(255,255,255,.92);
+    border: 1px solid rgba(255,255,255,.8);
+    border-radius: 25px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* ===== 8. PHẦN KÊU GỌI ĐẶT LỊCH ===== */
+#page-about .cta-section {
+    padding: 75px 6%;
+    background: linear-gradient(135deg, #0f2e65, #075985, #0879d9);
+    text-align: center;
+}
+
+#page-about .cta-inner {
+    max-width: 800px;
+    margin: auto;
+}
+
+#page-about .cta-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 22px;
+    background: rgba(255,255,255,.12);
+    font-size: 36px;
+}
+
+#page-about .cta-title {
+    margin: 0 0 18px;
+    color: #fff;
+    font-size: clamp(27px, 3.5vw, 38px);
+    line-height: 1.4;
+}
+
+#page-about .cta-title span {
+    color: #67e8f9;
+}
+
+#page-about .cta-desc {
+    max-width: 650px;
+    margin: 0 auto 30px;
+    color: #dbeafe;
+    font-size: 15px;
+    line-height: 1.9;
+}
+
+#page-about .cta-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+#page-about .btn-primary,
+#page-about .btn-cta-primary,
+#page-about .btn-cta-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 13px 24px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform .25s, box-shadow .25s, background .25s;
+}
+
+#page-about .btn-primary,
+#page-about .btn-cta-primary {
+    color: #fff;
+    background: linear-gradient(135deg, #2563eb, #0891b2);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, .2);
+}
+
+#page-about .facility .btn-primary {
+    color: #fff;
+}
+
+#page-about .btn-primary:hover,
+#page-about .btn-cta-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, .3);
+}
+
+#page-about .btn-cta-outline {
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.45);
+    background: rgba(255,255,255,.08);
+}
+
+#page-about .btn-cta-outline:hover {
+    transform: translateY(-3px);
+    background: rgba(255,255,255,.17);
+}
+
+/* ===== 9. HIỆU ỨNG ===== */
+@keyframes aboutFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes aboutFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* ===== 10. TABLET ===== */
+@media (max-width: 1000px) {
+    #page-about .about-intro-grid,
+    #page-about .facility-inner {
+        gap: 35px;
+    }
+
+    #page-about .why-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #page-about .about-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #page-about .story-float-1 {
+        left: 10px;
+    }
+
+    #page-about .story-float-2 {
+        right: 10px;
+    }
+}
+
+/* ===== 11. ĐIỆN THOẠI ===== */
+@media (max-width: 700px) {
+    #page-about section {
+        padding: 55px 5%;
+    }
+
+    #page-about .page-hero {
+        min-height: 390px;
+        padding: 75px 5%;
+    }
+
+    #page-about .page-hero-title {
+        font-size: 30px;
+        letter-spacing: -.5px;
+    }
+
+    #page-about .page-hero-desc {
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    #page-about .about-intro-grid,
+    #page-about .facility-inner {
+        grid-template-columns: 1fr;
+        gap: 35px;
+    }
+
+    #page-about .story-visual {
+        min-height: 300px;
+    }
+
+    #page-about .story-eye {
+        width: 130px;
+        height: 130px;
+        font-size: 65px;
+    }
+
+    #page-about .story-float {
+        gap: 8px;
+        padding: 10px;
+    }
+
+    #page-about .story-float-1 {
+        top: 15px;
+        left: 10px;
+    }
+
+    #page-about .story-float-2 {
+        right: 10px;
+        bottom: 15px;
+    }
+
+    #page-about .badge-emoji {
+        font-size: 22px;
+    }
+
+    #page-about .badge-info strong {
+        font-size: 12px;
+    }
+
+    #page-about .badge-info span {
+        font-size: 10px;
+    }
+
+    #page-about .timeline-list::before {
+        left: 55px;
+    }
+
+    #page-about .timeline-item {
+        grid-template-columns: 40px 1fr;
+        gap: 35px;
+    }
+
+    #page-about .timeline-dot {
+        left: 47px;
+    }
+
+    #page-about .timeline-year {
+        font-size: 15px;
+    }
+
+    #page-about .timeline-card {
+        padding: 18px;
+    }
+
+    #page-about .timeline-title {
+        font-size: 15px;
+    }
+
+    #page-about .timeline-desc {
+        font-size: 13px;
+    }
+
+    #page-about .why-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    #page-about .why-card {
+        padding: 25px 20px;
+    }
+
+    #page-about .about-stats-grid {
+        gap: 12px;
+    }
+
+    #page-about .about-stat {
+        padding: 23px 10px;
+    }
+
+    #page-about .about-stat-label {
+        font-size: 12px;
+    }
+
+    #page-about .facility-visual {
+        min-height: 280px;
+    }
+
+    #page-about .cta-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #page-about .btn-cta-primary,
+    #page-about .btn-cta-outline {
+        width: 100%;
+    }
+}
+
+/* Tôn trọng cài đặt giảm chuyển động */
+@media (prefers-reduced-motion: reduce) {
+    #page-about *,
+    #page-about *::before,
+    #page-about *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+```
