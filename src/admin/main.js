@@ -211,6 +211,11 @@ function renderAdminPortal() {
             <span class="adm-nav-icon">🔑</span>
             <span>Quản lý Tài khoản</span>
           </div>
+          <div class="adm-nav-item ${currentTab === 'payments' ? 'active' : ''}" data-tab="payments">
+  <span class="adm-nav-icon">💳</span>
+  <span>Quản lý Thanh toán</span>
+  <span class="adm-nav-tag" id="nav-payment-count">0</span>
+</div>
 
           <div class="adm-nav-item ${currentTab === 'settings' ? 'active' : ''}" data-tab="settings">
             <span class="adm-nav-icon">⚙️</span>
@@ -296,6 +301,8 @@ function getTabTitle(tab) {
     case 'dashboard': return 'Bảng điều khiển tổng quan';
     case 'comments': return 'Quản lý Bình Luận & Đánh giá';
     case 'accounts': return 'Quản lý Tài khoản Người dùng & Bác sĩ';
+    case 'payments':
+  return 'Quản lý Thanh toán';
     default: return 'Cài đặt hệ thống';
   }
 }
@@ -310,6 +317,8 @@ function renderTabContent() {
   if (currentTab === 'dashboard') return renderDashboardView();
   if (currentTab === 'comments') return renderCommentsManagementView();
   if (currentTab === 'accounts') return renderAccountsManagementView();
+  if (currentTab === 'payments') return renderPaymentsManagementView();
+
   return renderSettingsPlaceholderView();
 }
 
@@ -1635,6 +1644,339 @@ function openDeleteAccountModal(uid) {
   });
 }
 
+function renderPaymentsManagementView() {
+  const payments =
+    JSON.parse(localStorage.getItem('payments')) || [];
+
+  const pendingPayments =
+    payments.filter(p => p.status === 'pending');
+
+  const successPayments =
+    payments.filter(p => p.status === 'success');
+
+  const totalMoney =
+    successPayments.reduce(
+      (sum, p) => sum + Number(p.amount || 0),
+      0
+    );
+
+  return `
+    <div class="adm-page-header">
+      <div class="adm-page-title">
+        <h1>💳 Quản lý Thanh toán</h1>
+        <p>Quản lý các giao dịch thanh toán QR của khách hàng</p>
+      </div>
+    </div>
+
+    <div class="adm-stats-grid">
+
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon primary">💳</div>
+        <div class="adm-stat-meta">
+          <h3>Tổng giao dịch</h3>
+          <div class="stat-val">${payments.length}</div>
+        </div>
+      </div>
+
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon warning">⏳</div>
+        <div class="adm-stat-meta">
+          <h3>Chờ xác nhận</h3>
+          <div class="stat-val">${pendingPayments.length}</div>
+        </div>
+      </div>
+
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon success">✓</div>
+        <div class="adm-stat-meta">
+          <h3>Đã thanh toán</h3>
+          <div class="stat-val">${successPayments.length}</div>
+        </div>
+      </div>
+
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon accent">💰</div>
+        <div class="adm-stat-meta">
+          <h3>Doanh thu</h3>
+          <div class="stat-val">
+            ${totalMoney.toLocaleString('vi-VN')}đ
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="adm-card" style="margin-top: 24px; overflow-x: auto;">
+
+      <table class="adm-table" style="width:100%;">
+
+        <thead>
+          <tr>
+            <th>Mã giao dịch</th>
+            <th>Khách hàng</th>
+            <th>Bác sĩ</th>
+            <th>Ngày khám</th>
+            <th>Giờ</th>
+            <th>Số tiền</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          ${
+            payments.length === 0
+              ? `
+                <tr>
+                  <td colspan="8"
+                      style="text-align:center;padding:40px;">
+                    Chưa có giao dịch thanh toán nào.
+                  </td>
+                </tr>
+              `
+              : payments.map((payment, index) => {
+
+                  let statusHtml = '';
+
+                  if (payment.status === 'success') {
+                    statusHtml = `
+                      <span style="
+                        background:#dcfce7;
+                        color:#166534;
+                        padding:6px 10px;
+                        border-radius:8px;
+                        font-weight:700;
+                      ">
+                        ✓ Đã thanh toán
+                      </span>
+                    `;
+                  }
+                  else if (payment.status === 'cancel') {
+                    statusHtml = `
+                      <span style="
+                        background:#fee2e2;
+                        color:#991b1b;
+                        padding:6px 10px;
+                        border-radius:8px;
+                        font-weight:700;
+                      ">
+                        ✕ Từ chối
+                      </span>
+                    `;
+                  }
+                  else {
+                    statusHtml = `
+                      <span style="
+                        background:#fef3c7;
+                        color:#92400e;
+                        padding:6px 10px;
+                        border-radius:8px;
+                        font-weight:700;
+                      ">
+                        ⏳ Chờ xác nhận
+                      </span>
+                    `;
+                  }
+
+                  return `
+                    <tr>
+
+                      <td>
+                        <strong>${escapeHtml(payment.id)}</strong>
+                      </td>
+
+                      <td>
+                        ${escapeHtml(payment.patientName)}
+                      </td>
+
+                      <td>
+                        ${escapeHtml(payment.doctorName)}
+                      </td>
+
+                      <td>
+                        ${escapeHtml(payment.date)}
+                      </td>
+
+                      <td>
+                        ${escapeHtml(payment.time)}
+                      </td>
+
+                      <td>
+                        <strong>
+                          ${Number(payment.amount || 0)
+                            .toLocaleString('vi-VN')}đ
+                        </strong>
+                      </td>
+
+                      <td>
+                        ${statusHtml}
+                      </td>
+
+                      <td>
+
+                        ${
+                          payment.status === 'pending'
+                            ? `
+                              <button
+  type="button"
+  class="adm-btn-action"
+  data-payment-action="confirm"
+  data-payment-index="${index}"
+  style="background:rgba(34,197,94,.15);color:#22c55e;border-color:rgba(34,197,94,.35);"
+  title="Xác nhận">
+  ✓
+</button>
+
+                              <button
+  type="button"
+  class="adm-btn-action"
+  data-payment-action="cancel"
+  data-payment-index="${index}"
+  style="background:rgba(239,68,68,.15);color:#ef4444;border-color:rgba(239,68,68,.35);"
+  title="Từ chối">
+  ✕
+</button>
+                            `
+                            : ''
+                        }
+
+                       <button
+  type="button"
+  class="adm-btn-action delete"
+  data-payment-action="delete"
+  data-payment-index="${index}"
+  title="Xóa">
+  🗑️
+</button>
+
+                      </td>
+
+                    </tr>
+                  `;
+                }).join('')
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+  `;
+}
+
+function confirmAdminPayment(index) {
+  const payments = JSON.parse(
+    localStorage.getItem('payments') || '[]'
+  );
+
+  const payment = payments[index];
+
+  if (!payment) {
+    showToast('Không tìm thấy giao dịch.', 'error');
+    return;
+  }
+
+  payment.status = 'success';
+  payment.confirmedAt = new Date().toLocaleString('vi-VN');
+
+  // Lưu danh sách thanh toán
+  localStorage.setItem(
+    'payments',
+    JSON.stringify(payments)
+  );
+
+  // Lưu riêng giao dịch
+  localStorage.setItem(
+    'payment_' + payment.id,
+    JSON.stringify(payment)
+  );
+
+  showToast(
+    'Đã xác nhận thanh toán thành công!',
+    'success'
+  );
+
+  refreshMainView();
+}
+window.confirmAdminPayment = confirmAdminPayment;
+window.cancelAdminPayment = cancelAdminPayment;
+window.deleteAdminPayment = deleteAdminPayment;
+
+function cancelAdminPayment(index) {
+  const payments = JSON.parse(
+    localStorage.getItem('payments') || '[]'
+  );
+
+  const payment = payments[index];
+
+  if (!payment) {
+    showToast('Không tìm thấy giao dịch.', 'error');
+    return;
+  }
+
+  payment.status = 'cancel';
+  payment.cancelledAt = new Date().toLocaleString('vi-VN');
+
+  localStorage.setItem(
+    'payments',
+    JSON.stringify(payments)
+  );
+
+  localStorage.setItem(
+    'payment_' + payment.id,
+    JSON.stringify(payment)
+  );
+
+  showToast(
+    'Đã từ chối giao dịch.',
+    'info'
+  );
+
+  refreshMainView();
+}
+
+
+function deleteAdminPayment(index) {
+  const payments = JSON.parse(
+    localStorage.getItem('payments') || '[]'
+  );
+
+  const payment = payments[index];
+
+  if (!payment) {
+    showToast('Không tìm thấy giao dịch.', 'error');
+    return;
+  }
+
+  const ok = confirm(
+    'Bạn có chắc muốn xóa giao dịch này không?'
+  );
+
+  if (!ok) {
+    return;
+  }
+
+  payments.splice(index, 1);
+
+  localStorage.setItem(
+    'payments',
+    JSON.stringify(payments)
+  );
+
+  localStorage.removeItem(
+    'payment_' + payment.id
+  );
+
+  showToast(
+    'Đã xóa giao dịch.',
+    'info'
+  );
+
+  refreshMainView();
+}
+
+
 function bindAccountsEvents() {
   // Tab switch
   document.getElementById('acct-tab-patients')?.addEventListener('click', () => {
@@ -2947,6 +3289,37 @@ function bindPortalEvents() {
   });
 
   bindViewSpecificEvents();
+
+document.addEventListener('click', function (e) {
+
+  const btn = e.target.closest('[data-payment-action]');
+
+  if (!btn) return;
+
+  const action = btn.getAttribute('data-payment-action');
+
+  const index = Number(
+    btn.getAttribute('data-payment-index')
+  );
+
+  if (Number.isNaN(index)) {
+    console.error('Payment index không hợp lệ');
+    return;
+  }
+
+  if (action === 'confirm') {
+    confirmAdminPayment(index);
+  }
+
+  if (action === 'cancel') {
+    cancelAdminPayment(index);
+  }
+
+  if (action === 'delete') {
+    deleteAdminPayment(index);
+  }
+
+});
 }
 
 function bindViewSpecificEvents() {

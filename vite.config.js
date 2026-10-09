@@ -11,6 +11,7 @@ export default defineConfig({
         doctor: resolve(__dirname, 'bac-si.html'),
         login: resolve(__dirname, 'dang-nhap.html'),
         register: resolve(__dirname, 'dang-ky.html'),
+        profile: resolve(__dirname, 'ho-so.html'),
         admin: resolve(__dirname, 'admin/index.html')
       }
     }

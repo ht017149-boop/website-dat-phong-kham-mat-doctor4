@@ -27,11 +27,35 @@ const INITIAL_DEMO_USERS = [
   },
   {
     id: 'usr_patient_001',
-    name: 'Nguyễn Văn An (Bệnh nhân)',
+    name: 'Nguyễn Văn An',
     email: 'benhnhan@doctor4.vn',
     phone: '0987654321',
     password: '123456',
     role: 'patient',
+    patientProfile: {
+      dob: '1992-08-15',
+      gender: 'Nam',
+      cccdNumber: '079203018899',
+      address: '123 Nguyễn Tri Phương, Quận 5, TP. Hồ Chí Minh',
+      bhytCode: 'GD 4 79 1234567890',
+      emergencyContact: 'Chị Nguyễn Mai Hương (0909 111 222)',
+      bloodType: 'A+',
+      verified: true
+    },
+    eyeProfile: {
+      odSphere: '-2.50',
+      odCyl: '-0.75',
+      odAxis: '175',
+      odIop: '14',
+      osSphere: '-2.25',
+      osCyl: '-0.50',
+      osAxis: '180',
+      osIop: '15',
+      glassesType: 'Kính cận chống ánh sáng xanh',
+      lastCheckup: '2026-09-15',
+      nextCheckup: '2026-12-15',
+      notes: 'Thị lực sau chỉnh kính đạt 10/10 hai mắt. Hạn chế nhìn màn hình liên tục > 45 phút, tra nước mắt nhân tạo khi mỏi khô mắt.'
+    },
     createdAt: new Date().toISOString()
   }
 ];

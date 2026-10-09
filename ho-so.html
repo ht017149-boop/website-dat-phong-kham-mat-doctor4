@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thông Tin Người Dùng - Doctor4 Eye Clinic</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <div id="header-container"></div>
+
+    <main id="page-user-profile">
+      <!-- Hero -->
+      <section class="profile-hero">
+        <div class="profile-hero-inner">
+          <div class="profile-hero-badge">👤 CỔNG THÀNH VIÊN DOCTOR4</div>
+          <h1 class="profile-hero-title">
+            Thông Tin <span>Người Dùng</span>
+          </h1>
+          <p class="profile-hero-desc">
+            Xem và cập nhật hồ sơ bệnh nhân trực tuyến, thông tin liên hệ, bảo hiểm y tế
+            và ảnh thẻ 4x6 / CCCD đã đăng ký.
+          </p>
+        </div>
+      </section>
+
+      <!-- Nội dung hồ sơ (render bằng JS) -->
+      <section class="profile-body">
+        <div id="user-profile-root" class="profile-container">
+          <!-- Populated by user-profile.js -->
+        </div>
+      </section>
+    </main>
+
+    <div id="footer-container"></div>
+    <script type="module" src="/src/pages/user-profile.js"></script>
+  </body>
+</html>
