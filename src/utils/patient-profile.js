@@ -153,7 +153,7 @@ export function getPatientProfileData(appOrUser) {
     phone: phone,
     email: email,
     gender: gender,
-    dob: profile.dob || appOrUser.dob || '15/08/1992',
+    dob: profile.dob || appOrUser.dob || '1995-05-20',
     cccdNumber: profile.cccdNumber || appOrUser.cccdNumber || '079203018899',
     address: profile.address || appOrUser.address || '123 Nguyễn Tri Phương, Quận 5, TP. Hồ Chí Minh',
     bhytCode: profile.bhytCode || appOrUser.bhytCode || 'GD 4 79 1234567890',
@@ -170,3 +170,293 @@ export function getPatientProfileData(appOrUser) {
     updatedAt: profile.updatedAt || new Date().toISOString()
   };
 }
+
+/**
+ * Mở Modal Quản Lý & Tải Lên Hồ Sơ Bệnh Nhân (Dành cho Người Dùng / Client)
+ */
+export function openPatientProfileModal(userOrPhone = null) {
+  let modalRoot = document.getElementById('patient-profile-modal-root');
+  if (!modalRoot) {
+    modalRoot = document.createElement('div');
+    modalRoot.id = 'patient-profile-modal-root';
+    document.body.appendChild(modalRoot);
+  }
+
+  // Xác định dữ liệu người dùng
+  let currentUser = null;
+  try {
+    const session = localStorage.getItem('doctor4_session') || sessionStorage.getItem('doctor4_session');
+    if (session) currentUser = JSON.parse(session);
+  } catch (e) {}
+
+  // Lấy thông tin từ Users DB nếu có
+  let usersList = [];
+  try {
+    usersList = JSON.parse(localStorage.getItem('doctor4_users_db')) || [];
+  } catch (e) {}
+
+  let matchedUser = null;
+  if (currentUser) {
+    matchedUser = usersList.find(u => u.id === currentUser.id || u.phone === currentUser.phone || u.email === currentUser.email) || currentUser;
+  } else if (typeof userOrPhone === 'string' && userOrPhone.trim()) {
+    matchedUser = usersList.find(u => u.phone === userOrPhone.trim() || u.email === userOrPhone.trim());
+  }
+
+  const profile = getPatientProfileData(matchedUser || {
+    name: 'Bệnh nhân',
+    phone: '',
+    email: '',
+    gender: 'Nam'
+  });
+
+  let currentPhoto4x6 = profile.photo4x6;
+  let currentCccdFront = profile.cccdFront;
+  let currentCccdBack = profile.cccdBack;
+
+  const render = () => {
+    modalRoot.innerHTML = `
+      <div style="position: fixed; inset: 0; background: rgba(15,23,42,0.85); backdrop-filter: blur(10px); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 16px; animation: admFadeIn 0.25s ease-out;">
+        <div style="background: #ffffff; color: #0f172a; max-width: 820px; width: 100%; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); overflow: hidden; max-height: 92vh; display: flex; flex-direction: column;">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; padding: 22px 26px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <h2 style="font-size: 20px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span>📋</span> Hồ Sơ Y Tế & Tải Thông Tin Bệnh Nhân
+              </h2>
+              <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">
+                Tải lên Ảnh thẻ 4x6, Căn cước công dân (CCCD 2 mặt) & Mã BHYT để Bác sĩ đối chiếu khi đến khám
+              </p>
+            </div>
+            <button id="btn-close-profile-modal" style="background: rgba(255,255,255,0.2); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 18px; cursor: pointer;">✕</button>
+          </div>
+
+          <!-- Body Form -->
+          <div style="padding: 24px; overflow-y: auto; flex: 1;">
+            <form id="form-user-patient-profile">
+              
+              <!-- Khối 3 Ảnh tải lên -->
+              <div style="background: #f8fafc; border: 1.5px dashed #0284c7; border-radius: 16px; padding: 18px; margin-bottom: 22px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                  <span style="font-weight: 800; font-size: 14px; color: #0284c7; display: flex; align-items: center; gap: 6px;">
+                    📸 ẢNH THẺ 4x6 & CĂN CƯỚC CÔNG DÂN (CCCD 2 MẶT)
+                  </span>
+                  <span style="font-size: 12px; background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 6px; font-weight: 600;">
+                    Tự động đồng bộ với Bác sĩ
+                  </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.3fr 1.3fr; gap: 14px;">
+                  <!-- Ảnh 4x6 -->
+                  <div style="background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; text-align: center;">
+                    <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">1. Ảnh chân dung 4x6</div>
+                    <div id="box-user-photo4x6" style="width: 100%; height: 110px; background: #f1f5f9; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; border: 1px solid #e2e8f0;">
+                      <img src="${currentPhoto4x6}" alt="Ảnh 4x6" style="width: 100%; height: 100%; object-fit: cover;" />
+                    </div>
+                    <input type="file" id="input-user-photo4x6" accept="image/*" style="display: none;" />
+                    <button type="button" class="btn-trigger-upload" onclick="document.getElementById('input-user-photo4x6').click()" style="width: 100%; padding: 6px; font-size: 11.5px; background: #0284c7; color: #fff; font-weight: 700; border: none; border-radius: 6px; cursor: pointer;">
+                      📤 Tải ảnh 4x6
+                    </button>
+                  </div>
+
+                  <!-- CCCD Mặt trước -->
+                  <div style="background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; text-align: center;">
+                    <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">2. CCCD Mặt trước</div>
+                    <div id="box-user-cccd-front" style="width: 100%; height: 110px; background: #f1f5f9; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; border: 1px solid #e2e8f0;">
+                      <img src="${currentCccdFront}" alt="CCCD Mặt trước" style="width: 100%; height: 100%; object-fit: cover;" />
+                    </div>
+                    <input type="file" id="input-user-cccd-front" accept="image/*" style="display: none;" />
+                    <button type="button" class="btn-trigger-upload" onclick="document.getElementById('input-user-cccd-front').click()" style="width: 100%; padding: 6px; font-size: 11.5px; background: #0284c7; color: #fff; font-weight: 700; border: none; border-radius: 6px; cursor: pointer;">
+                      📤 Tải mặt trước
+                    </button>
+                  </div>
+
+                  <!-- CCCD Mặt sau -->
+                  <div style="background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; text-align: center;">
+                    <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">3. CCCD Mặt sau</div>
+                    <div id="box-user-cccd-back" style="width: 100%; height: 110px; background: #f1f5f9; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; border: 1px solid #e2e8f0;">
+                      <img src="${currentCccdBack}" alt="CCCD Mặt sau" style="width: 100%; height: 100%; object-fit: cover;" />
+                    </div>
+                    <input type="file" id="input-user-cccd-back" accept="image/*" style="display: none;" />
+                    <button type="button" class="btn-trigger-upload" onclick="document.getElementById('input-user-cccd-back').click()" style="width: 100%; padding: 6px; font-size: 11.5px; background: #0284c7; color: #fff; font-weight: 700; border: none; border-radius: 6px; cursor: pointer;">
+                      📤 Tải mặt sau
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thông tin cá nhân & Y tế -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 4px;">Họ và tên bệnh nhân *</label>
+                  <input type="text" id="prof-name" value="${profile.fullName}" required style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;" />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 4px;">Số điện thoại liên hệ *</label>
+                  <input type="tel" id="prof-phone" value="${profile.phone}" required style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;" />
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 4px;">Ngày sinh</label>
+                  <input type="date" id="prof-dob" value="${profile.dob || '1995-05-20'}" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;" />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 4px;">Giới tính</label>
+                  <select id="prof-gender" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;">
+                    <option value="Nam" ${profile.gender === 'Nam' ? 'selected' : ''}>Nam</option>
+                    <option value="Nữ" ${profile.gender === 'Nữ' ? 'selected' : ''}>Nữ</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 4px;">Số CCCD / CMND</label>
+                  <input type="text" id="prof-cccd" value="${profile.cccdNumber}" placeholder="079203018899" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;" />
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 4px;">Địa chỉ thường trú / Nơi ở</label>
+                  <input type="text" id="prof-address" value="${profile.address}" placeholder="VD: 123 Nguyễn Tri Phương, Q.5, TP.HCM" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;" />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 4px;">Mã thẻ BHYT (nếu có)</label>
+                  <input type="text" id="prof-bhyt" value="${profile.bhytCode || ''}" placeholder="VD: GD 4 79 1234567890" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;" />
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px;">
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 4px;">Tiền sử bệnh mắt & sức khỏe</label>
+                  <input type="text" id="prof-history" value="${profile.medicalHistory || ''}" placeholder="VD: Cận loạn thị 4 độ, từng bắn laser" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;" />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 4px;">Dị ứng thuốc / Thực phẩm</label>
+                  <input type="text" id="prof-allergies" value="${profile.allergies || ''}" placeholder="VD: Không có hoặc dị ứng kháng sinh" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;" />
+                </div>
+              </div>
+
+              <!-- Footer Buttons -->
+              <div style="display: flex; gap: 12px; border-top: 1px solid #e2e8f0; padding-top: 18px;">
+                <button type="submit" id="btn-save-patient-profile" style="flex: 1; padding: 13px; background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; font-weight: 800; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; box-shadow: 0 4px 12px rgba(2,132,199,0.3);">
+                  💾 Lưu & Cập Nhật Hồ Sơ Bệnh Nhân
+                </button>
+                <button type="button" id="btn-cancel-profile-modal" style="padding: 13px 24px; background: #e2e8f0; color: #334155; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; font-size: 14px;">
+                  Đóng
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Event close
+    const closeModal = () => { modalRoot.innerHTML = ''; };
+    document.getElementById('btn-close-profile-modal')?.addEventListener('click', closeModal);
+    document.getElementById('btn-cancel-profile-modal')?.addEventListener('click', closeModal);
+
+    // Event upload 3 ảnh
+    const bindUpload = (inputId, boxId, cb) => {
+      const input = document.getElementById(inputId);
+      const box = document.getElementById(boxId);
+      if (!input || !box) return;
+
+      input.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          box.innerHTML = `<span style="font-size: 11px; color: #0284c7;">⏳ Đang nén...</span>`;
+          const base64 = await compressImageFile(file, 600, 600, 0.75);
+          cb(base64);
+          box.innerHTML = `<img src="${base64}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+        }
+      });
+    };
+
+    bindUpload('input-user-photo4x6', 'box-user-photo4x6', (b64) => { currentPhoto4x6 = b64; });
+    bindUpload('input-user-cccd-front', 'box-user-cccd-front', (b64) => { currentCccdFront = b64; });
+    bindUpload('input-user-cccd-back', 'box-user-cccd-back', (b64) => { currentCccdBack = b64; });
+
+    // Submit lưu
+    document.getElementById('form-user-patient-profile')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('prof-name').value.trim();
+      const phone = document.getElementById('prof-phone').value.trim();
+      const dob = document.getElementById('prof-dob').value;
+      const gender = document.getElementById('prof-gender').value;
+      const cccd = document.getElementById('prof-cccd').value.trim();
+      const address = document.getElementById('prof-address').value.trim();
+      const bhyt = document.getElementById('prof-bhyt').value.trim();
+      const history = document.getElementById('prof-history').value.trim();
+      const allergies = document.getElementById('prof-allergies').value.trim();
+
+      const updatedProfileObj = {
+        fullName: name,
+        phone,
+        dob,
+        gender,
+        cccdNumber: cccd,
+        address,
+        bhytCode: bhyt,
+        medicalHistory: history,
+        allergies,
+        photo4x6: currentPhoto4x6,
+        cccdFront: currentCccdFront,
+        cccdBack: currentCccdBack,
+        verified: true,
+        updatedAt: new Date().toISOString()
+      };
+
+      // 1. Cập nhật Session nếu đang login
+      if (currentUser) {
+        currentUser.name = name;
+        currentUser.phone = phone;
+        currentUser.avatar = currentPhoto4x6;
+        currentUser.patientProfile = updatedProfileObj;
+        localStorage.setItem('doctor4_session', JSON.stringify(currentUser));
+      }
+
+      // 2. Cập nhật DB users
+      let users = [];
+      try {
+        users = JSON.parse(localStorage.getItem('doctor4_users_db')) || [];
+      } catch (err) {}
+
+      const userIndex = users.findIndex(u => (currentUser && u.id === currentUser.id) || (u.phone && u.phone === phone));
+      if (userIndex >= 0) {
+        users[userIndex].name = name;
+        users[userIndex].phone = phone;
+        users[userIndex].patientProfile = updatedProfileObj;
+        users[userIndex].avatar = currentPhoto4x6;
+        localStorage.setItem('doctor4_users_db', JSON.stringify(users));
+      }
+
+      // 3. Đồng bộ vào các lịch hẹn của người này để Bác sĩ thấy ngay lập tức
+      let apps = [];
+      try {
+        apps = JSON.parse(localStorage.getItem('doctor4_appointments_db')) || [];
+      } catch (err) {}
+
+      apps = apps.map(app => {
+        if (app.patientPhone === phone || (currentUser && app.patientEmail === currentUser.email)) {
+          return {
+            ...app,
+            patientName: name,
+            patientProfile: updatedProfileObj
+          };
+        }
+        return app;
+      });
+      localStorage.setItem('doctor4_appointments_db', JSON.stringify(apps));
+
+      alert('✅ Đã lưu và cập nhật hồ sơ bệnh nhân thành công! Bác sĩ có thể xem phiếu thông tin ngay trên hệ thống.');
+      closeModal();
+      window.location.reload();
+    });
+  };
+
+  render();
+}
+

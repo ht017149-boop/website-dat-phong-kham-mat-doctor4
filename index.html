@@ -378,6 +378,96 @@
             <textarea id="book-symptoms" rows="2" placeholder="VD: Mắt nhìn mờ khi lái xe ban đêm, cộm xốn, muốn đo độ cận và tư vấn mổ LASIK..." style="width: 100%; padding: 0.75rem 1rem; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: #fff; font-size: 0.92rem; outline: none;"></textarea>
           </div>
 
+          <!-- KHỐI TẢI THÔNG TIN BỆNH NHÂN & CCCD / ẢNH 4X6 TRỰC TUYẾN (TÙY CHỌN - COLLAPSIBLE) -->
+          <details class="booking-patient-profile-section" style="background: rgba(14, 165, 233, 0.08); border: 1.5px dashed rgba(56, 189, 248, 0.4); border-radius: 14px; padding: 14px 18px; margin-bottom: 1.75rem; cursor: pointer;">
+            <summary style="display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: 0.95rem; color: #38bdf8; outline: none; list-style: none; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span>📋</span> 
+                <span>Khai báo trước CCCD & Ảnh thẻ <em>(Tùy chọn - Không bắt buộc)</em></span>
+              </div>
+              <span style="font-size: 0.78rem; background: rgba(56,189,248,0.2); color: #7dd3fc; padding: 4px 10px; border-radius: 6px; font-weight: 600; white-space: nowrap;">
+                ▼ Bấm để mở / đóng
+              </span>
+            </summary>
+            
+            <div style="padding-top: 14px; cursor: default;">
+              <p style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 14px; line-height: 1.5;">
+                💡 <strong>Lưu ý:</strong> Bạn có thể bỏ qua phần này và <strong>xuất trình CCCD trực tiếp tại quầy lễ tân</strong> khi đến khám. Nếu tải lên trước, Bác sĩ sẽ chuẩn bị hồ sơ sẵn cho bạn.
+              </p>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                  <label style="display: block; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem;">Ngày sinh</label>
+                  <input type="date" id="book-patient-dob" value="1995-05-20" style="width: 100%; padding: 0.65rem; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.88rem; outline: none;" />
+                </div>
+                <div>
+                  <label style="display: block; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem;">Giới tính</label>
+                  <select id="book-patient-gender" style="width: 100%; padding: 0.65rem; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.88rem; outline: none;">
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem;">Số CCCD / CMND</label>
+                  <input type="text" id="book-patient-cccd" placeholder="VD: 079203018899" style="width: 100%; padding: 0.65rem; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.88rem; outline: none;" />
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                <div>
+                  <label style="display: block; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem;">Địa chỉ thường trú</label>
+                  <input type="text" id="book-patient-address" placeholder="VD: 123 Nguyễn Tri Phương, Q.5, TP.HCM" style="width: 100%; padding: 0.65rem; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.88rem; outline: none;" />
+                </div>
+                <div>
+                  <label style="display: block; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem;">Mã thẻ BHYT (nếu có)</label>
+                  <input type="text" id="book-patient-bhyt" placeholder="VD: GD 4 79 1234567890" style="width: 100%; padding: 0.65rem; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.88rem; outline: none;" />
+                </div>
+              </div>
+
+              <!-- Tải 3 loại ảnh -->
+              <div style="font-size: 0.82rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px;">
+                📸 Tải 3 ảnh định danh (Chân dung 4x6 & CCCD 2 mặt):
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                <!-- Ảnh 4x6 -->
+                <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px; text-align: center;">
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #7dd3fc; margin-bottom: 6px;">1. Ảnh chân dung 4x6</label>
+                  <div id="preview-book-photo4x6" style="width: 100%; height: 85px; background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                    <span style="font-size: 24px;">👤</span>
+                  </div>
+                  <input type="file" id="file-book-photo4x6" accept="image/*" style="display: none;" />
+                  <button type="button" onclick="document.getElementById('file-book-photo4x6').click()" style="width: 100%; padding: 5px; font-size: 11px; background: #0284c7; color: #fff; font-weight: 700; border: none; border-radius: 6px; cursor: pointer;">
+                    📤 Tải ảnh 4x6
+                  </button>
+                </div>
+
+                <!-- CCCD Trước -->
+                <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px; text-align: center;">
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #7dd3fc; margin-bottom: 6px;">2. CCCD Mặt trước</label>
+                  <div id="preview-book-cccd-front" style="width: 100%; height: 85px; background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                    <span style="font-size: 24px;">🪪</span>
+                  </div>
+                  <input type="file" id="file-book-cccd-front" accept="image/*" style="display: none;" />
+                  <button type="button" onclick="document.getElementById('file-book-cccd-front').click()" style="width: 100%; padding: 5px; font-size: 11px; background: #0284c7; color: #fff; font-weight: 700; border: none; border-radius: 6px; cursor: pointer;">
+                    📤 Tải mặt trước
+                  </button>
+                </div>
+
+                <!-- CCCD Sau -->
+                <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px; text-align: center;">
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #7dd3fc; margin-bottom: 6px;">3. CCCD Mặt sau</label>
+                  <div id="preview-book-cccd-back" style="width: 100%; height: 85px; background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                    <span style="font-size: 24px;">💳</span>
+                  </div>
+                  <input type="file" id="file-book-cccd-back" accept="image/*" style="display: none;" />
+                  <button type="button" onclick="document.getElementById('file-book-cccd-back').click()" style="width: 100%; padding: 5px; font-size: 11px; background: #0284c7; color: #fff; font-weight: 700; border: none; border-radius: 6px; cursor: pointer;">
+                    📤 Tải mặt sau
+                  </button>
+                </div>
+              </div>
+            </div>
+          </details>
+
           <button type="submit" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #0b1329; font-weight: 800; font-size: 1.05rem; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 24px rgba(56,189,248,0.4); transition: transform 0.2s;">
             <span>✨ XÁC NHẬN ĐẶT LỊCH KHÁM</span>
             <span>→</span>
