@@ -470,16 +470,17 @@ function renderPayments() {
 
                         <td>
                             <span class="payment-id">
-                                ${payment.paymentId || "N/A"}
+                                ${payment.paymentId || payment.id || "N/A"}
                             </span>
+                            ${payment.appointmentId ? `<div style="font-size:11px;color:#64748b;">Hẹn: ${payment.appointmentId}</div>` : ""}
                         </td>
 
                         <td>
-                            ${payment.name || "Chưa cập nhật"}
+                            <strong>${payment.name || payment.patientName || "Chưa cập nhật"}</strong>
                         </td>
 
                         <td>
-                            ${payment.doctor || "Chưa cập nhật"}
+                            ${payment.doctor || payment.doctorName || "Chưa cập nhật"}
                         </td>
 
                         <td>
@@ -505,7 +506,7 @@ function renderPayments() {
                             <div class="actions">
 
                                 ${
-                                    payment.status === "pending"
+                                    (payment.status === "pending" || payment.status === "counter_pending")
                                     ?
                                     `
                                     <button
@@ -579,10 +580,38 @@ function confirmPayment(index) {
     payment.status = "success";
 
     payment.confirmedAt =
-        new Date().toISOString();
-
+        new Date().toLocaleString("vi-VN");
+    payment.paidAt = payment.confirmedAt;
 
     savePayments(payments);
+
+    const payId = payment.id || payment.paymentId;
+    if (payId) {
+        localStorage.setItem("payment_" + payId, JSON.stringify(payment));
+    }
+
+    // Đồng bộ lịch hẹn sang confirmed
+    if (payment.appointmentId) {
+        try {
+            const raw = localStorage.getItem("doctor4_appointments_db");
+            if (raw) {
+                let apps = JSON.parse(raw);
+                const idx = apps.findIndex(a => String(a.id) === String(payment.appointmentId));
+                if (idx !== -1) {
+                    apps[idx].status = "confirmed";
+                    apps[idx].billing = {
+                        ...(apps[idx].billing || {}),
+                        examFee: Number(payment.amount || 200000),
+                        totalAmount: Number(payment.amount || 200000),
+                        paymentStatus: "paid",
+                        paymentMethod: payment.paymentMethod || "VietQR",
+                        paidAt: payment.confirmedAt
+                    };
+                    localStorage.setItem("doctor4_appointments_db", JSON.stringify(apps));
+                }
+            }
+        } catch (e) {}
+    }
 
     renderPayments();
 

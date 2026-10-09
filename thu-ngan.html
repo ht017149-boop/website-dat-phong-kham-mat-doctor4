@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cổng Thu Ngân - Doctor4 Eye Clinic</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --cashier-primary: #0284c7;
+        --cashier-success: #16a34a;
+        --cashier-warning: #d97706;
+        --cashier-danger: #dc2626;
+        --cashier-bg: #0f172a;
+        --cashier-card: #1e293b;
+        --cashier-border: rgba(148,163,184,0.15);
+        --cashier-text: #f1f5f9;
+        --cashier-muted: #94a3b8;
+      }
+
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: var(--cashier-bg);
+        color: var(--cashier-text);
+        min-height: 100vh;
+      }
+
+      /* ── HEADER ── */
+      .cashier-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-bottom: 1px solid var(--cashier-border);
+        padding: 0 24px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+      }
+
+      .cashier-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .cashier-logo {
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .cashier-logo-icon { font-size: 28px; }
+      .cashier-logo-text {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #fff;
+      }
+      .cashier-logo-text strong { color: #38bdf8; }
+
+      .cashier-portal-badge {
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 20px;
+        letter-spacing: 0.5px;
+      }
+
+      .cashier-nav-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .cashier-profile-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--cashier-border);
+        border-radius: 12px;
+        padding: 8px 14px;
+      }
+
+      .cashier-profile-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #22c55e;
+      }
+
+      .cashier-profile-name {
+        font-weight: 700;
+        font-size: 13.5px;
+        color: #fff;
+      }
+
+      .cashier-profile-role {
+        font-size: 11px;
+        color: #22c55e;
+        font-weight: 600;
+      }
+
+      .cashier-btn-ghost {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border: 1px solid var(--cashier-border);
+        border-radius: 8px;
+        background: rgba(255,255,255,0.05);
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .cashier-btn-ghost:hover {
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+      }
+
+      .cashier-btn-logout {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border: 1px solid rgba(239,68,68,0.3);
+        border-radius: 8px;
+        background: rgba(239,68,68,0.08);
+        color: #f87171;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .cashier-btn-logout:hover {
+        background: rgba(239,68,68,0.2);
+        color: #ff4444;
+      }
+
+      /* ── MAIN ── */
+      .cashier-main {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      /* ── SHIFT BANNER ── */
+      .cashier-shift-banner {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border: 1px solid var(--cashier-border);
+        border-radius: 20px;
+        padding: 24px 28px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      .cashier-shift-left {}
+      .cashier-shift-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(34,197,94,0.15);
+        border: 1px solid rgba(34,197,94,0.3);
+        color: #22c55e;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        margin-bottom: 8px;
+      }
+
+      .pulse-indicator {
+        width: 8px;
+        height: 8px;
+        background: #22c55e;
+        border-radius: 50%;
+        animation: pulse-anim 1.5s ease-in-out infinite;
+        display: inline-block;
+      }
+
+      @keyframes pulse-anim {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(1.3); }
+      }
+
+      .cashier-shift-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 6px;
+      }
+
+      .cashier-shift-stats {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .cashier-stat-box {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--cashier-border);
+        border-radius: 14px;
+        padding: 14px 22px;
+        text-align: center;
+        min-width: 120px;
+      }
+
+      .cashier-stat-num {
+        font-size: 26px;
+        font-weight: 800;
+        color: #fff;
+        font-family: 'Space Grotesk', sans-serif;
+      }
+
+      .cashier-stat-label {
+        font-size: 11px;
+        color: var(--cashier-muted);
+        margin-top: 2px;
+      }
+
+      .cashier-stat-box.stat-pending .cashier-stat-num { color: #fbbf24; }
+      .cashier-stat-box.stat-paid .cashier-stat-num { color: #22c55e; }
+      .cashier-stat-box.stat-revenue .cashier-stat-num { color: #38bdf8; font-size: 18px; }
+
+      /* ── QUEUE SECTION ── */
+      .cashier-queue-section {
+        background: var(--cashier-card);
+        border: 1px solid var(--cashier-border);
+        border-radius: 20px;
+        overflow: hidden;
+      }
+
+      .cashier-section-header {
+        padding: 20px 24px 0;
+        border-bottom: 1px solid var(--cashier-border);
+        padding-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .cashier-section-title {
+        font-size: 17px;
+        font-weight: 800;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+
+      .cashier-section-subtitle {
+        font-size: 12.5px;
+        color: var(--cashier-muted);
+      }
+
+      .cashier-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .cashier-filter-tabs {
+        display: flex;
+        gap: 6px;
+      }
+
+      .cashier-tab-btn {
+        padding: 6px 14px;
+        border: 1px solid var(--cashier-border);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--cashier-muted);
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .cashier-tab-btn.active {
+        background: rgba(34,197,94,0.15);
+        border-color: rgba(34,197,94,0.4);
+        color: #22c55e;
+      }
+
+      .cashier-search-input {
+        padding: 8px 14px;
+        border: 1px solid var(--cashier-border);
+        border-radius: 8px;
+        background: rgba(255,255,255,0.05);
+        color: #fff;
+        font-size: 13px;
+        width: 240px;
+        outline: none;
+      }
+
+      .cashier-search-input:focus {
+        border-color: rgba(34,197,94,0.5);
+      }
+
+      .cashier-btn-refresh {
+        padding: 8px 14px;
+        border: 1px solid var(--cashier-border);
+        border-radius: 8px;
+        background: rgba(56,189,248,0.1);
+        color: #38bdf8;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .cashier-btn-refresh:hover { background: rgba(56,189,248,0.2); }
+
+      /* ── INVOICE TABLE ── */
+      .cashier-queue-container {
+        padding: 0;
+      }
+
+      .cashier-table-wrapper {
+        overflow-x: auto;
+      }
+
+      .cashier-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+      }
+
+      .cashier-table thead tr {
+        background: rgba(255,255,255,0.03);
+        border-bottom: 1px solid var(--cashier-border);
+      }
+
+      .cashier-table th {
+        padding: 12px 16px;
+        color: var(--cashier-muted);
+        font-weight: 700;
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: left;
+        white-space: nowrap;
+      }
+
+      .cashier-table tbody tr {
+        border-bottom: 1px solid rgba(148,163,184,0.07);
+        transition: background 0.15s;
+      }
+
+      .cashier-table tbody tr:hover {
+        background: rgba(255,255,255,0.03);
+      }
+
+      .cashier-table td {
+        padding: 14px 16px;
+        vertical-align: middle;
+      }
+
+      .invoice-id-badge {
+        font-family: monospace;
+        font-size: 12px;
+        font-weight: 700;
+        color: #38bdf8;
+        background: rgba(56,189,248,0.1);
+        padding: 3px 8px;
+        border-radius: 6px;
+        display: inline-block;
+      }
+
+      .patient-name-box .name {
+        font-weight: 700;
+        color: #fff;
+        font-size: 14px;
+      }
+
+      .patient-name-box .meta {
+        font-size: 11.5px;
+        color: var(--cashier-muted);
+        margin-top: 2px;
+      }
+
+      .doctor-room-box .doc { font-weight: 600; color: #a5f3fc; font-size: 13px; }
+      .doctor-room-box .room { font-size: 11.5px; color: var(--cashier-muted); }
+
+      .amount-badge {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 16px;
+        font-weight: 800;
+        color: #fbbf24;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .status-badge.pending {
+        background: rgba(251,191,36,0.15);
+        border: 1px solid rgba(251,191,36,0.4);
+        color: #fbbf24;
+      }
+
+      .status-badge.paid {
+        background: rgba(34,197,94,0.15);
+        border: 1px solid rgba(34,197,94,0.4);
+        color: #22c55e;
+      }
+
+      .cashier-action-btns {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+      }
+
+      .btn-collect-payment {
+        padding: 7px 16px;
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+
+      .btn-collect-payment:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(34,197,94,0.4);
+      }
+
+      .btn-view-invoice {
+        padding: 7px 12px;
+        background: rgba(56,189,248,0.12);
+        color: #38bdf8;
+        border: 1px solid rgba(56,189,248,0.3);
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-view-invoice:hover {
+        background: rgba(56,189,248,0.22);
+      }
+
+      .cashier-empty {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--cashier-muted);
+      }
+
+      .cashier-empty .empty-icon { font-size: 52px; margin-bottom: 12px; }
+      .cashier-empty h3 { font-size: 17px; color: #fff; margin-bottom: 6px; }
+      .cashier-empty p { font-size: 13px; }
+
+      /* ── MODAL ── */
+      .cashier-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        animation: fadeInOverlay 0.2s ease;
+      }
+
+      @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+
+      .cashier-modal {
+        background: #1e293b;
+        border: 1px solid var(--cashier-border);
+        border-radius: 20px;
+        width: 100%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: scaleInModal 0.25s ease;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+      }
+
+      @keyframes scaleInModal {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+      }
+
+      .cashier-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--cashier-border);
+      }
+
+      .cashier-modal-header h3 {
+        font-size: 17px;
+        font-weight: 800;
+        color: #fff;
+      }
+
+      .cashier-modal-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid var(--cashier-border);
+        background: transparent;
+        color: var(--cashier-muted);
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+      }
+
+      .cashier-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+      .cashier-modal-body { padding: 22px 24px; }
+
+      .invoice-detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(148,163,184,0.08);
+        font-size: 13.5px;
+      }
+
+      .invoice-detail-row:last-child { border-bottom: none; }
+      .invoice-detail-row .label { color: var(--cashier-muted); }
+      .invoice-detail-row .value { font-weight: 600; color: #fff; text-align: right; max-width: 60%; }
+
+      .prescription-mini-list {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--cashier-border);
+        border-radius: 10px;
+        padding: 12px;
+        margin: 8px 0;
+      }
+
+      .prescription-mini-list .drug-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 12.5px;
+        border-bottom: 1px solid rgba(148,163,184,0.07);
+      }
+
+      .prescription-mini-list .drug-row:last-child { border-bottom: none; }
+      .prescription-mini-list .drug-name { color: #a5f3fc; font-weight: 600; }
+      .prescription-mini-list .drug-price { color: #fbbf24; font-weight: 700; }
+
+      .total-fee-box {
+        background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(56,189,248,0.08));
+        border: 1.5px solid rgba(34,197,94,0.3);
+        border-radius: 12px;
+        padding: 16px 18px;
+        margin: 16px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .total-fee-box .total-label {
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .total-fee-box .total-amount {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 24px;
+        font-weight: 800;
+        color: #22c55e;
+      }
+
+      .payment-method-group {
+        margin: 14px 0 8px;
+      }
+
+      .payment-method-group label {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--cashier-muted);
+        display: block;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .method-options {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .method-btn {
+        flex: 1;
+        min-width: 100px;
+        padding: 10px 12px;
+        border: 1.5px solid var(--cashier-border);
+        border-radius: 10px;
+        background: rgba(255,255,255,0.03);
+        color: #94a3b8;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.2s;
+      }
+
+      .method-btn.selected {
+        border-color: #22c55e;
+        background: rgba(34,197,94,0.12);
+        color: #22c55e;
+      }
+
+      .cashier-input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid var(--cashier-border);
+        border-radius: 10px;
+        background: rgba(255,255,255,0.05);
+        color: #fff;
+        font-size: 14px;
+        outline: none;
+        margin-top: 6px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        transition: border-color 0.2s;
+      }
+
+      .cashier-input:focus { border-color: #22c55e; }
+
+      .cashier-modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid var(--cashier-border);
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .btn-cashier-cancel {
+        padding: 10px 20px;
+        border: 1px solid var(--cashier-border);
+        border-radius: 10px;
+        background: transparent;
+        color: var(--cashier-muted);
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .btn-cashier-confirm {
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+        border: none;
+        border-radius: 10px;
+        color: #fff;
+        font-size: 13.5px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 14px rgba(34,197,94,0.35);
+      }
+
+      .btn-cashier-confirm:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(34,197,94,0.5);
+      }
+
+      /* ── TOAST ── */
+      .cashier-toast-container {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .cashier-toast {
+        background: #1e293b;
+        border: 1px solid var(--cashier-border);
+        border-radius: 12px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        animation: slideInToast 0.3s ease;
+        min-width: 260px;
+        max-width: 360px;
+      }
+
+      @keyframes slideInToast {
+        from { opacity: 0; transform: translateX(30px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+
+      .cashier-toast.toast-success { border-left: 3px solid #22c55e; }
+      .cashier-toast.toast-error { border-left: 3px solid #ef4444; }
+      .cashier-toast.toast-info { border-left: 3px solid #38bdf8; }
+
+      .cashier-toast .t-icon { font-size: 20px; flex-shrink: 0; }
+      .cashier-toast .t-title { font-size: 13px; font-weight: 700; color: #fff; }
+      .cashier-toast .t-msg { font-size: 12px; color: var(--cashier-muted); margin-top: 2px; }
+
+      /* New invoice notification pulse */
+      .new-invoice-pulse {
+        animation: newInvoiceBlink 1s ease 3;
+      }
+
+      @keyframes newInvoiceBlink {
+        0%, 100% { background: transparent; }
+        50% { background: rgba(251,191,36,0.07); }
+      }
+
+      /* Receipt print */
+      @media print {
+        body * { display: none !important; }
+        #cashier-print-area,
+        #cashier-print-area * { display: block !important; }
+        #cashier-print-area { position: fixed; inset: 0; background: #fff; color: #000; padding: 24px; font-family: sans-serif; }
+      }
+
+      @media (max-width: 768px) {
+        .cashier-header { padding: 0 14px; }
+        .cashier-main { padding: 14px; }
+        .cashier-shift-banner { flex-direction: column; }
+        .cashier-stat-box { min-width: 100px; padding: 10px 14px; }
+        .cashier-shift-title { font-size: 18px; }
+        .cashier-search-input { width: 160px; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- Top Navigation Bar -->
+    <header class="cashier-header">
+      <div class="cashier-brand">
+        <a href="/index.html" class="cashier-logo">
+          <span class="cashier-logo-icon">👁️</span>
+          <span class="cashier-logo-text">Doctor<strong>4</strong></span>
+        </a>
+        <span class="cashier-portal-badge">💵 THU NGÂN</span>
+      </div>
+
+      <div class="cashier-nav-right">
+        <div class="cashier-profile-card" id="cashier-active-profile">
+          <img id="cashier-avatar-img"
+               src="https://api.dicebear.com/7.x/bottts/svg?seed=cashier"
+               alt="Thu ngân"
+               class="cashier-profile-avatar" />
+          <div>
+            <div class="cashier-profile-name" id="cashier-profile-name">Thu Ngân</div>
+            <div class="cashier-profile-role">💵 Quầy Thu Ngân</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;">
+          <a href="/lich-kham.html" class="cashier-btn-ghost" title="Cổng bệnh nhân">
+            <span>🎫 Cổng BN</span>
+          </a>
+          <a href="/admin/index.html" class="cashier-btn-ghost" title="Vào cổng quản trị">
+            <span>🛡️ Admin</span>
+          </a>
+          <button type="button" id="btn-cashier-logout" class="cashier-btn-logout">
+            <span>🚪 Đăng xuất</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="cashier-main">
+
+      <!-- Shift Banner -->
+      <section class="cashier-shift-banner" id="cashier-shift-banner">
+        <div class="cashier-shift-left">
+          <div class="cashier-shift-tag">
+            <span class="pulse-indicator"></span> CA TRỰC HÔM NAY — QUẦY THU NGÂN
+          </div>
+          <h1 class="cashier-shift-title" id="cashier-shift-title">
+            💵 Quầy Thu Viện Phí
+          </h1>
+          <div style="font-size:12.5px;color:#94a3b8;margin-top:4px;">
+            Hóa đơn được bác sĩ chuyển về tự động sau khi khám xong. Xác nhận thu tiền khi bệnh nhân đến quầy thanh toán.
+          </div>
+        </div>
+
+        <div class="cashier-shift-stats">
+          <div class="cashier-stat-box">
+            <div class="cashier-stat-num" id="stat-total-invoices">0</div>
+            <div class="cashier-stat-label">Tổng hóa đơn</div>
+          </div>
+          <div class="cashier-stat-box stat-pending">
+            <div class="cashier-stat-num" id="stat-pending-invoices">0</div>
+            <div class="cashier-stat-label">Chờ thu tiền</div>
+          </div>
+          <div class="cashier-stat-box stat-paid">
+            <div class="cashier-stat-num" id="stat-paid-invoices">0</div>
+            <div class="cashier-stat-label">Đã thu tiền</div>
+          </div>
+          <div class="cashier-stat-box stat-revenue">
+            <div class="cashier-stat-num" id="stat-total-revenue">0đ</div>
+            <div class="cashier-stat-label">Doanh thu ca trực</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Invoice Queue -->
+      <section class="cashier-queue-section">
+        <div class="cashier-section-header">
+          <div>
+            <h2 class="cashier-section-title">
+              <span>🧾</span> Danh Sách Hóa Đơn Viện Phí Cần Thu
+            </h2>
+            <p class="cashier-section-subtitle">
+              Bác sĩ kê xong tự động hiện ở đây. Bấm "Thu Tiền" để xác nhận thanh toán từ bệnh nhân.
+            </p>
+          </div>
+
+          <div class="cashier-controls">
+            <div class="cashier-filter-tabs">
+              <button type="button" class="cashier-tab-btn active" data-filter="all">Tất cả (<span id="count-all">0</span>)</button>
+              <button type="button" class="cashier-tab-btn" data-filter="pending">⏳ Chờ thu (<span id="count-pending">0</span>)</button>
+              <button type="button" class="cashier-tab-btn" data-filter="paid">✅ Đã thu (<span id="count-paid">0</span>)</button>
+            </div>
+
+            <input type="text" id="cashier-search"
+                   placeholder="🔍 Tìm bệnh nhân, mã hóa đơn..."
+                   class="cashier-search-input" />
+
+            <button type="button" id="btn-refresh-invoices" class="cashier-btn-refresh">
+              🔄 Làm mới
+            </button>
+          </div>
+        </div>
+
+        <!-- Invoice List -->
+        <div class="cashier-queue-container" id="cashier-queue-container">
+          <!-- Populated by cashier-portal.js -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Modal Root -->
+    <div id="cashier-modal-root"></div>
+
+    <!-- Toast Root -->
+    <div class="cashier-toast-container" id="cashier-toast-container"></div>
+
+    <!-- Print area (hidden) -->
+    <div id="cashier-print-area" style="display:none;"></div>
+
+    <script type="module" src="/src/pages/cashier-portal.js"></script>
+  </body>
+</html>
+

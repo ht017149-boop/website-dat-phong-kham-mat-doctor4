@@ -833,10 +833,65 @@ function openDoctorExamModal(app) {
     };
 
     // Lưu vào database (AppointmentManager) — cập nhật tức thì sang Admin & Bệnh nhân
-    AppointmentManager.completeMedicalExam(app.id, medicalRecordData);
+    const completedApp = AppointmentManager.completeMedicalExam(app.id, medicalRecordData);
+
+    // ── Tạo/Cập nhật Hóa Đơn Viện Phí → chuyển tự động sang Quầy Thu Ngân ──
+    try {
+      const INVOICES_KEY = 'doctor4_invoices_db';
+      const rawInvoices = localStorage.getItem(INVOICES_KEY);
+      let invoiceList = rawInvoices ? JSON.parse(rawInvoices) : [];
+
+      const invoiceId = 'HD-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000);
+      const existingIdx = invoiceList.findIndex(i => i.appointmentId === app.id);
+
+      const newInvoice = {
+        id: existingIdx >= 0 ? invoiceList[existingIdx].id : invoiceId,
+        appointmentId: app.id,
+        patientName: app.patientName,
+        patientPhone: app.patientPhone || '',
+        patientGender: app.patientGender || '',
+        patientAge: app.patientAge || '',
+        doctorId: currentDoctor.id,
+        doctorName: `${currentDoctor.degree || ''} ${currentDoctor.name}`.trim(),
+        roomId: currentDoctor.roomId || app.roomId,
+        roomName: currentDoctor.room || app.roomName || 'Phòng khám',
+        serviceName: app.serviceName || 'Khám Mắt',
+        diagnosis: medicalRecordData.diagnosis || '',
+        advice: medicalRecordData.advice || '',
+        revisitDate: medicalRecordData.revisitDate || '',
+        prescriptions: currentPrescription.map(d => ({
+          name: d.name,
+          type: d.type || '',
+          quantity: d.quantity || 1,
+          dosage: d.dosage || '',
+          price: d.price || 0,
+          amount: (d.quantity || 1) * (d.price || 0)
+        })),
+        examFee,
+        medicineFee,
+        serviceFee,
+        discount,
+        totalAmount,
+        status: paymentStatus === 'paid' ? 'paid' : 'pending',
+        sentAt: new Date().toISOString(),
+        paidAt: paymentStatus === 'paid' ? new Date().toISOString() : null,
+        cashierName: paymentStatus === 'paid' ? 'Bác sĩ xác nhận' : null,
+        paymentMethod: paymentStatus === 'paid' ? medicalRecordData.paymentMethod : null
+      };
+
+      if (existingIdx >= 0) {
+        invoiceList[existingIdx] = { ...invoiceList[existingIdx], ...newInvoice };
+      } else {
+        invoiceList.unshift(newInvoice);
+      }
+      localStorage.setItem(INVOICES_KEY, JSON.stringify(invoiceList));
+    } catch (invErr) {
+      console.error('Lỗi tạo hóa đơn thu ngân:', invErr);
+    }
 
     // Hiển thị thông báo
-    showToast('success', 'Báo Xong Thành Công!', `Bệnh án, đơn thuốc & viện phí của bệnh nhân ${app.patientName} đã được cập nhật tức thì tới Admin và Cổng Bệnh Nhân!`);
+    showToast('success', '✅ Báo Xong & Chuyển Thu Ngân!',
+      `Bệnh án ${app.patientName} đã lưu. Hóa đơn ${formatCurrency(totalAmount)} đã gửi tới Quầy Thu Ngân!`);
 
     closeModal();
     renderShiftBanner();

@@ -1,263 +1,653 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Thanh toán</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán & Xác minh Đặt lịch khám - Doctor4 Eye Clinic</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="payment.css">
     <style>
-
-        * {
-            box-sizing: border-box;
+        /* Modern enhancement styles */
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #e0f2fe;
+            --success: #16a34a;
+            --success-light: #dcfce7;
+            --warning: #d97706;
+            --warning-light: #fef3c7;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --border: #e2e8f0;
         }
 
         body {
+            background: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--dark);
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7fb;
-            color: #1f2937;
+            padding: 20px 10px;
         }
 
         .payment-container {
-            width: 90%;
-            max-width: 1000px;
-            margin: 40px auto;
+            max-width: 920px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+            border: 1px solid var(--border);
         }
 
+        /* Top Bar */
+        .top-navbar {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1.15rem;
+        }
+
+        .brand-badge {
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #082f49;
+        }
+
+        .btn-nav-home {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .btn-nav-home:hover {
+            color: #38bdf8;
+        }
+
+        /* Header */
         .payment-header {
+            background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+            color: white;
+            padding: 30px;
             text-align: center;
-            margin-bottom: 30px;
         }
 
         .payment-header h1 {
-            margin-bottom: 10px;
-            color: #111827;
+            margin: 0 0 8px;
+            font-size: 1.75rem;
+            font-weight: 800;
         }
 
         .payment-header p {
-            color: #6b7280;
+            margin: 0;
+            font-size: 0.95rem;
+            opacity: 0.92;
         }
 
-        .payment-card {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+        /* Steps Bar */
+        .steps-bar-wrapper {
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            padding: 18px 24px;
         }
 
-        .payment-grid {
+        .steps-bar {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            position: relative;
         }
 
-        .info-box {
-            border: 1px solid #e5e7eb;
+        .step-pill {
+            text-align: center;
+            padding: 8px 6px;
             border-radius: 12px;
-            padding: 20px;
-        }
-
-        .info-box h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 20px;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            color: #6b7280;
-        }
-
-        .info-value {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            font-size: 0.78rem;
+            color: var(--gray);
             font-weight: 600;
-            text-align: right;
+            transition: all 0.2s;
         }
 
-        .amount {
-            color: #dc2626;
-            font-size: 20px;
-        }
-
-        .qr-box {
-            text-align: center;
-        }
-
-        .qr-box h2 {
-            margin-top: 0;
-        }
-
-        #qrCode {
-            width: 280px;
-            height: 280px;
-            object-fit: contain;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 10px;
-            background: white;
-        }
-
-        .bank-info {
-            margin-top: 20px;
-            text-align: left;
-            background: #f9fafb;
-            border-radius: 10px;
-            padding: 15px;
-        }
-
-        .bank-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-        }
-
-        .bank-row span:first-child {
-            color: #6b7280;
-        }
-
-        .bank-row span:last-child {
-            font-weight: 600;
-        }
-
-        .transfer-content {
-            margin-top: 15px;
-            padding: 12px;
-            background: #eff6ff;
-            border-radius: 8px;
-            color: #1d4ed8;
-            font-weight: 700;
-            word-break: break-word;
-        }
-
-        .payment-status {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: 700;
-        }
-
-        .payment-status.waiting {
-            background: #f3f4f6;
-            color: #374151;
-        }
-
-        .payment-status.pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .payment-status.success {
-            background: #dcfce7;
+        .step-pill.completed {
+            background: #f0fdf4;
+            border-color: #86efac;
             color: #166534;
         }
 
-        .payment-status.cancel {
-            background: #fee2e2;
-            color: #991b1b;
+        .step-pill.active {
+            background: #e0f2fe;
+            border-color: #38bdf8;
+            color: #0369a1;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
         }
 
-        .button-group {
+        .step-pill .step-dot {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            line-height: 18px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #475569;
+            font-size: 10px;
+            margin-right: 4px;
+        }
+        .step-pill.completed .step-dot {
+            background: #22c55e;
+            color: #ffffff;
+        }
+        .step-pill.active .step-dot {
+            background: #0284c7;
+            color: #ffffff;
+        }
+
+        /* Content Body */
+        .payment-body {
+            padding: 30px;
+        }
+
+        /* Section Blocks */
+        .step-card {
+            background: #ffffff;
+            border: 1.5px solid var(--border);
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: border-color 0.2s;
+        }
+
+        .step-card.highlight {
+            border-color: #7dd3fc;
+            background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
+        }
+
+        .card-heading {
             display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 25px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        button {
-            border: none;
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin: 0;
+        }
+
+        .card-tag {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Fee Calculation Grid */
+        .fee-calc-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 20px;
+        }
+
+        .appt-summary-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 0.92rem;
+        }
+
+        .appt-summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .appt-summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .appt-summary-row span:first-child {
+            color: var(--gray);
+        }
+
+        .appt-summary-row strong {
+            color: var(--dark);
+            text-align: right;
+        }
+
+        /* Fee Breakdown Box */
+        .fee-breakdown-box {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .fee-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.9rem;
+        }
+
+        .fee-row.prepaid {
+            background: #f0fdf4;
+            padding: 10px 12px;
             border-radius: 10px;
-            padding: 13px 22px;
-            font-size: 15px;
-            font-weight: 600;
+            border-left: 4px solid var(--success);
+            margin-bottom: 8px;
+        }
+
+        .fee-row.postpaid {
+            background: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border-left: 4px solid #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .fee-total {
+            border-top: 2px solid var(--border);
+            padding-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-amount-highlight {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--success);
+        }
+
+        /* Payment Method Options (Step 3) */
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .method-card {
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
             cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            background: #ffffff;
+            text-align: center;
         }
 
-        #confirmButton {
-            background: #16a34a;
-            color: white;
+        .method-card:hover {
+            border-color: #93c5fd;
+            transform: translateY(-2px);
         }
 
-        #confirmButton:hover {
-            background: #15803d;
+        .method-card.selected {
+            border-color: var(--primary);
+            background: #f0f9ff;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.12);
         }
 
-        #confirmButton:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
+        .method-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
         }
 
-        .back-button {
-            background: #e5e7eb;
-            color: #374151;
+        .method-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--dark);
+            margin-bottom: 4px;
         }
 
-        .back-button:hover {
-            background: #d1d5db;
+        .method-sub {
+            font-size: 0.78rem;
+            color: var(--gray);
+            line-height: 1.4;
         }
 
-        .note {
-            margin-top: 20px;
-            padding: 15px;
-            background: #fff7ed;
-            border: 1px solid #fed7aa;
+        .method-badge {
+            position: absolute;
+            top: -10px;
+            right: 12px;
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            color: #ffffff;
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 2px 8px;
             border-radius: 10px;
-            color: #9a3412;
-            line-height: 1.6;
+            text-transform: uppercase;
         }
 
-        @media (max-width: 768px) {
+        /* Payment Execution Panels (Step 4) */
+        .exec-panel {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        .exec-panel.active {
+            display: block;
+        }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .qr-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+            align-items: center;
+            background: #f8fafc;
+            border-radius: 18px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .qr-frame {
+            background: #ffffff;
+            padding: 14px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .qr-image {
+            width: 100%;
+            max-width: 250px;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .bank-transfer-details {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bank-data-row {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bank-data-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .bank-data-val-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bank-data-val {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--dark);
+        }
+
+        .btn-copy {
+            background: var(--primary-light);
+            border: none;
+            color: var(--primary-dark);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-copy:hover {
+            background: #bae6fd;
+        }
+
+        /* Step 5 Verification Status */
+        .verification-box {
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 24px;
+            text-align: center;
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s;
+        }
+
+        .verification-box.pending {
+            background: #fffbeb;
+            border-color: #f59e0b;
+            color: #92400e;
+        }
+
+        .verification-box.success {
+            background: #f0fdf4;
+            border-color: #22c55e;
+            border-style: solid;
+            color: #166534;
+        }
+
+        .verification-box.waiting {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: var(--dark);
+        }
+
+        /* Actions Button Group */
+        .actions-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary-action {
+            flex: 2;
+            min-width: 240px;
+            padding: 15px 24px;
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            color: white;
+            font-weight: 800;
+            font-size: 1rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary-action:hover {
+            background: linear-gradient(135deg, #15803d, #16a34a);
+            transform: translateY(-1px);
+        }
+
+        .btn-simulate-action {
+            padding: 15px 20px;
+            background: #0284c7;
+            color: white;
+            font-weight: 700;
+            font-size: 0.92rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-simulate-action:hover {
+            background: #0369a1;
+        }
+
+        .btn-back-action {
+            padding: 15px 20px;
+            background: #e2e8f0;
+            color: #334155;
+            font-weight: 700;
+            font-size: 0.92rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-back-action:hover {
+            background: #cbd5e1;
+        }
+
+        /* Step 6: Electronic Receipt Modal/Section */
+        .receipt-card {
+            display: none;
+            background: #ffffff;
+            border: 2px solid #86efac;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 24px;
+            box-shadow: 0 15px 35px rgba(22, 163, 74, 0.12);
+            position: relative;
+        }
+
+        .receipt-card.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .receipt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px dashed #cbd5e1;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .receipt-stamp {
+            background: #dcfce7;
+            border: 2px solid #22c55e;
+            color: #15803d;
+            font-weight: 800;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transform: rotate(-2deg);
+        }
+
+        .receipt-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            font-size: 0.92rem;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .receipt-row span:first-child {
+            color: var(--gray);
+        }
+
+        .receipt-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .top-navbar, .steps-bar-wrapper, .methods-grid, .exec-panel, .actions-group, .payment-header p {
+                display: none !important;
+            }
             .payment-container {
-                width: 95%;
-                margin: 20px auto;
+                box-shadow: none;
+                border: none;
+                max-width: 100%;
             }
-
-            .payment-card {
-                padding: 20px;
+            .receipt-card {
+                display: block !important;
+                border: 1px solid #000;
+                box-shadow: none;
             }
+        }
 
-            .payment-grid {
+        /* Responsive */
+        @media (max-width: 800px) {
+            .steps-bar {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .fee-calc-grid {
                 grid-template-columns: 1fr;
             }
-
-            #qrCode {
-                width: 240px;
-                height: 240px;
+            .methods-grid {
+                grid-template-columns: 1fr;
             }
-
-            .info-row {
+            .qr-layout {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .bank-data-row {
                 flex-direction: column;
-                gap: 5px;
+                gap: 6px;
+                text-align: center;
             }
-
-            .info-value {
-                text-align: left;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            button {
-                width: 100%;
+            .receipt-grid {
+                grid-template-columns: 1fr;
             }
         }
-
     </style>
 </head>
 
@@ -265,229 +655,401 @@
 
     <div class="payment-container">
 
-        <div class="payment-header">
-
-            <h1>💳 Thanh toán lịch khám</h1>
-
-            <p>
-                Vui lòng quét mã QR để thanh toán
-            </p>
-
+        <!-- Top Brand Navigation -->
+        <div class="top-navbar">
+            <a href="/index.html" class="brand-logo">
+                <span>👁️ Doctor4 Eye Clinic</span>
+                <span class="brand-badge">Cổng Thanh Toán</span>
+            </a>
+            <a href="/index.html" class="btn-nav-home">← Quay về Trang chủ</a>
         </div>
 
+        <!-- Header -->
+        <div class="payment-header">
+            <h1>💳 Thanh toán & Xác minh Đặt lịch khám</h1>
+            <p>Quy trình thanh toán minh bạch chuẩn y khoa theo quy định Phòng khám Doctor4</p>
+        </div>
 
-        <div class="payment-card">
+        <!-- 6 Steps Indicator Bar -->
+        <div class="steps-bar-wrapper">
+            <div class="steps-bar">
+                <div class="step-pill completed">
+                    <span class="step-dot">✓</span>
+                    <span>1. Đặt lịch</span>
+                </div>
+                <div class="step-pill completed" id="pill-step-2">
+                    <span class="step-dot">2</span>
+                    <span>2. Tính tiền</span>
+                </div>
+                <div class="step-pill active" id="pill-step-3">
+                    <span class="step-dot">3</span>
+                    <span>3. Chọn PTTT</span>
+                </div>
+                <div class="step-pill" id="pill-step-4">
+                    <span class="step-dot">4</span>
+                    <span>4. Chuyển tiền</span>
+                </div>
+                <div class="step-pill" id="pill-step-5">
+                    <span class="step-dot">5</span>
+                    <span>5. Xác minh</span>
+                </div>
+                <div class="step-pill" id="pill-step-6">
+                    <span class="step-dot">6</span>
+                    <span>6. Biên nhận</span>
+                </div>
+            </div>
+        </div>
 
-            <div class="payment-grid">
+        <div class="payment-body">
 
-
-                <!-- THÔNG TIN LỊCH KHÁM -->
-
-                <div class="info-box">
-
-                    <h2>📋 Thông tin lịch khám</h2>
-
-
-                    <div class="info-row">
-
-                        <span class="info-label">
-                            Bệnh nhân
-                        </span>
-
-                        <span
-                            class="info-value"
-                            id="patientName">
-                            -
-                        </span>
-
-                    </div>
-
-
-                    <div class="info-row">
-
-                        <span class="info-label">
-                            Bác sĩ
-                        </span>
-
-                        <span
-                            class="info-value"
-                            id="doctorName">
-                            -
-                        </span>
-
-                    </div>
-
-
-                    <div class="info-row">
-
-                        <span class="info-label">
-                            Ngày khám
-                        </span>
-
-                        <span
-                            class="info-value"
-                            id="appointmentDate">
-                            -
-                        </span>
-
-                    </div>
-
-
-                    <div class="info-row">
-
-                        <span class="info-label">
-                            Giờ khám
-                        </span>
-
-                        <span
-                            class="info-value"
-                            id="appointmentTime">
-                            -
-                        </span>
-
-                    </div>
-
-
-                    <div class="info-row">
-
-                        <span class="info-label">
-                            Số tiền
-                        </span>
-
-                        <span
-                            class="info-value amount"
-                            id="paymentAmount">
-                            -
-                        </span>
-
-                    </div>
-
+            <!-- BƯỚC 2: HỆ THỐNG TÍNH TIỀN (PHÂN ĐỊNH KHOẢN THU TRƯỚC & KHOẢN THANH TOÁN SAU) -->
+            <div class="step-card highlight">
+                <div class="card-heading">
+                    <h2 class="card-title">
+                        <span>💰</span> Bước 2: Hệ thống tính tiền minh bạch
+                    </h2>
+                    <span class="card-tag">Bảng kê chi phí niêm yết</span>
                 </div>
 
+                <div class="fee-calc-grid">
+                    <!-- Thông tin lịch khám -->
+                    <div class="appt-summary-list">
+                        <div class="appt-summary-row">
+                            <span>Mã lịch hẹn:</span>
+                            <strong id="valAppointmentId" style="font-family: monospace; color: var(--primary); font-size: 1rem;">-</strong>
+                        </div>
+                        <div class="appt-summary-row">
+                            <span>Bệnh nhân:</span>
+                            <strong id="valPatientName">-</strong>
+                        </div>
+                        <div class="appt-summary-row">
+                            <span>Dịch vụ khám mắt:</span>
+                            <strong id="valServiceName" style="color: #0284c7;">-</strong>
+                        </div>
+                        <div class="appt-summary-row">
+                            <span>Bác sĩ phụ trách:</span>
+                            <strong id="valDoctorName">-</strong>
+                        </div>
+                        <div class="appt-summary-row">
+                            <span>Ngày & Giờ khám:</span>
+                            <strong id="valDateTime">-</strong>
+                        </div>
+                    </div>
 
-                <!-- THANH TOÁN QR -->
-
-                <div class="info-box qr-box">
-
-                    <h2>📱 Quét mã QR</h2>
-
-
-                    <img
-                        id="qrCode"
-                        src=""
-                        alt="QR thanh toán">
-
-
-                    <div class="bank-info">
-
-                        <div class="bank-row">
-
-                            <span>Ngân hàng</span>
-
-                            <span id="bankName">
-                                -
-                            </span>
-
+                    <!-- Bảng tính viện phí -->
+                    <div class="fee-breakdown-box">
+                        <div style="font-size: 0.82rem; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 8px;">
+                            Phân định chi phí phòng khám:
                         </div>
 
-
-                        <div class="bank-row">
-
-                            <span>Số tài khoản</span>
-
-                            <span id="accountNumber">
-                                -
-                            </span>
-
+                        <!-- Khoản 1: Thu trước -->
+                        <div class="fee-row prepaid">
+                            <div>
+                                <strong style="color: #166534; display: block;">1. Khoản thu trước (Thanh toán ngay):</strong>
+                                <span style="font-size: 0.78rem; color: #15803d;" id="valPrepaidDesc">Phí khám ban đầu & giữ chỗ bác sĩ</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <strong style="font-size: 1.15rem; color: #166534;" id="valPrepaidAmount">200.000đ</strong>
+                            </div>
                         </div>
 
-
-                        <div class="bank-row">
-
-                            <span>Chủ tài khoản</span>
-
-                            <span id="accountName">
-                                -
-                            </span>
-
+                        <!-- Khoản 2: Thanh toán sau -->
+                        <div class="fee-row postpaid">
+                            <div>
+                                <strong style="color: #334155; display: block;">2. Khoản thanh toán sau (Tại phòng khám):</strong>
+                                <span style="font-size: 0.78rem; color: #64748b;" id="valPostpaidDesc">Chi phí phẫu thuật / thủ thuật / thuốc phát sinh</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <strong style="font-size: 1rem; color: #475569;" id="valPostpaidAmount">Theo chỉ định</strong>
+                            </div>
                         </div>
 
+                        <!-- Tổng tiền cần thanh toán bây giờ -->
+                        <div class="fee-total">
+                            <div>
+                                <span style="font-size: 0.85rem; color: #64748b; display: block;">TỔNG TIỀN PHẢI TRẢ ĐỢT NÀY:</span>
+                                <strong style="font-size: 0.95rem; color: var(--dark);">Thanh toán xác nhận giữ chỗ</strong>
+                            </div>
+                            <div class="total-amount-highlight" id="valTotalDue">
+                                200.000đ
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                        <div class="transfer-content">
+                <div style="margin-top: 14px; font-size: 0.8rem; color: #64748b; background: #f8fafc; padding: 10px 14px; border-radius: 10px; border-left: 3px solid #38bdf8;">
+                    💡 <strong>Quy định phòng khám:</strong> Khách hàng thanh toán khoản thu trước để hệ thống xác nhận giữ chỗ với Bác sĩ chuyên khoa. Các chi phí cận lâm sàng, thủ thuật hoặc thuốc điều trị (nếu có) sẽ được thanh toán sau tại quầy thu ngân tầng 1 khi kết thúc ca khám.
+                </div>
+            </div>
 
-                            Nội dung chuyển khoản:
+            <!-- BƯỚC 3: KHÁCH CHỌN PHƯƠNG THỨC THANH TOÁN -->
+            <div class="step-card" id="step-3-container">
+                <div class="card-heading">
+                    <h2 class="card-title">
+                        <span>💳</span> Bước 3: Chọn phương thức thanh toán
+                    </h2>
+                    <span class="card-tag">3 hình thức linh hoạt</span>
+                </div>
 
-                            <div id="transferContent">
-                                -
+                <div class="methods-grid">
+                    <!-- Phương thức 1: VietQR -->
+                    <div class="method-card selected" id="method-card-vietqr" onclick="selectPaymentMethod('vietqr')">
+                        <span class="method-badge">Khuyên dùng</span>
+                        <div class="method-icon">📱</div>
+                        <div class="method-name">Chuyển khoản VietQR</div>
+                        <div class="method-sub">Quét mã QR qua ứng dụng ngân hàng bất kỳ, tự động đối chiếu số tiền & mã hẹn</div>
+                    </div>
+
+                    <!-- Phương thức 2: Tại quầy -->
+                    <div class="method-card" id="method-card-counter" onclick="selectPaymentMethod('counter')">
+                        <div class="method-icon">🏢</div>
+                        <div class="method-name">Thanh toán tại quầy</div>
+                        <div class="method-sub">Nộp tiền mặt hoặc quẹt thẻ POS tại quầy lễ tân Tầng 1 trước khi vào phòng khám</div>
+                    </div>
+
+                    <!-- Phương thức 3: Cổng điện tử -->
+                    <div class="method-card" id="method-card-gateway" onclick="selectPaymentMethod('gateway')">
+                        <div class="method-icon">⚡</div>
+                        <div class="method-name">Cổng TT điện tử</div>
+                        <div class="method-sub">Tích hợp VNPAY / MoMo tiện lợi cho thẻ ATM nội địa & thẻ Quốc tế Visa/Master</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BƯỚC 4: KHÁCH THỰC HIỆN THANH TOÁN -->
+            <div class="step-card" id="step-4-container">
+                <div class="card-heading">
+                    <h2 class="card-title">
+                        <span>📲</span> Bước 4: Khách thực hiện thanh toán
+                    </h2>
+                    <span class="card-tag" id="current-method-tag">Chuyển khoản VietQR</span>
+                </div>
+
+                <!-- Panel 1: VietQR -->
+                <div class="exec-panel active" id="panel-vietqr">
+                    <div class="qr-layout">
+                        <!-- Khung ảnh QR -->
+                        <div class="qr-frame">
+                            <img id="qrCodeImage" src="" alt="Mã QR thanh toán VietQR" class="qr-image" />
+                            <div style="margin-top: 10px; font-size: 0.78rem; color: #64748b;">
+                                🔒 Quét bằng App Ngân Hàng hoặc Ví Điện Tử
+                            </div>
+                        </div>
+
+                        <!-- Chi tiết chuyển khoản -->
+                        <div class="bank-transfer-details">
+                            <div class="bank-data-row">
+                                <span class="bank-data-label">Ngân hàng:</span>
+                                <div class="bank-data-val-group">
+                                    <span class="bank-data-val" id="valBankName">MB Bank (Quân Đội)</span>
+                                </div>
                             </div>
 
-                        </div>
+                            <div class="bank-data-row">
+                                <span class="bank-data-label">Số tài khoản:</span>
+                                <div class="bank-data-val-group">
+                                    <span class="bank-data-val" id="valAccountNumber" style="color: var(--primary); font-family: monospace; font-size: 1.1rem;">0123456789</span>
+                                    <button class="btn-copy" onclick="copyText('valAccountNumber', 'Đã chép số tài khoản!')">📋 Chép</button>
+                                </div>
+                            </div>
 
+                            <div class="bank-data-row">
+                                <span class="bank-data-label">Chủ tài khoản:</span>
+                                <div class="bank-data-val-group">
+                                    <span class="bank-data-val" id="valAccountName">PHONG KHAM MAT DOCTOR4</span>
+                                </div>
+                            </div>
+
+                            <div class="bank-data-row">
+                                <span class="bank-data-label">Số tiền:</span>
+                                <div class="bank-data-val-group">
+                                    <span class="bank-data-val" id="valTransferAmount" style="color: #dc2626; font-size: 1.25rem;">200.000đ</span>
+                                    <button class="btn-copy" onclick="copyRawText(currentAmount, 'Đã chép số tiền!')">📋 Chép</button>
+                                </div>
+                            </div>
+
+                            <div class="bank-data-row" style="background: #eff6ff; border-color: #93c5fd;">
+                                <span class="bank-data-label" style="color: #1d4ed8;">Nội dung chuyển khoản:</span>
+                                <div class="bank-data-val-group">
+                                    <span class="bank-data-val" id="valTransferContent" style="color: #1d4ed8; font-family: monospace; font-size: 1.05rem;">-</span>
+                                    <button class="btn-copy" onclick="copyText('valTransferContent', 'Đã chép nội dung!')">📋 Chép</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
+                    <div style="margin-top: 16px; background: #fefce8; border: 1px solid #fef08a; padding: 12px 16px; border-radius: 12px; font-size: 0.85rem; color: #854d0e;">
+                        👉 <strong>Hướng dẫn:</strong> Mở ứng dụng ngân hàng của bạn, chọn chức năng <strong>Quét mã QR</strong>, kiểm tra thông tin người nhận (<strong>PHONG KHAM MAT DOCTOR4</strong>) và số tiền, sau đó bấm xác nhận chuyển tiền.
+                    </div>
                 </div>
 
+                <!-- Panel 2: Tại quầy -->
+                <div class="exec-panel" id="panel-counter">
+                    <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 16px; padding: 24px; text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 12px;">🏢</div>
+                        <h3 style="font-size: 1.2rem; color: #0f172a; margin: 0 0 8px;">Thanh toán trực tiếp tại Quầy Lễ Tân</h3>
+                        <p style="color: #64748b; font-size: 0.95rem; max-width: 500px; margin: 0 auto 16px;">
+                            Quý khách vui lòng đến trước giờ hẹn <strong>15 phút</strong> tại <strong>Quầy Lễ Tân (Tầng 1)</strong> Phòng khám Doctor4 và xuất trình mã đặt lịch:
+                        </p>
+
+                        <div style="display: inline-block; background: #e0f2fe; border: 2px dashed #0284c7; border-radius: 12px; padding: 12px 24px; margin-bottom: 16px;">
+                            <span style="font-size: 0.85rem; color: #0369a1; text-transform: uppercase; font-weight: 700; display: block;">MÃ LỊCH HẸN CỦA BẠN:</span>
+                            <span id="counterApptCode" style="font-family: monospace; font-size: 1.5rem; font-weight: 800; color: #0284c7;">DOC-2026-XXXX</span>
+                        </div>
+
+                        <div style="display: flex; justify-content: center; gap: 15px; font-size: 0.9rem; color: #475569;">
+                            <span>💵 Hỗ trợ Tiền mặt</span>
+                            <span>💳 Quẹt thẻ ATM / Visa / Mastercard</span>
+                            <span>📱 Chuyển khoản tại quầy</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 3: Cổng thanh toán điện tử -->
+                <div class="exec-panel" id="panel-gateway">
+                    <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 16px; padding: 24px; text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 12px;">⚡</div>
+                        <h3 style="font-size: 1.2rem; color: #0f172a; margin: 0 0 8px;">Cổng thanh toán điện tử VNPAY & MoMo</h3>
+                        <p style="color: #64748b; font-size: 0.92rem; max-width: 520px; margin: 0 auto 20px;">
+                            Hệ thống đã kết nối cổng thanh toán an toàn, bảo mật tiêu chuẩn ngân hàng. Bấm vào nút bên dưới để thanh toán ngay số tiền <strong id="gatewayAmountText" style="color: #16a34a;">200.000đ</strong>:
+                        </p>
+
+                        <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+                            <button type="button" onclick="triggerGatewaySimulate('vnpay')" style="padding: 12px 24px; background: #005baa; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                <span>💳 Thanh toán qua VNPAY-QR</span>
+                            </button>
+                            <button type="button" onclick="triggerGatewaySimulate('momo')" style="padding: 12px 24px; background: #a50064; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                <span>👛 Thanh toán qua Ví MoMo</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BƯỚC 5: XÁC MINH GIAO DỊCH -->
+                <div class="verification-box waiting" id="verificationStatusBox">
+                    <div style="font-size: 28px; margin-bottom: 6px;" id="verificationIcon">⏳</div>
+                    <div style="font-size: 1.05rem; font-weight: 800; margin-bottom: 4px;" id="verificationTitle">
+                        Bước 5: Đang chờ đối chiếu giao dịch...
+                    </div>
+                    <div style="font-size: 0.88rem; opacity: 0.9;" id="verificationSubtitle">
+                        Hệ thống tự động lắng nghe xác nhận từ ngân hàng hoặc Admin phòng khám.
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="actions-group">
+                    <button class="btn-primary-action" id="btnConfirmPaid" onclick="handleCustomerConfirmed()">
+                        <span>✅ Tôi đã thanh toán (Gửi yêu cầu xác minh)</span>
+                    </button>
+
+                    <button class="btn-simulate-action" id="btnSimulateBank" onclick="simulateInstantVerification()" title="Giả lập ngân hàng nhận tiền tức thì">
+                        <span>⚡ Giả lập NH báo Có (Xác minh tức thì)</span>
+                    </button>
+
+                    <button class="btn-back-action" onclick="window.history.back()">
+                        <span>← Quay lại</span>
+                    </button>
+                </div>
             </div>
 
+            <!-- BƯỚC 6: CẬP NHẬT TRẠNG THÁI VÀ GỬI BIÊN NHẬN -->
+            <div class="receipt-card" id="step-6-receipt">
+                <div class="receipt-header">
+                    <div>
+                        <div style="font-size: 0.8rem; color: #15803d; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+                            BƯỚC 6: BIÊN NHẬN ĐIỆN TỬ CHÍNH THỨC
+                        </div>
+                        <h2 style="margin: 4px 0 2px; font-size: 1.45rem; color: #0f172a; font-weight: 800;">
+                            PHÒNG KHÁM CHUYÊN KHOA MẮT DOCTOR4
+                        </h2>
+                        <div style="font-size: 0.85rem; color: #64748b;">
+                            Hệ thống 10 phòng khám mắt chuyên sâu · 24/7 Hotline: 1900 6868
+                        </div>
+                    </div>
 
-            <!-- TRẠNG THÁI THANH TOÁN -->
+                    <div class="receipt-stamp">
+                        <span>✓</span>
+                        <span>ĐÃ XÁC MINH & THANH TOÁN</span>
+                    </div>
+                </div>
 
-            <div
-                id="paymentStatus"
-                class="payment-status waiting">
+                <div class="receipt-grid">
+                    <div class="receipt-row">
+                        <span>Mã biên nhận (Receipt ID):</span>
+                        <strong id="receiptIdText" style="font-family: monospace; color: var(--primary);">-</strong>
+                    </div>
 
-                ⏳ Đang chờ thanh toán
+                    <div class="receipt-row">
+                        <span>Mã lịch hẹn (Appointment):</span>
+                        <strong id="receiptApptCode" style="font-family: monospace;">-</strong>
+                    </div>
 
-            </div>
+                    <div class="receipt-row">
+                        <span>Thời gian giao dịch:</span>
+                        <strong id="receiptTimestamp">-</strong>
+                    </div>
 
+                    <div class="receipt-row">
+                        <span>Phương thức thanh toán:</span>
+                        <strong id="receiptMethodText">VietQR (Ngân hàng MB)</strong>
+                    </div>
 
-            <!-- NÚT -->
+                    <div class="receipt-row">
+                        <span>Khách hàng (Bệnh nhân):</span>
+                        <strong id="receiptPatientName">-</strong>
+                    </div>
 
-            <div class="button-group">
+                    <div class="receipt-row">
+                        <span>Dịch vụ khám mắt:</span>
+                        <strong id="receiptServiceName" style="color: #0284c7;">-</strong>
+                    </div>
 
-                <button
-                    id="confirmButton"
-                    onclick="confirmPayment()">
+                    <div class="receipt-row">
+                        <span>Bác sĩ phụ trách:</span>
+                        <strong id="receiptDoctorName">-</strong>
+                    </div>
 
-                    Tôi đã thanh toán
+                    <div class="receipt-row">
+                        <span>Ngày & Khung giờ khám:</span>
+                        <strong id="receiptDateTime" style="color: #d97706;">-</strong>
+                    </div>
+                </div>
 
-                </button>
+                <div style="margin-top: 20px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span style="font-size: 0.85rem; color: #166534; font-weight: 700; text-transform: uppercase;">SỐ TIỀN ĐÃ THANH TOÁN THÀNH CÔNG:</span>
+                        <div style="font-size: 0.8rem; color: #15803d;">Khoản thu trước: Phí khám chuyên sâu & Đặt lịch giữ chỗ</div>
+                    </div>
+                    <div style="font-size: 1.6rem; font-weight: 800; color: #15803d;" id="receiptPaidAmount">
+                        200.000đ
+                    </div>
+                </div>
 
+                <div style="margin-top: 12px; font-size: 0.82rem; color: #64748b; line-height: 1.5;">
+                    * <em>Ghi chú:</em> Biên nhận điện tử này có giá trị xác thực lịch hẹn. Khi đến khám, quý khách chỉ cần xuất trình mã lịch hẹn trên điện thoại tại Quầy tiếp đón Tầng 1 để được hướng dẫn vào đúng số phòng khám.
+                </div>
 
-                <button
-                    class="back-button"
-                    onclick="goBack()">
+                <div class="receipt-actions">
+                    <button type="button" onclick="window.print()" style="padding: 12px 20px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <span>🖨️ In biên nhận</span>
+                    </button>
 
-                    ← Quay lại
+                    <button type="button" id="btnViewTicketReceipt" onclick="goToAppointmentTicket()" style="padding: 12px 20px; background: #0284c7; color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <span>🎫 Xem vé khám & vị trí phòng</span>
+                    </button>
 
-                </button>
-
-            </div>
-
-
-            <div class="note">
-
-                <strong>⚠️ Lưu ý:</strong>
-
-                Sau khi chuyển khoản, hãy bấm
-                <strong>"Tôi đã thanh toán"</strong>.
-
-                Giao dịch sẽ chuyển sang trạng thái
-                <strong>chờ xác nhận</strong>.
-
-                Admin sẽ kiểm tra và xác nhận thanh toán.
-
+                    <a href="/index.html" style="padding: 12px 20px; background: #16a34a; color: white; text-decoration: none; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                        <span>🏠 Về Trang chủ</span>
+                    </a>
+                </div>
             </div>
 
         </div>
 
     </div>
 
-
-    <!-- JAVASCRIPT -->
-
-    <script src="payment.js"></script>
+    <!-- JAVASCRIPT LOGIC -->
+    <script type="module" src="/payment.js"></script>
 
 </body>
-
 </html>

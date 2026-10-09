@@ -17,7 +17,7 @@ export const CLINIC_ROOMS = [
   { id: 'R110', number: 'Phòng 110', name: 'Khám Mắt Tổng Quát & Cấp Cứu 24/7', specialty: 'general', floor: 'Tầng 1', equipment: 'Sinh hiển vi đèn khe kỹ thuật số Nidek' }
 ];
 
-// Danh mục Bệnh lý / Dịch vụ khám mắt
+// Danh mục Bệnh lý / Dịch vụ khám mắt với phân định rõ khoản thu trước & khoản thanh toán sau
 export const CLINIC_SERVICES = [
   {
     id: 'lasik',
@@ -26,7 +26,11 @@ export const CLINIC_SERVICES = [
     desc: 'Điều trị triệt để tật khúc xạ bằng công nghệ Laser không chạm SMILE Pro & Femto-LASIK',
     roomId: 'R101',
     defaultRoom: 'Phòng 101 - LASIK A',
-    price: '25.000.000đ - 45.000.000đ'
+    price: '25.000.000đ - 45.000.000đ',
+    examFee: 500000,
+    serviceFee: 25000000,
+    prepaidDesc: 'Phí khám khúc xạ chuyên sâu 10 bước & đo bản đồ giác mạc (Thu trước)',
+    postpaidDesc: 'Chi phí phẫu thuật Femto-LASIK / SMILE Pro (Thanh toán sau tại quầy lễ tân)'
   },
   {
     id: 'cataract',
@@ -35,7 +39,11 @@ export const CLINIC_SERVICES = [
     desc: 'Thay thủy tinh thể nhân tạo đơn tiêu / đa tiêu cự giúp lấy lại thị lực trong suốt',
     roomId: 'R104',
     defaultRoom: 'Phòng 104 - Phaco A',
-    price: '15.000.000đ - 38.000.000đ'
+    price: '15.000.000đ - 38.000.000đ',
+    examFee: 300000,
+    serviceFee: 15000000,
+    prepaidDesc: 'Phí khám mắt sinh hiển vi, đo nhãn áp & soi đục thủy tinh thể (Thu trước)',
+    postpaidDesc: 'Chi phí phẫu thuật Phaco thay thủy tinh thể nhân tạo (Thanh toán sau tại viện)'
   },
   {
     id: 'glocom',
@@ -44,7 +52,11 @@ export const CLINIC_SERVICES = [
     desc: 'Tầm soát sớm tổn thương dây thần kinh thị giác, hạ nhãn áp bằng laser và thuốc chuyên khoa',
     roomId: 'R103',
     defaultRoom: 'Phòng 103 - Glôcôm',
-    price: '500.000đ - 2.500.000đ'
+    price: '500.000đ - 2.500.000đ',
+    examFee: 350000,
+    serviceFee: 1200000,
+    prepaidDesc: 'Phí khám chuyên khoa Glôcôm, đo nhãn áp kế & soi góc tiền phòng (Thu trước)',
+    postpaidDesc: 'Chi phí laser tạo hình bè hoặc thủ thuật hạ áp nếu có (Thanh toán sau)'
   },
   {
     id: 'pediatric',
@@ -53,7 +65,11 @@ export const CLINIC_SERVICES = [
     desc: 'Định hình giác mạc ban đêm không cần đeo kính ban ngày, ngăn tăng độ cận ở trẻ',
     roomId: 'R106',
     defaultRoom: 'Phòng 106 - Nhãn Nhi',
-    price: '800.000đ - 18.000.000đ'
+    price: '800.000đ - 18.000.000đ',
+    examFee: 300000,
+    serviceFee: 8000000,
+    prepaidDesc: 'Phí khám thị lực trẻ em, đo khúc xạ liệt điều tiết & thử kính (Thu trước)',
+    postpaidDesc: 'Chi phí bộ kính định hình ban đêm Ortho-K nếu đăng ký (Thanh toán sau)'
   },
   {
     id: 'retina',
@@ -62,7 +78,11 @@ export const CLINIC_SERVICES = [
     desc: 'Chụp OCT độ phân giải cao, tiêm nội nhãn và laser quang đông võng mạc',
     roomId: 'R108',
     defaultRoom: 'Phòng 108 - Võng Mạc',
-    price: '1.200.000đ - 6.500.000đ'
+    price: '1.200.000đ - 6.500.000đ',
+    examFee: 400000,
+    serviceFee: 2500000,
+    prepaidDesc: 'Phí khám đáy mắt chuyên sâu & chụp cắt lớp quang học OCT (Thu trước)',
+    postpaidDesc: 'Chi phí laser đáy mắt hoặc tiêm thuốc nội nhãn (Thanh toán sau nếu chỉ định)'
   },
   {
     id: 'cornea',
@@ -71,7 +91,11 @@ export const CLINIC_SERVICES = [
     desc: 'Điều trị khô mắt chuyên sâu bằng ánh sáng xung cường độ cao IPL và nút điểm lệ',
     roomId: 'R107',
     defaultRoom: 'Phòng 107 - Giác Mạc',
-    price: '400.000đ - 3.200.000đ'
+    price: '400.000đ - 3.200.000đ',
+    examFee: 250000,
+    serviceFee: 1200000,
+    prepaidDesc: 'Phí khám kiểm tra giác mạc, nhuộm huỳnh quang & đo phim nước mắt (Thu trước)',
+    postpaidDesc: 'Chi phí liệu trình ánh sáng xung IPL hoặc thuốc chuyên khoa (Thanh toán sau)'
   },
   {
     id: 'oculoplastic',
@@ -80,7 +104,11 @@ export const CLINIC_SERVICES = [
     desc: 'Treo cơ nâng mi, cắt da thừa mí mắt, phục hồi chức năng và thẩm mỹ mí mắt',
     roomId: 'R109',
     defaultRoom: 'Phòng 109 - Thẩm Mỹ Mắt',
-    price: '6.000.000đ - 18.000.000đ'
+    price: '6.000.000đ - 18.000.000đ',
+    examFee: 350000,
+    serviceFee: 8000000,
+    prepaidDesc: 'Phí tư vấn bác sĩ phẫu thuật & đo cơ nâng mi, thiết kế nếp mí (Thu trước)',
+    postpaidDesc: 'Chi phí phẫu thuật tạo hình mí mắt / tiểu phẫu (Thanh toán sau tại viện)'
   },
   {
     id: 'general',
@@ -89,9 +117,36 @@ export const CLINIC_SERVICES = [
     desc: 'Kiểm tra toàn diện 12 bước thị lực, áp tròng, đáy mắt và xử lý dị vật mắt khẩn cấp',
     roomId: 'R110',
     defaultRoom: 'Phòng 110 - Khám Tổng Quát',
-    price: '300.000đ - 600.000đ'
+    price: '300.000đ - 600.000đ',
+    examFee: 200000,
+    serviceFee: 300000,
+    prepaidDesc: 'Phí khám mắt tổng quát 12 bước tiêu chuẩn quốc tế (Thu trước)',
+    postpaidDesc: 'Chi phí gắp dị vật / xét nghiệm bổ sung nếu có (Thanh toán sau)'
   }
 ];
+
+export const CLINIC_SERVICES_STORAGE_KEY = 'doctor4_services_pricing';
+
+export function getClinicServices() {
+  try {
+    const raw = localStorage.getItem(CLINIC_SERVICES_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {
+    console.error('Lỗi đọc dịch vụ giá:', e);
+  }
+  return CLINIC_SERVICES;
+}
+
+export function saveClinicServices(services) {
+  try {
+    localStorage.setItem(CLINIC_SERVICES_STORAGE_KEY, JSON.stringify(services));
+  } catch (e) {
+    console.error('Lỗi lưu dịch vụ giá:', e);
+  }
+}
 
 // 10 Bác Sĩ chuyên môn cao (Nhiều bác sĩ cùng khám 1 loại bệnh)
 export const INITIAL_10_DOCTORS = [
