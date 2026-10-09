@@ -192,6 +192,81 @@
                 </div>
               </div>
 
+              <!-- PHIẾU THÔNG TIN BỆNH NHÂN TRỰC TUYẾN & TẢI ẢNH CCCD/4x6 -->
+              <div class="patient-profile-upload-box" style="margin: 20px 0; padding: 16px; background: rgba(14,165,233,0.06); border: 1.5px dashed rgba(14,165,233,0.35); border-radius: 12px;">
+                <div style="font-weight: 700; font-size: 0.95rem; color: #0284c7; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                  <span>📋</span> PHIẾU THÔNG TIN BỆNH NHÂN TRỰC TUYẾN (Dành cho Bác sĩ & Admin)
+                </div>
+                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 14px;">
+                  Tải lên ảnh 4x6 và CCCD mặt trước/mặt sau để bác sĩ kiểm tra đối chiếu khi bạn đến khám.
+                </p>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label" for="regDob">Ngày sinh & Giới tính</label>
+                    <div style="display: flex; gap: 8px;">
+                      <input type="date" id="regDob" class="auth-input" style="flex: 2;" value="1995-05-20" />
+                      <select id="regGender" class="auth-input" style="flex: 1;">
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="regCccd">Số CCCD / CMND</label>
+                    <input type="text" id="regCccd" class="auth-input" placeholder="VD: 079203018899" />
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 10px;">
+                  <label class="form-label" for="regAddress">Địa chỉ thường trú / Chỗ ở hiện tại</label>
+                  <input type="text" id="regAddress" class="auth-input" placeholder="VD: 123 Nguyễn Tri Phương, Q.5, TP.HCM" />
+                </div>
+
+                <!-- Tải 3 Ảnh: 4x6, CCCD Trước, CCCD Sau -->
+                <div style="margin-top: 14px; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 8px;">
+                  📸 Tải Ảnh 4x6 & Căn Cước Công Dân (CCCD):
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                  <!-- Ảnh 4x6 -->
+                  <div style="text-align: center; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: #0284c7; display: block; margin-bottom: 6px;">Ảnh 4x6 chân dung</label>
+                    <div id="preview-photo4x6-box" style="width: 100%; height: 75px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 6px;">
+                      <span style="font-size: 24px;">👤</span>
+                    </div>
+                    <input type="file" id="filePhoto4x6" accept="image/*" style="display: none;" />
+                    <button type="button" class="btn-upload-trigger" onclick="document.getElementById('filePhoto4x6').click()" style="width: 100%; padding: 4px; font-size: 11px; background: #0284c7; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                      📤 Chọn ảnh
+                    </button>
+                  </div>
+
+                  <!-- CCCD Mặt trước -->
+                  <div style="text-align: center; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: #0284c7; display: block; margin-bottom: 6px;">CCCD Mặt trước</label>
+                    <div id="preview-cccd-front-box" style="width: 100%; height: 75px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 6px;">
+                      <span style="font-size: 24px;">🪪</span>
+                    </div>
+                    <input type="file" id="fileCccdFront" accept="image/*" style="display: none;" />
+                    <button type="button" class="btn-upload-trigger" onclick="document.getElementById('fileCccdFront').click()" style="width: 100%; padding: 4px; font-size: 11px; background: #0284c7; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                      📤 Chọn mặt trước
+                    </button>
+                  </div>
+
+                  <!-- CCCD Mặt sau -->
+                  <div style="text-align: center; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: #0284c7; display: block; margin-bottom: 6px;">CCCD Mặt sau</label>
+                    <div id="preview-cccd-back-box" style="width: 100%; height: 75px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 6px;">
+                      <span style="font-size: 24px;">💳</span>
+                    </div>
+                    <input type="file" id="fileCccdBack" accept="image/*" style="display: none;" />
+                    <button type="button" class="btn-upload-trigger" onclick="document.getElementById('fileCccdBack').click()" style="width: 100%; padding: 4px; font-size: 11px; background: #0284c7; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                      📤 Chọn mặt sau
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <!-- Terms Agreement -->
               <div class="form-group">
                 <label class="custom-checkbox">

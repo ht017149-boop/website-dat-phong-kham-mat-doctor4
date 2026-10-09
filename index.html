@@ -304,7 +304,7 @@
         <div class="testimonial-card">
           <div class="review-stars">★★★★★</div>
           <p class="review-text">
-            "Hệ thống xếp phòng khám 10 phòng rất nhanh gọn, đặt lịch online đến được vào khám đúng phòng 106 với BS Thu Hà, không phải chen chúc."
+            "Hệ thống đặt lịch khám 10 phòng rất nhanh gọn, đặt lịch online đến được vào khám đúng phòng 106 với BS Thu Hà, không phải chen chúc."
           </p>
           <div class="reviewer">
             <div class="reviewer-avatar rev-bg-2">👩</div>
@@ -331,13 +331,13 @@
       </div>
     </section>
 
-    <!-- SECTION ĐẶT LỊCH KHÁM & XẾP PHÒNG CHUYÊN NGHIỆP -->
+    <!-- SECTION ĐẶT LỊCH KHÁM CHUYÊN NGHIỆP -->
     <section class="cta-section" id="dat-lich" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0c1a3a 100%); padding: 5rem 1rem;">
       <div style="max-width: 900px; margin: 0 auto; background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px; padding: 3rem 2.5rem; box-shadow: 0 20px 50px rgba(0,0,0,0.4);">
         <div style="text-align: center; margin-bottom: 2.5rem;">
           <div style="display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; background: linear-gradient(135deg, #0284c7, #38bdf8); border-radius: 18px; font-size: 28px; margin-bottom: 1rem; box-shadow: 0 8px 20px rgba(56,189,248,0.3);">📅</div>
           <h2 style="color: #ffffff; font-size: 2rem; font-weight: 800; font-family: var(--font-heading); margin-bottom: 0.5rem;">
-            Đặt Lịch Khám Mắt & <span style="color: #38bdf8;">Xếp Phòng Trực Tuyến</span>
+            Đặt Lịch Khám Mắt <span style="color: #38bdf8;">Trực Tuyến</span>
           </h2>
           <p style="color: #94a3b8; font-size: 0.95rem; max-width: 600px; margin: 0 auto;">
             Hệ thống tự động xếp <strong>10 Phòng khám chuyên biệt</strong> và đội ngũ <strong>10 Bác sĩ chuyên khoa</strong>. Tiết kiệm thời gian, không cần chờ đợi.
@@ -466,8 +466,103 @@
             </div>
           </div>
 
+
           <button type="submit" id="btn-submit-booking" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #0b1329; font-weight: 800; font-size: 1.05rem; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 24px rgba(56,189,248,0.4); transition: transform 0.2s;">
             <span id="btn-submit-booking-text">✨ XÁC NHẬN ĐẶT LỊCH & TIẾP TỤC THANH TOÁN (500.000đ)</span>
+
+          <!-- KHỐI TẢI THÔNG TIN BỆNH NHÂN & CCCD / ẢNH 4X6 TRỰC TUYẾN (TÙY CHỌN - COLLAPSIBLE) -->
+          <details class="booking-patient-profile-section" style="background: rgba(14, 165, 233, 0.08); border: 1.5px dashed rgba(56, 189, 248, 0.4); border-radius: 14px; padding: 14px 18px; margin-bottom: 1.75rem; cursor: pointer;">
+            <summary style="display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: 0.95rem; color: #38bdf8; outline: none; list-style: none; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span>📋</span> 
+                <span>Khai báo trước CCCD & Ảnh thẻ <em>(Tùy chọn - Không bắt buộc)</em></span>
+              </div>
+              <span style="font-size: 0.78rem; background: rgba(56,189,248,0.2); color: #7dd3fc; padding: 4px 10px; border-radius: 6px; font-weight: 600; white-space: nowrap;">
+                ▼ Bấm để mở / đóng
+              </span>
+            </summary>
+            
+            <div style="padding-top: 14px; cursor: default;">
+              <p style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 14px; line-height: 1.5;">
+                💡 <strong>Lưu ý:</strong> Bạn có thể bỏ qua phần này và <strong>xuất trình CCCD trực tiếp tại quầy lễ tân</strong> khi đến khám. Nếu tải lên trước, Bác sĩ sẽ chuẩn bị hồ sơ sẵn cho bạn.
+              </p>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                  <label style="display: block; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem;">Ngày sinh</label>
+                  <input type="date" id="book-patient-dob" value="1995-05-20" style="width: 100%; padding: 0.65rem; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.88rem; outline: none;" />
+                </div>
+                <div>
+                  <label style="display: block; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem;">Giới tính</label>
+                  <select id="book-patient-gender" style="width: 100%; padding: 0.65rem; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.88rem; outline: none;">
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem;">Số CCCD / CMND</label>
+                  <input type="text" id="book-patient-cccd" placeholder="VD: 079203018899" style="width: 100%; padding: 0.65rem; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.88rem; outline: none;" />
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                <div>
+                  <label style="display: block; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem;">Địa chỉ thường trú</label>
+                  <input type="text" id="book-patient-address" placeholder="VD: 123 Nguyễn Tri Phương, Q.5, TP.HCM" style="width: 100%; padding: 0.65rem; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.88rem; outline: none;" />
+                </div>
+                <div>
+                  <label style="display: block; color: #cbd5e1; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem;">Mã thẻ BHYT (nếu có)</label>
+                  <input type="text" id="book-patient-bhyt" placeholder="VD: GD 4 79 1234567890" style="width: 100%; padding: 0.65rem; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.88rem; outline: none;" />
+                </div>
+              </div>
+
+              <!-- Tải 3 loại ảnh -->
+              <div style="font-size: 0.82rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px;">
+                📸 Tải 3 ảnh định danh (Chân dung 4x6 & CCCD 2 mặt):
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                <!-- Ảnh 4x6 -->
+                <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px; text-align: center;">
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #7dd3fc; margin-bottom: 6px;">1. Ảnh chân dung 4x6</label>
+                  <div id="preview-book-photo4x6" style="width: 100%; height: 85px; background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                    <span style="font-size: 24px;">👤</span>
+                  </div>
+                  <input type="file" id="file-book-photo4x6" accept="image/*" style="display: none;" />
+                  <button type="button" onclick="document.getElementById('file-book-photo4x6').click()" style="width: 100%; padding: 5px; font-size: 11px; background: #0284c7; color: #fff; font-weight: 700; border: none; border-radius: 6px; cursor: pointer;">
+                    📤 Tải ảnh 4x6
+                  </button>
+                </div>
+
+                <!-- CCCD Trước -->
+                <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px; text-align: center;">
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #7dd3fc; margin-bottom: 6px;">2. CCCD Mặt trước</label>
+                  <div id="preview-book-cccd-front" style="width: 100%; height: 85px; background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                    <span style="font-size: 24px;">🪪</span>
+                  </div>
+                  <input type="file" id="file-book-cccd-front" accept="image/*" style="display: none;" />
+                  <button type="button" onclick="document.getElementById('file-book-cccd-front').click()" style="width: 100%; padding: 5px; font-size: 11px; background: #0284c7; color: #fff; font-weight: 700; border: none; border-radius: 6px; cursor: pointer;">
+                    📤 Tải mặt trước
+                  </button>
+                </div>
+
+                <!-- CCCD Sau -->
+                <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px; text-align: center;">
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #7dd3fc; margin-bottom: 6px;">3. CCCD Mặt sau</label>
+                  <div id="preview-book-cccd-back" style="width: 100%; height: 85px; background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                    <span style="font-size: 24px;">💳</span>
+                  </div>
+                  <input type="file" id="file-book-cccd-back" accept="image/*" style="display: none;" />
+                  <button type="button" onclick="document.getElementById('file-book-cccd-back').click()" style="width: 100%; padding: 5px; font-size: 11px; background: #0284c7; color: #fff; font-weight: 700; border: none; border-radius: 6px; cursor: pointer;">
+                    📤 Tải mặt sau
+                  </button>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <button type="submit" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #0b1329; font-weight: 800; font-size: 1.05rem; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 24px rgba(56,189,248,0.4); transition: transform 0.2s;">
+            <span>✨ XÁC NHẬN ĐẶT LỊCH KHÁM</span>
+
             <span>→</span>
           </button>
         </form>
@@ -475,6 +570,78 @@
     </section>
   </main>
   
+    <!-- SECTION BÌNH LUẬN & ĐÁNH GIÁ -->
+    <section class="comments-section" id="binh-luan">
+      <div class="comments-inner">
+        <div class="section-header">
+          <span class="section-tag">Đánh giá từ cộng đồng</span>
+          <h2 class="section-title">Chia sẻ <span>trải nghiệm của bạn</span></h2>
+          <p class="section-desc">Bình luận của bạn giúp chúng tôi không ngừng cải thiện chất lượng dịch vụ.</p>
+        </div>
+
+        <div class="comments-layout">
+          <!-- Form gửi bình luận -->
+          <div class="comment-form-card">
+            <div class="cfc-header">
+              <div class="cfc-icon">✍️</div>
+              <div>
+                <h3 class="cfc-title">Gửi đánh giá của bạn</h3>
+                <p class="cfc-sub">Chia sẻ trải nghiệm sau khi khám tại Doctor4</p>
+              </div>
+            </div>
+            <form id="comment-form" class="cfc-form">
+              <div class="cfc-row-2">
+                <div class="cfc-field">
+                  <label for="comment-name" class="cfc-label">Họ và tên <span class="req">*</span></label>
+                  <input type="text" id="comment-name" class="cfc-input" placeholder="VD: Nguyễn Văn A" required />
+                </div>
+                <div class="cfc-field">
+                  <label for="comment-email" class="cfc-label">Email</label>
+                  <input type="email" id="comment-email" class="cfc-input" placeholder="email@gmail.com" />
+                </div>
+              </div>
+              <div class="cfc-field">
+                <label class="cfc-label">Đánh giá sao <span class="req">*</span></label>
+                <div class="star-picker" id="star-picker">
+                  <span class="star" data-val="1">★</span>
+                  <span class="star" data-val="2">★</span>
+                  <span class="star" data-val="3">★</span>
+                  <span class="star" data-val="4">★</span>
+                  <span class="star" data-val="5">★</span>
+                </div>
+                <select id="comment-rating" style="display:none;">
+                  <option value="5" selected>5</option>
+                  <option value="4">4</option>
+                  <option value="3">3</option>
+                  <option value="2">2</option>
+                  <option value="1">1</option>
+                </select>
+              </div>
+              <div class="cfc-field">
+                <label for="comment-content" class="cfc-label">Nội dung bình luận <span class="req">*</span></label>
+                <textarea id="comment-content" class="cfc-input cfc-textarea" rows="4"
+                  placeholder="Chia sẻ trải nghiệm của bạn tại Doctor4: chất lượng bác sĩ, dịch vụ, cơ sở vật chất..." required></textarea>
+              </div>
+              <button type="submit" class="cfc-submit-btn" id="btn-submit-comment">
+                <span>💬 Gửi đánh giá</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Danh sách bình luận -->
+          <div class="comments-list-wrap">
+            <div class="clw-header">
+              <h3 class="clw-title">Đánh giá gần đây</h3>
+              <span class="clw-badge" id="comments-count-badge">0 đánh giá</span>
+            </div>
+            <div id="comments-list" class="comments-list">
+              <!-- Rendered by comments.js -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <div id="footer-container"></div>
     <script type="module" src="/src/main.js"></script>
   </body>

@@ -8,6 +8,7 @@ import '../css/auth.css';
 import { renderHeader, renderFooter, setupHeaderEvents } from '../components/layout.js';
 
 import { INITIAL_10_DOCTORS } from '../data/clinic-data.js';
+import { compressImageFile, getDefaultPatientPhotos } from '../utils/patient-profile.js';
 
 // Keys lưu trữ
 const USERS_STORAGE_KEY = 'doctor4_users_db';
@@ -37,11 +38,35 @@ const INITIAL_DEMO_USERS = [
   },
   {
     id: 'usr_patient_001',
-    name: 'Nguyễn Văn An (Bệnh nhân)',
+    name: 'Nguyễn Văn An',
     email: 'benhnhan@doctor4.vn',
     phone: '0987654321',
     password: '123456',
     role: 'patient',
+    patientProfile: {
+      dob: '1992-08-15',
+      gender: 'Nam',
+      cccdNumber: '079203018899',
+      address: '123 Nguyễn Tri Phương, Quận 5, TP. Hồ Chí Minh',
+      bhytCode: 'GD 4 79 1234567890',
+      emergencyContact: 'Chị Nguyễn Mai Hương (0909 111 222)',
+      bloodType: 'A+',
+      verified: true
+    },
+    eyeProfile: {
+      odSphere: '-2.50',
+      odCyl: '-0.75',
+      odAxis: '175',
+      odIop: '14',
+      osSphere: '-2.25',
+      osCyl: '-0.50',
+      osAxis: '180',
+      osIop: '15',
+      glassesType: 'Kính cận chống ánh sáng xanh',
+      lastCheckup: '2026-09-15',
+      nextCheckup: '2026-12-15',
+      notes: 'Thị lực sau chỉnh kính đạt 10/10 hai mắt. Hạn chế nhìn màn hình liên tục > 45 phút, tra nước mắt nhân tạo khi mỏi khô mắt.'
+    },
     createdAt: new Date().toISOString()
   }
 ];
@@ -271,6 +296,8 @@ export const AuthService = {
       phone: cleanPhone,
       password: userData.password,
       role: 'patient',
+      patientProfile: userData.patientProfile || null,
+      avatar: (userData.patientProfile && userData.patientProfile.photo4x6) || undefined,
       createdAt: new Date().toISOString()
     };
 
@@ -471,6 +498,36 @@ function setupRegisterPage() {
   const form = document.getElementById('formRegister');
   if (!form) return;
 
+  // Xử lý upload và xem trước 3 ảnh (4x6, CCCD trước, CCCD sau)
+  let photo4x6Data = '';
+  let cccdFrontData = '';
+  let cccdBackData = '';
+
+  const bindImageUpload = (fileInputId, previewBoxId, onCompressed) => {
+    const input = document.getElementById(fileInputId);
+    const box = document.getElementById(previewBoxId);
+    if (!input || !box) return;
+
+    input.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        try {
+          box.innerHTML = `<span style="font-size: 11px; color: #0284c7;">⏳ Đang nén...</span>`;
+          const base64 = await compressImageFile(file, 600, 600, 0.75);
+          onCompressed(base64);
+          box.innerHTML = `<img src="${base64}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+          showToast('success', 'Đã tải ảnh thành công', `Đã chọn ảnh ${file.name}`);
+        } catch (err) {
+          box.innerHTML = `<span style="font-size: 11px; color: red;">Lỗi tải ảnh</span>`;
+        }
+      }
+    });
+  };
+
+  bindImageUpload('filePhoto4x6', 'preview-photo4x6-box', (data) => { photo4x6Data = data; });
+  bindImageUpload('fileCccdFront', 'preview-cccd-front-box', (data) => { cccdFrontData = data; });
+  bindImageUpload('fileCccdBack', 'preview-cccd-back-box', (data) => { cccdBackData = data; });
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearFieldErrors(form);
@@ -489,6 +546,14 @@ function setupRegisterPage() {
     const password = pwdInput ? pwdInput.value : '';
     const confirmPassword = confirmPwdInput ? confirmPwdInput.value : '';
     const agreed = agreeTerms ? agreeTerms.checked : false;
+
+    // Các trường profile bổ sung
+    const dob = document.getElementById('regDob')?.value || '1995-05-20';
+    const gender = document.getElementById('regGender')?.value || 'Nam';
+    const cccdNumber = document.getElementById('regCccd')?.value.trim() || '079203018899';
+    const address = document.getElementById('regAddress')?.value.trim() || '123 Nguyễn Tri Phương, Q.5, TP.HCM';
+
+    const defaults = getDefaultPatientPhotos(name, gender);
 
     let hasError = false;
 
@@ -530,14 +595,27 @@ function setupRegisterPage() {
     try {
       await new Promise(res => setTimeout(res, 700));
 
+      const patientProfile = {
+        dob,
+        gender,
+        cccdNumber,
+        address,
+        photo4x6: photo4x6Data || defaults.photo4x6,
+        cccdFront: cccdFrontData || defaults.cccdFront,
+        cccdBack: cccdBackData || defaults.cccdBack,
+        verified: true,
+        updatedAt: new Date().toISOString()
+      };
+
       const newUser = AuthService.register({
         name,
         phone,
         email,
-        password
+        password,
+        patientProfile
       }, true);
 
-      showToast('success', 'Đăng ký thành công!', `Tài khoản của ${newUser.name} đã được tạo thành công.`);
+      showToast('success', 'Đăng ký thành công!', `Hồ sơ bệnh nhân trực tuyến của ${newUser.name} đã tạo thành công!`);
 
       setTimeout(() => {
         window.location.href = '/index.html';

@@ -139,6 +139,16 @@ function setupLookupPage() {
         }
       });
     });
+
+    // Gắn sự kiện Xem/Tải Hồ Sơ Bệnh Nhân & Ảnh CCCD
+    resultsContainer.querySelectorAll('.btn-view-patient-profile').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const phone = btn.getAttribute('data-phone');
+        import('../utils/patient-profile.js').then(module => {
+          module.openPatientProfileModal(phone);
+        });
+      });
+    });
   }
 
   function cancelAppt(id) {
@@ -162,7 +172,7 @@ function renderTicketCard(app) {
 
   const statusBadge = {
     pending: '<span style="background: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">🟡 Chờ xác nhận</span>',
-    confirmed: '<span style="background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">🟢 Đã xếp phòng khám</span>',
+    confirmed: '<span style="background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">🟢 Đã xác nhận lịch khám</span>',
     in_progress: '<span style="background: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">🩺 Đang khám tại phòng</span>',
     completed: '<span style="background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">✅ Đã hoàn thành</span>',
     cancelled: '<span style="background: #fee2e2; color: #b91c1c; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">❌ Đã hủy</span>'
@@ -213,7 +223,10 @@ function renderTicketCard(app) {
         <!-- Trạng thái & Thao tác -->
         <div style="border-top: 1px solid #f1f5f9; padding-top: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
           <div>${statusBadge[app.status] || statusBadge.confirmed}</div>
-          <div style="display: flex; gap: 6px;">
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="btn-view-patient-profile" data-phone="${app.patientPhone || ''}" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+              <span>📋 Hồ sơ & CCCD</span>
+            </button>
             ${(app.status === 'completed' || app.medicalRecord) ? `
               <button class="btn-view-medical-record" data-id="${app.id}" style="background: linear-gradient(135deg, #0284c7, #0ea5e9); color: #ffffff; border: none; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(2,132,199,0.25);">
                 <span>📄 Bệnh Án & Đơn Thuốc</span>

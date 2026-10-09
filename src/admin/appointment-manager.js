@@ -1,10 +1,11 @@
 /* ============================================================
    src/admin/appointment-manager.js — Doctor4 Eye Clinic
-   Quản lý Đặt Lịch Khám & Xếp Phòng (10 Phòng - 10 Bác Sĩ)
+   Quản lý Đặt Lịch Khám (10 Phòng - 10 Bác Sĩ)
    ============================================================ */
 
 import { CLINIC_ROOMS, CLINIC_SERVICES, INITIAL_APPOINTMENTS } from '../data/clinic-data.js';
 import { DoctorManager } from './doctor-manager.js';
+import { getPatientProfileData } from '../utils/patient-profile.js';
 
 const APPOINTMENTS_STORAGE_KEY = 'doctor4_appointments_db';
 
@@ -76,6 +77,7 @@ export const AppointmentManager = {
       timeSlot: data.timeSlot || '08:30 - 09:30',
       symptoms: (data.symptoms || '').trim() || 'Khám mắt theo nhu cầu',
       status: data.status || 'pending', // 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled'
+      patientProfile: getPatientProfileData(data),
       createdAt: new Date().toISOString()
     };
 

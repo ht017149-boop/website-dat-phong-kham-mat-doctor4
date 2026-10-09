@@ -1,5 +1,6 @@
 import './css/style.css';
 import './css/home.css';
+import './css/gioi-thieu.css';
 
 import {
   renderHeader,
@@ -36,8 +37,11 @@ function init() {
   setupHeaderEvents();
   setupBookingSystem();
 
+
   // Khởi động chức năng bình luận
   initComments();
 }
 
 init();
+
+
