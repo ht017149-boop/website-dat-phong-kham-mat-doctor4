@@ -1,14 +1,10 @@
-﻿/* ============================================================
+/* ============================================================
    src/pages/booking.js — Doctor4 Eye Clinic
    Xử lý toàn bộ tính năng Đặt Lịch Khám Người Dùng & Hiển thị Bác Sĩ
    ============================================================ */
 
-
 import { INITIAL_10_DOCTORS, CLINIC_ROOMS, CLINIC_SERVICES, getClinicServices } from '../data/clinic-data.js';
-
-import { INITIAL_10_DOCTORS, CLINIC_ROOMS, CLINIC_SERVICES } from '../data/clinic-data.js';
 import { compressImageFile, getDefaultPatientPhotos, getPatientProfileData } from '../utils/patient-profile.js';
-
 
 const DOCTORS_STORAGE_KEY = 'doctor4_doctors_db';
 const APPOINTMENTS_STORAGE_KEY = 'doctor4_appointments_db';
@@ -45,78 +41,9 @@ function saveAppointment(data) {
     list = [];
   }
 
-
-
-  const randomCode =
-    Math.floor(
-      1000 + Math.random() * 9000
-    );
-
+  const randomCode = Math.floor(1000 + Math.random() * 9000);
   const examFee = Number(data.examFee || 200000);
   const serviceFee = Number(data.serviceFee || 0);
-
-  const newAppointment = {
-
-    id:
-      `DOC-${new Date().getFullYear()}-${randomCode}`,
-
-    patientName:
-      data.patientName,
-
-    patientPhone:
-      data.patientPhone,
-
-    patientEmail:
-      data.patientEmail ||
-      'Chưa cập nhật',
-
-    serviceCode:
-      data.serviceCode,
-
-    serviceName:
-      data.serviceName,
-
-    doctorId:
-      data.doctorId,
-
-    doctorName:
-      data.doctorName,
-
-    roomId:
-      data.roomId,
-
-    roomName:
-      data.roomName,
-
-    date:
-      data.date,
-
-    timeSlot:
-      data.timeSlot,
-
-    symptoms:
-      data.symptoms ||
-      'Khám mắt định kỳ theo yêu cầu',
-
-    examFee: examFee,
-    serviceFee: serviceFee,
-    prepaidDesc: data.prepaidDesc || 'Phí khám ban đầu',
-    postpaidDesc: data.postpaidDesc || 'Chi phí điều trị phát sinh',
-    billing: {
-      examFee: examFee,
-      serviceFee: serviceFee,
-      totalAmount: examFee,
-      paymentStatus: 'unpaid'
-    },
-
-    status:
-      'pending',
-
-    createdAt:
-      new Date().toISOString()
-
-
-  const randomCode = Math.floor(1000 + Math.random() * 9000);
 
   const newAppointment = {
     id: `DOC-${new Date().getFullYear()}-${randomCode}`,
@@ -133,9 +60,18 @@ function saveAppointment(data) {
     timeSlot: data.timeSlot,
     symptoms: data.symptoms || 'Khám mắt định kỳ theo yêu cầu',
     patientProfile: data.patientProfile || null,
+    examFee: examFee,
+    serviceFee: serviceFee,
+    prepaidDesc: data.prepaidDesc || 'Phí khám ban đầu',
+    postpaidDesc: data.postpaidDesc || 'Chi phí điều trị phát sinh',
+    billing: {
+      examFee: examFee,
+      serviceFee: serviceFee,
+      totalAmount: examFee,
+      paymentStatus: 'unpaid'
+    },
     status: 'pending',
     createdAt: new Date().toISOString()
-
   };
 
   list.unshift(newAppointment);
@@ -291,32 +227,7 @@ export function setupBookingForm() {
   const srvSelect = document.getElementById('book-service');
   if (!form || !srvSelect) return;
 
-
-  const form =
-    document.getElementById(
-      'client-booking-form'
-    );
-
-
-  const srvSelect =
-    document.getElementById(
-      'book-service'
-    );
-
-
-  if (
-    !form ||
-    !srvSelect
-  ) {
-    return;
-  }
-
-
-  /*
-  ========================================
-  CẬP NHẬT TÍNH TIỀN TRỰC TIẾP (BƯỚC 2)
-  ========================================
-  */
+  // Cập nhật tính tiền trực tiếp
   function updateFeePreview(code) {
     const services = getClinicServices();
     const s = services.find(item => item.code === code || item.id === code) || services[0];
@@ -338,203 +249,15 @@ export function setupBookingForm() {
     if (submitTextEl) submitTextEl.textContent = `✨ XÁC NHẬN ĐẶT LỊCH & TIẾP TỤC THANH TOÁN (${examFee.toLocaleString('vi-VN')}đ)`;
   }
 
-  /*
-  ========================================
-  KHỞI TẠO OPTIONS & TÍNH TIỀN
-  ========================================
-  */
+  // Khởi tạo Options & tính tiền ban đầu
+  updateDoctorAndRoomOptions(srvSelect.value);
+  updateFeePreview(srvSelect.value);
 
-  updateDoctorAndRoomOptions(
-    srvSelect.value
-  );
-
-  updateFeePreview(
-    srvSelect.value
-  );
-
-
-  /*
-  ========================================
-  KHI CHỌN DỊCH VỤ
-  ========================================
-  */
-
-  srvSelect.addEventListener(
-    'change',
-    () => {
-
-      updateDoctorAndRoomOptions(
-        srvSelect.value
-      );
-
-      updateFeePreview(
-        srvSelect.value
-      );
-
-    }
-  );
-
-
-  /*
-  ========================================
-  KHI SUBMIT ĐẶT LỊCH
-  ========================================
-  */
-
-  form.addEventListener(
-    'submit',
-    e => {
-
-      e.preventDefault();
-
-
-      const name =
-        document
-          .getElementById(
-            'book-name'
-          )
-          .value
-          .trim();
-
-
-      const phone =
-        document
-          .getElementById(
-            'book-phone'
-          )
-          .value
-          .trim();
-
-
-      const email =
-        document
-          .getElementById(
-            'book-email'
-          )
-          ?.value
-          .trim() ||
-        '';
-
-
-      const serviceCode =
-        srvSelect.value;
-
-
-      /*
-      ========================================
-      BƯỚC 2: HỆ THỐNG TÍNH TIỀN CHÍNH XÁC
-      ========================================
-      */
-      const services = getClinicServices();
-      const selectedService =
-        services.find(s => s.code === serviceCode || s.id === serviceCode) || services[0];
-      const examFee = Number(selectedService.examFee || 200000);
-      const serviceFee = Number(selectedService.serviceFee || 0);
-
-
-      /*
-      ========================================
-      BÁC SĨ
-      ========================================
-      */
-
-      const docSelect =
-        document.getElementById(
-          'book-doctor'
-        );
-
-
-      const doctorId =
-        docSelect.value;
-
-
-      const doctorName =
-        docSelect
-          .selectedOptions[0]
-          ?.getAttribute(
-            'data-name'
-          ) ||
-        docSelect
-          .selectedOptions[0]
-          ?.text;
-
-
-      /*
-      ========================================
-      PHÒNG
-      ========================================
-      */
-
-      const roomSelect =
-        document.getElementById(
-          'book-room'
-        );
-
-
-      const roomId =
-        roomSelect.value;
-
-
-      const roomName =
-        roomSelect
-          .selectedOptions[0]
-          ?.getAttribute(
-            'data-name'
-          ) ||
-        roomSelect
-          .selectedOptions[0]
-          ?.text;
-
-
-      /*
-      ========================================
-      NGÀY + GIỜ
-      ========================================
-      */
-
-      const date =
-        document
-          .getElementById(
-            'book-date'
-          )
-          .value;
-
-
-      const timeSlot =
-        document
-          .getElementById(
-            'book-time'
-          )
-          .value;
-
-
-      const symptoms =
-        document
-          .getElementById(
-            'book-symptoms'
-          )
-          ?.value
-          .trim() ||
-        '';
-
-
-      /*
-      ========================================
-      KIỂM TRA
-      ========================================
-      */
-
-      if (
-        !name ||
-        !phone ||
-        !date
-      ) {
-
-        alert(
-          'Vui lòng điền đầy đủ Họ tên, Số điện thoại và Ngày khám.'
-        );
-
-        return;
+  // Khi thay đổi dịch vụ
+  srvSelect.addEventListener('change', () => {
+    updateDoctorAndRoomOptions(srvSelect.value);
+    updateFeePreview(srvSelect.value);
+  });
 
   // Biến lưu Base64 ảnh upload từ form đặt lịch
   let uploadedPhoto4x6 = '';
@@ -554,7 +277,6 @@ export function setupBookingForm() {
       if (phoneInput && user.phone) phoneInput.value = user.phone;
       if (emailInput && user.email) emailInput.value = user.email;
 
-      // Auto-fill patient profile fields if exist
       if (user.patientProfile) {
         const prof = user.patientProfile;
         if (prof.dob && document.getElementById('book-patient-dob')) document.getElementById('book-patient-dob').value = prof.dob;
@@ -599,7 +321,6 @@ export function setupBookingForm() {
         } catch (err) {
           box.innerHTML = `<span style="font-size: 10px; color: #ef4444;">Lỗi ảnh</span>`;
         }
-
       }
     });
   };
@@ -608,141 +329,19 @@ export function setupBookingForm() {
   bindBookUpload('file-book-cccd-front', 'preview-book-cccd-front', (b64) => { uploadedCccdFront = b64; });
   bindBookUpload('file-book-cccd-back', 'preview-book-cccd-back', (b64) => { uploadedCccdBack = b64; });
 
-
-      /*
-      ========================================
-      LƯU LỊCH HẸN
-      ========================================
-      */
-
-      const newApp =
-        saveAppointment({
-
-          patientName:
-            name,
-
-          patientPhone:
-            phone,
-
-          patientEmail:
-            email,
-
-          serviceCode:
-            selectedService.code,
-
-          serviceName:
-            selectedService.name,
-
-          doctorId:
-            doctorId,
-
-          doctorName:
-            doctorName,
-
-          roomId:
-            roomId,
-
-          roomName:
-            roomName,
-
-          date:
-            date,
-
-          timeSlot:
-            timeSlot,
-
-          symptoms:
-            symptoms,
-
-          examFee:
-            examFee,
-
-          serviceFee:
-            serviceFee,
-
-          prepaidDesc:
-            selectedService.prepaidDesc,
-
-          postpaidDesc:
-            selectedService.postpaidDesc
-
-        });
-
-
-      /*
-      ========================================
-      TẠO BẢN GHI THANH TOÁN ĐỒNG BỘ
-      ========================================
-      */
-      const paymentId = 'PAY' + Date.now();
-      let payments = [];
-      try {
-        payments = JSON.parse(localStorage.getItem('payments') || '[]');
-      } catch (err) {
-        payments = [];
-      }
-
-      const paymentData = {
-        id: paymentId,
-        paymentId: paymentId,
-        appointmentId: newApp.id,
-        patientName: newApp.patientName,
-        name: newApp.patientName,
-        doctorName: newApp.doctorName,
-        doctor: newApp.doctorName,
-        serviceCode: selectedService.code,
-        serviceName: selectedService.name,
-        roomId: newApp.roomId,
-        roomName: newApp.roomName,
-        date: newApp.date,
-        time: newApp.timeSlot,
-        amount: examFee,
-        prepaidAmount: examFee,
-        postpaidAmount: serviceFee,
-        prepaidDesc: selectedService.prepaidDesc,
-        postpaidDesc: selectedService.postpaidDesc,
-        paymentMethod: 'vietqr',
-        bank: 'MB Bank',
-        accountNumber: '0123456789',
-        accountName: 'PHONG KHAM MAT DOCTOR4',
-        content: 'THANHTOAN ' + newApp.id,
-        status: 'pending',
-        createdAt: new Date().toLocaleString('vi-VN')
-      };
-
-      payments.unshift(paymentData);
-      localStorage.setItem('payments', JSON.stringify(payments));
-      localStorage.setItem('payment_' + paymentId, JSON.stringify(paymentData));
-      localStorage.setItem('currentPaymentId', paymentId);
-
-
-      /*
-      ========================================
-      HIỂN THỊ THÔNG BÁO & TIẾN TRÌNH THANH TOÁN
-      ========================================
-      */
-
-      showBookingSuccessModal(
-        newApp,
-        selectedService,
-        paymentId
-      );
-
-  updateDoctorAndRoomOptions(srvSelect.value);
-
-  srvSelect.addEventListener('change', () => {
-    updateDoctorAndRoomOptions(srvSelect.value);
-  });
-
+  // Xử lý submit form
   form.addEventListener('submit', e => {
     e.preventDefault();
-
 
     const name = document.getElementById('book-name').value.trim();
     const phone = document.getElementById('book-phone').value.trim();
     const email = document.getElementById('book-email')?.value.trim() || '';
     const serviceCode = srvSelect.value;
-    const serviceName = srvSelect.selectedOptions[0]?.getAttribute('data-name') || srvSelect.selectedOptions[0]?.text;
+
+    const services = getClinicServices();
+    const selectedService = services.find(s => s.code === serviceCode || s.id === serviceCode) || services[0];
+    const examFee = Number(selectedService.examFee || 200000);
+    const serviceFee = Number(selectedService.serviceFee || 0);
 
     const docSelect = document.getElementById('book-doctor');
     const doctorId = docSelect.value;
@@ -762,16 +361,9 @@ export function setupBookingForm() {
     const address = document.getElementById('book-patient-address')?.value.trim() || 'TP. Hồ Chí Minh';
     const bhytCode = document.getElementById('book-patient-bhyt')?.value.trim() || '';
 
-
-      updateFeePreview(
-        srvSelect.value
-      );
-
-
     if (!name || !phone || !date) {
       alert('Vui lòng điền đầy đủ Họ tên, Số điện thoại và Ngày khám.');
       return;
-
     }
 
     const defaultPhotos = getDefaultPatientPhotos(name, gender);
@@ -798,8 +390,8 @@ export function setupBookingForm() {
       patientName: name,
       patientPhone: phone,
       patientEmail: email,
-      serviceCode: serviceCode,
-      serviceName: serviceName,
+      serviceCode: selectedService.code,
+      serviceName: selectedService.name,
       doctorId: doctorId,
       doctorName: doctorName,
       roomId: roomId,
@@ -807,36 +399,66 @@ export function setupBookingForm() {
       date: date,
       timeSlot: timeSlot,
       symptoms: symptoms,
+      examFee: examFee,
+      serviceFee: serviceFee,
+      prepaidDesc: selectedService.prepaidDesc,
+      postpaidDesc: selectedService.postpaidDesc,
       patientProfile: patientProfile
     });
 
-    showBookingSuccessModal(newApp);
+    // Tạo bản ghi thanh toán đồng bộ
+    const paymentId = 'PAY' + Date.now();
+    let payments = [];
+    try {
+      payments = JSON.parse(localStorage.getItem('payments') || '[]');
+    } catch (err) {
+      payments = [];
+    }
+
+    const paymentData = {
+      id: paymentId,
+      paymentId: paymentId,
+      appointmentId: newApp.id,
+      patientName: newApp.patientName,
+      name: newApp.patientName,
+      doctorName: newApp.doctorName,
+      doctor: newApp.doctorName,
+      serviceCode: selectedService.code,
+      serviceName: selectedService.name,
+      roomId: newApp.roomId,
+      roomName: newApp.roomName,
+      date: newApp.date,
+      time: newApp.timeSlot,
+      amount: examFee,
+      prepaidAmount: examFee,
+      postpaidAmount: serviceFee,
+      prepaidDesc: selectedService.prepaidDesc,
+      postpaidDesc: selectedService.postpaidDesc,
+      paymentMethod: 'vietqr',
+      bank: 'MB Bank',
+      accountNumber: '0123456789',
+      accountName: 'PHONG KHAM MAT DOCTOR4',
+      content: 'THANHTOAN ' + newApp.id,
+      status: 'pending',
+      createdAt: new Date().toLocaleString('vi-VN')
+    };
+
+    payments.unshift(paymentData);
+    localStorage.setItem('payments', JSON.stringify(payments));
+    localStorage.setItem('payment_' + paymentId, JSON.stringify(paymentData));
+    localStorage.setItem('currentPaymentId', paymentId);
+
+    showBookingSuccessModal(newApp, selectedService, paymentId);
     form.reset();
     updateDoctorAndRoomOptions(srvSelect.value);
+    updateFeePreview(srvSelect.value);
   });
 }
 
 /**
-
- * Hiển thị modal đặt lịch thành công — 4 bước đơn giản
- * Thanh toán tại quầy thu ngân sau khi bác sĩ khám xong
+ * Hiển thị modal đặt lịch thành công kèm nút Thanh toán QR & Theo dõi
  */
-function showBookingSuccessModal(
-  app,
-  serviceInfo = null,
-  paymentId = null
-) {
-
-  let modal =
-    document.getElementById(
-      'booking-success-modal'
-    );
-
-
-
- * Hiển thị modal đặt lịch thành công (Kèm nút Thanh toán QR & Theo dõi)
- */
-function showBookingSuccessModal(app) {
+function showBookingSuccessModal(app, serviceInfo = null, paymentId = null) {
   let modal = document.getElementById('booking-success-modal');
 
   if (!modal) {
@@ -845,8 +467,9 @@ function showBookingSuccessModal(app) {
     document.body.appendChild(modal);
   }
 
-  modal.innerHTML = `
+  const examFee = Number(app.examFee || 200000);
 
+  modal.innerHTML = `
     <div style="position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(10px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
       <div style="background:#ffffff;color:#0f172a;max-width:540px;width:100%;border-radius:24px;padding:28px 30px;box-shadow:0 25px 50px rgba(0,0,0,0.35);text-align:center;animation:admScaleIn 0.3s ease-out;max-height:90vh;overflow-y:auto;">
 
@@ -862,103 +485,43 @@ function showBookingSuccessModal(app) {
           <div>👨‍⚕️ <strong>Bác sĩ:</strong> ${app.doctorName}</div>
           <div>🏥 <strong>Phòng khám:</strong> <span style="color:#0284c7;font-weight:700;">${app.roomName || 'Phòng 101'}</span></div>
           <div>📅 <strong>Thời gian:</strong> <strong style="color:#d97706;">${app.timeSlot} — Ngày ${app.date}</strong></div>
+          <div>💳 <strong>Phí khám ban đầu:</strong> <span style="color:#16a34a;font-weight:800;">${examFee.toLocaleString('vi-VN')}đ</span></div>
         </div>
 
         <!-- 4 Bước quy trình -->
         <div style="text-align:left;margin-bottom:18px;">
-          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">📋 Quy Trình 4 Bước Tại Doctor4</div>
+          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">📋 Quy Trình Tại Doctor4</div>
           <div style="display:flex;flex-direction:column;gap:8px;">
             <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#dcfce7;border-radius:10px;">
               <span style="font-size:18px;flex-shrink:0;">✅</span>
               <div><strong style="color:#166534;font-size:12.5px;">Bước 1 — Đặt lịch khám</strong><div style="font-size:11.5px;color:#166534;">Hoàn tất! Hệ thống đã ghi nhận lịch hẹn của bạn.</div></div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#e0f2fe;border-radius:10px;">
-              <span style="font-size:18px;flex-shrink:0;">🏥</span>
-              <div><strong style="color:#0369a1;font-size:12.5px;">Bước 2 — Đến phòng khám</strong><div style="font-size:11.5px;color:#0369a1;">Đến đúng giờ, trình mã vé tại quầy lễ tân để xếp số thứ tự.</div></div>
+              <span style="font-size:18px;flex-shrink:0;">💳</span>
+              <div><strong style="color:#0369a1;font-size:12.5px;">Bước 2 — Thanh toán QR / Quầy</strong><div style="font-size:11.5px;color:#0369a1;">Chuyển khoản QR trực tuyến hoặc thanh toán tại quầy lễ tân.</div></div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fef3c7;border-radius:10px;">
               <span style="font-size:18px;flex-shrink:0;">🩺</span>
-              <div><strong style="color:#92400e;font-size:12.5px;">Bước 3 — Bác sĩ khám & kê đơn</strong><div style="font-size:11.5px;color:#92400e;">Bác sĩ khám lâm sàng, ghi bệnh án và kê đơn thuốc chi tiết.</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f3e8ff;border-radius:10px;">
-              <span style="font-size:18px;flex-shrink:0;">💵</span>
-              <div><strong style="color:#6b21a8;font-size:12.5px;">Bước 4 — Thanh toán tại quầy thu ngân</strong><div style="font-size:11.5px;color:#6b21a8;">Hóa đơn tự động chuyển về quầy. Thanh toán tiền mặt, thẻ hoặc chuyển khoản.</div></div>
+              <div><strong style="color:#92400e;font-size:12.5px;">Bước 3 — Khám chuyên khoa & Kê đơn</strong><div style="font-size:11.5px;color:#92400e;">Bác sĩ khám lâm sàng và cập nhật bệnh án trực tuyến.</div></div>
             </div>
           </div>
         </div>
 
         <!-- Buttons -->
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button type="button" id="btn-view-ticket-now" style="flex:1;min-width:160px;padding:13px;background:linear-gradient(135deg,#0284c7,#2563eb);color:#fff;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-size:13.5px;">
+          <button type="button" id="btn-payment-qr" style="flex:1;min-width:140px;padding:13px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-size:13.5px;">
+            💳 Thanh toán QR
+          </button>
+          <button type="button" id="btn-view-ticket-now" style="flex:1;min-width:140px;padding:13px;background:linear-gradient(135deg,#0284c7,#2563eb);color:#fff;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-size:13.5px;">
             🎫 Xem vé khám
           </button>
           <button type="button" id="btn-close-success-modal" style="padding:13px 20px;background:#e2e8f0;color:#334155;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-size:13px;">
-
-    <div style="position: fixed; inset: 0; background: rgba(15,23,42,0.8); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-      <div style="background: #ffffff; color: #0f172a; max-width: 540px; width: 100%; border-radius: 20px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; animation: admScaleIn 0.3s ease-out;">
-        <div style="font-size: 56px; margin-bottom: 12px;">📋</div>
-        <h2 style="font-size: 22px; font-weight: 800; color: #0284c7; margin-bottom: 6px;">Yêu Cầu Đã Được Ghi Nhận!</h2>
-        <p style="color: #64748b; font-size: 14px; margin-bottom: 16px;">
-          Doctor4 đã tiếp nhận yêu cầu đặt lịch của bạn. Phòng khám đang xem xét và sẽ xác nhận phòng & bác sĩ phụ trách sớm nhất.
-        </p>
-
-        <!-- TRẠNG THÁI -->
-        <div style="background: #fef3c7; border: 1.5px solid #fcd34d; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; text-align: left;">
-          <span style="font-size: 22px;">⏳</span>
-          <div>
-            <div style="font-weight: 700; color: #92400e; font-size: 13px;">Đang chờ xác nhận lịch khám</div>
-            <div style="font-size: 12px; color: #b45309;">Phòng khám sẽ xếp phòng và liên hệ sớm nhất.</div>
-          </div>
-        </div>
-
-        <!-- THÔNG TIN LỊCH HẸN -->
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; text-align: left; font-size: 13.5px; line-height: 1.9; margin-bottom: 20px;">
-          <div>🔖 <strong>Mã lịch hẹn:</strong> <span style="font-family: monospace; color: #2563eb; font-weight: 800; font-size: 15px;">${app.id}</span></div>
-          <div>👤 <strong>Bệnh nhân:</strong> ${app.patientName} (📞 ${app.patientPhone})</div>
-          <div>🩺 <strong>Dịch vụ yêu cầu:</strong> ${app.serviceName}</div>
-          <div>👨‍⚕️ <strong>Bác sĩ đề xuất:</strong> ${app.doctorName}</div>
-          <div>📅 <strong>Ngày hẹn mong muốn:</strong> <strong style="color: #d97706;">${app.timeSlot} — Ngày ${app.date}</strong></div>
-        </div>
-
-        <!-- HƯỚNG DẪN -->
-        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px 16px; font-size: 12.5px; color: #0369a1; margin-bottom: 20px; text-align: left;">
-          💡 <strong>Lưu mã hẹn:</strong> Dùng mã <strong style="font-family: monospace; color: #2563eb;">${app.id}</strong> hoặc số điện thoại để tra cứu trạng thái xác nhận phòng khám.
-        </div>
-
-        <!-- BUTTONS -->
-        <div style="display: flex; gap: 10px;">
-          <button type="button" id="btn-payment-qr" style="flex: 1; padding: 13px; background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; font-size: 14px;">
-            💳 Thanh toán QR
-          </button>
-          <button type="button" id="btn-view-ticket-now" style="flex: 1; padding: 13px; background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; font-size: 14px;">
-            🔍 Theo dõi lịch hẹn
-          </button>
-          <button type="button" id="btn-close-success-modal" style="padding: 13px 20px; background: #e2e8f0; color: #334155; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; font-size: 14px;">
-
             Đóng
           </button>
         </div>
       </div>
     </div>
   `;
-
-
-  document
-    .getElementById('btn-close-success-modal')
-    ?.addEventListener('click', () => { modal.innerHTML = ''; });
-
-  document
-    .getElementById('btn-view-ticket-now')
-    ?.addEventListener('click', () => {
-      modal.innerHTML = '';
-      import('./my-appointments.js')
-        .then(module => { module.openLookupAppointmentModal(app.id); })
-        .catch(error => {
-          console.error('Không thể mở tra cứu lịch hẹn:', error);
-          alert('Không thể mở phần tra cứu lịch hẹn.');
-        });
-    });
-
 
   document.getElementById('btn-close-success-modal')?.addEventListener('click', () => {
     modal.innerHTML = '';
@@ -975,9 +538,8 @@ function showBookingSuccessModal(app) {
   });
 
   document.getElementById('btn-payment-qr')?.addEventListener('click', () => {
-    const amount = 200000;
-    const paymentUrl = `/payment.html?appointmentId=${encodeURIComponent(app.id)}&amount=${amount}&name=${encodeURIComponent(app.patientName)}&doctor=${encodeURIComponent(app.doctorName)}&date=${encodeURIComponent(app.date)}&time=${encodeURIComponent(app.timeSlot)}`;
+    const paymentUrl = `/payment.html?appointmentId=${encodeURIComponent(app.id)}&amount=${examFee}&name=${encodeURIComponent(app.patientName)}&doctor=${encodeURIComponent(app.doctorName)}&date=${encodeURIComponent(app.date)}&time=${encodeURIComponent(app.timeSlot)}`;
     window.location.href = paymentUrl;
   });
-
 }
+
