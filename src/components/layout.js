@@ -40,7 +40,8 @@ export function renderHeader(active) {
           </div>
           <a href="/ho-so.html" class="nav-dropdown-item" style="color: #38bdf8; font-weight: 700;">👤 Thông tin người dùng</a>
           ${user.role === 'admin' ? `<a href="/admin/index.html" class="nav-dropdown-item">📊 Quản trị Admin</a>` : ''}
-          ${user.role === 'doctor' ? `<a href="/bac-si.html" class="nav-dropdown-item" style="color: #38bdf8; font-weight: 700;">🩺 Cổng Bác Sĩ (Phòng khám)</a>` : ''}
+          ${user.role === 'doctor' || user.role === 'admin' ? `<a href="/bac-si.html" class="nav-dropdown-item" style="color: #38bdf8; font-weight: 700;">🩺 Cổng Bác Sĩ (Phòng khám)</a>` : ''}
+          ${user.role === 'cashier' || user.role === 'admin' ? `<a href="/thu-ngan.html" class="nav-dropdown-item" style="color: #22c55e; font-weight: 700;">💵 Cổng Thu Ngân (Viện Phí)</a>` : ''}
           <a href="javascript:void(0)" class="nav-dropdown-item btn-open-patient-profile" style="color: #38bdf8; font-weight: 600;">📋 Hồ sơ bệnh nhân & Tải ảnh CCCD</a>
           <a href="javascript:void(0)" class="nav-dropdown-item btn-open-user-lookup" data-phone="${user.phone || ''}">🎫 Xem phòng & vé khám của tôi</a>
           <a href="/index.html#dat-lich" class="nav-dropdown-item">📅 Đặt lịch khám mới</a>
