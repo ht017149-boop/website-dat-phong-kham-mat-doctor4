@@ -1,5 +1,6 @@
 import './css/style.css';
 import './css/home.css';
+import './css/gioi-thieu.css';
 
 import {
   renderHeader,
