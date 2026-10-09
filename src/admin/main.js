@@ -8,7 +8,7 @@ import '../css/admin.css';
 import { AdminAuth } from './admin-auth.js';
 import { DoctorManager, SAMPLE_AVATARS } from './doctor-manager.js';
 import { AppointmentManager, SAMPLE_EYE_DRUGS, SAMPLE_DIAGNOSES } from './appointment-manager.js';
-import { CLINIC_ROOMS, CLINIC_SERVICES } from '../data/clinic-data.js';
+import { CLINIC_ROOMS, CLINIC_SERVICES, getClinicServices, saveClinicServices } from '../data/clinic-data.js';
 
 // Khởi tạo container chính
 const appRoot = document.getElementById('admin-app') || document.body;
@@ -1565,10 +1565,12 @@ function renderPaymentsManagementView() {
           <tr>
             <th>Mã giao dịch</th>
             <th>Khách hàng</th>
+            <th>Dịch vụ khám</th>
             <th>Bác sĩ</th>
             <th>Ngày khám</th>
             <th>Giờ</th>
-            <th>Số tiền</th>
+            <th>Số tiền (Thu trước)</th>
+            <th>Phương thức</th>
             <th>Trạng thái</th>
             <th>Thao tác</th>
           </tr>
@@ -1580,7 +1582,7 @@ function renderPaymentsManagementView() {
             payments.length === 0
               ? `
                 <tr>
-                  <td colspan="8"
+                  <td colspan="10"
                       style="text-align:center;padding:40px;">
                     Chưa có giao dịch thanh toán nào.
                   </td>
@@ -1630,34 +1632,50 @@ function renderPaymentsManagementView() {
                     `;
                   }
 
+                  let methodLabel = 'VietQR';
+                  if (payment.paymentMethod === 'counter') methodLabel = '🏢 Tại quầy';
+                  else if (payment.paymentMethod === 'vnpay') methodLabel = '⚡ VNPAY';
+                  else if (payment.paymentMethod === 'momo') methodLabel = '⚡ MoMo';
+
                   return `
                     <tr>
 
                       <td>
-                        <strong>${escapeHtml(payment.id)}</strong>
+                        <strong style="color: #38bdf8; font-family: monospace;">${escapeHtml(payment.id || payment.paymentId || 'N/A')}</strong>
+                        ${payment.appointmentId ? `<div style="font-size: 11px; color: #94a3b8;">Hẹn: ${escapeHtml(payment.appointmentId)}</div>` : ''}
                       </td>
 
                       <td>
-                        ${escapeHtml(payment.patientName)}
+                        <strong>${escapeHtml(payment.patientName || payment.name || 'Khách vãng lai')}</strong>
                       </td>
 
                       <td>
-                        ${escapeHtml(payment.doctorName)}
+                        <span style="color: #38bdf8; font-weight: 600;">${escapeHtml(payment.serviceName || 'Khám Mắt')}</span>
                       </td>
 
                       <td>
-                        ${escapeHtml(payment.date)}
+                        ${escapeHtml(payment.doctorName || payment.doctor || 'BS Trực')}
                       </td>
 
                       <td>
-                        ${escapeHtml(payment.time)}
+                        ${escapeHtml(payment.date || 'Hôm nay')}
                       </td>
 
                       <td>
-                        <strong>
+                        ${escapeHtml(payment.time || '08:00')}
+                      </td>
+
+                      <td>
+                        <strong style="color: #4ade80; font-size: 14px;">
                           ${Number(payment.amount || 0)
                             .toLocaleString('vi-VN')}đ
                         </strong>
+                      </td>
+
+                      <td>
+                        <span style="background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                          ${methodLabel}
+                        </span>
                       </td>
 
                       <td>
@@ -1667,7 +1685,7 @@ function renderPaymentsManagementView() {
                       <td>
 
                         ${
-                          payment.status === 'pending'
+                          (payment.status === 'pending' || payment.status === 'counter_pending')
                             ? `
                               <button
   type="button"
@@ -1675,7 +1693,7 @@ function renderPaymentsManagementView() {
   data-payment-action="confirm"
   data-payment-index="${index}"
   style="background:rgba(34,197,94,.15);color:#22c55e;border-color:rgba(34,197,94,.35);"
-  title="Xác nhận">
+  title="Xác nhận thanh toán">
   ✓
 </button>
 
@@ -1730,6 +1748,7 @@ function confirmAdminPayment(index) {
 
   payment.status = 'success';
   payment.confirmedAt = new Date().toLocaleString('vi-VN');
+  payment.paidAt = payment.confirmedAt;
 
   // Lưu danh sách thanh toán
   localStorage.setItem(
@@ -1743,8 +1762,33 @@ function confirmAdminPayment(index) {
     JSON.stringify(payment)
   );
 
+  // Đồng bộ trạng thái lịch hẹn sang confirmed
+  if (payment.appointmentId) {
+    try {
+      const raw = localStorage.getItem('doctor4_appointments_db');
+      if (raw) {
+        let apps = JSON.parse(raw);
+        const idx = apps.findIndex(a => String(a.id) === String(payment.appointmentId));
+        if (idx !== -1) {
+          apps[idx].status = 'confirmed';
+          apps[idx].billing = {
+            ...(apps[idx].billing || {}),
+            examFee: Number(payment.amount || 200000),
+            totalAmount: Number(payment.amount || 200000),
+            paymentStatus: 'paid',
+            paymentMethod: payment.paymentMethod || 'VietQR',
+            paidAt: payment.confirmedAt
+          };
+          localStorage.setItem('doctor4_appointments_db', JSON.stringify(apps));
+        }
+      }
+    } catch (e) {
+      console.error('Lỗi sync appointment:', e);
+    }
+  }
+
   showToast(
-    'Đã xác nhận thanh toán thành công!',
+    'Đã xác nhận thanh toán & xếp phòng thành công!',
     'success'
   );
 
@@ -1905,21 +1949,68 @@ function bindAccountsEvents() {
 }
 
 function renderSettingsPlaceholderView() {
+  const services = getClinicServices();
 
   return `
     <div class="adm-page-header">
       <div class="adm-page-title">
-        <h1>Cài Đặt Hệ Thống Phòng Khám</h1>
-        <p>Cấu hình tài khoản quản trị và thông số hoạt động</p>
+        <h1>⚙️ Cài Đặt Hệ Thống & Bảng Giá Dịch Vụ</h1>
+        <p>Cấu hình tài khoản quản trị và bảng giá viện phí niêm yết đồng bộ với trang chủ</p>
       </div>
     </div>
-    <div style="background: var(--adm-bg-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-lg); padding: 24px; max-width: 600px;">
-      <h3 style="color: #fff; margin-bottom: 16px;">Tài khoản Quản trị viên</h3>
-      <div style="color: var(--adm-text-muted); font-size: 14px; line-height: 2;">
-        <div>Tên hiển thị: <strong style="color: #fff;">Quản Trị Viên (Admin)</strong></div>
-        <div>Tên đăng nhập: <strong style="color: var(--adm-primary);">admin</strong></div>
-        <div>Mật khẩu: <strong style="color: var(--adm-primary);">123456</strong></div>
-        <div>Email quản trị: <strong style="color: #fff;">admin@doctor4.vn</strong></div>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
+      <!-- BẢNG GIÁ DỊCH VỤ -->
+      <div style="background: var(--adm-bg-surface); border: 1.5px solid rgba(56,189,248,0.3); border-radius: var(--adm-radius-lg); padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--adm-border); padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 style="color: #38bdf8; margin: 0; font-size: 18px;">💰 Quản lý Bảng giá Dịch vụ & Thu phí</h3>
+            <p style="color: var(--adm-text-muted); font-size: 13px; margin: 4px 0 0;">Phân định rõ khoản thu trước (Phí khám) và khoản thanh toán sau (Điều trị/phẫu thuật) hiển thị trên Trang Chủ & Cổng thanh toán.</p>
+          </div>
+          <button id="btn-save-services-pricing" style="padding: 10px 20px; background: linear-gradient(135deg, #16a34a, #22c55e); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+            💾 Lưu Cấu Hình Bảng Giá
+          </button>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="adm-table" style="width: 100%;">
+            <thead>
+              <tr>
+                <th>Mã</th>
+                <th>Tên dịch vụ mắt</th>
+                <th>Phòng mặc định</th>
+                <th>Khoản thu trước (Phí khám VNĐ)</th>
+                <th>Khoản thanh toán sau (Dự kiến VNĐ)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${services.map((s) => `
+                <tr>
+                  <td><strong style="color: #38bdf8; font-family: monospace;">${s.code}</strong></td>
+                  <td><strong>${escapeHtml(s.name)}</strong></td>
+                  <td>${escapeHtml(s.defaultRoom || 'Phòng khám')}</td>
+                  <td>
+                    <input type="number" step="10000" min="0" class="adm-input adm-input-no-icon srv-exam-fee" data-code="${s.code}" value="${Number(s.examFee || 200000)}" style="width: 150px; font-weight: 700; color: #4ade80;" />
+                  </td>
+                  <td>
+                    <input type="number" step="100000" min="0" class="adm-input adm-input-no-icon srv-service-fee" data-code="${s.code}" value="${Number(s.serviceFee || 0)}" style="width: 170px;" />
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TÀI KHOẢN ADMIN -->
+      <div style="background: var(--adm-bg-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-lg); padding: 24px; max-width: 600px;">
+        <h3 style="color: #fff; margin-bottom: 16px;">🔑 Tài khoản Quản trị viên</h3>
+        <div style="color: var(--adm-text-muted); font-size: 14px; line-height: 2;">
+          <div>Tên hiển thị: <strong style="color: #fff;">Quản Trị Viên (Admin)</strong></div>
+          <div>Tên đăng nhập: <strong style="color: var(--adm-primary);">admin</strong></div>
+          <div>Mật khẩu: <strong style="color: var(--adm-primary);">123456</strong></div>
+          <div>Email quản trị: <strong style="color: #fff;">admin@doctor4.vn</strong></div>
+        </div>
       </div>
     </div>
   `;
@@ -3202,6 +3293,27 @@ function bindViewSpecificEvents() {
   // Events cho Tab Accounts (Quản lý Tài Khoản)
   if (currentTab === 'accounts') {
     bindAccountsEvents();
+  }
+
+  // Events cho Tab Settings (Lưu Bảng Giá Dịch Vụ)
+  if (currentTab === 'settings') {
+    document.getElementById('btn-save-services-pricing')?.addEventListener('click', () => {
+      const services = getClinicServices();
+      const updatedServices = services.map(s => {
+        const examInput = document.querySelector(`.srv-exam-fee[data-code="${s.code}"]`);
+        const serviceInput = document.querySelector(`.srv-service-fee[data-code="${s.code}"]`);
+        const newExamFee = examInput ? Number(examInput.value || 0) : s.examFee;
+        const newServiceFee = serviceInput ? Number(serviceInput.value || 0) : s.serviceFee;
+        return {
+          ...s,
+          examFee: newExamFee,
+          serviceFee: newServiceFee
+        };
+      });
+      saveClinicServices(updatedServices);
+      showToast('Đã lưu cấu hình bảng giá thành công! Trang chủ và cổng thanh toán đã đồng bộ theo giá mới.', 'success');
+      refreshMainView();
+    });
   }
 }
 

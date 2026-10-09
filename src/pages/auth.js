@@ -25,6 +25,17 @@ const INITIAL_DEMO_USERS = [
     createdAt: new Date().toISOString()
   },
   {
+    id: 'usr_cashier_001',
+    name: 'Nguyễn Mai Anh (Thu Ngân)',
+    email: 'thungan@doctor4.vn',
+    phone: '0901234567',
+    password: '123456',
+    role: 'cashier',
+    desk: 'Quầy Thu Ngân 1 - Tầng 1',
+    avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=cashier',
+    createdAt: new Date().toISOString()
+  },
+  {
     id: 'usr_patient_001',
     name: 'Nguyễn Văn An (Bệnh nhân)',
     email: 'benhnhan@doctor4.vn',
@@ -93,6 +104,21 @@ export const AuthService = {
           if (!exists.specialty && doc.specialty) exists.specialty = doc.specialty;
         }
       });
+
+      // Đảm bảo tài khoản Thu Ngân mặc định luôn tồn tại
+      if (!users.some(u => u.email === 'thungan@doctor4.vn' || u.role === 'cashier')) {
+        users.push({
+          id: 'usr_cashier_001',
+          name: 'Nguyễn Mai Anh (Thu Ngân)',
+          email: 'thungan@doctor4.vn',
+          phone: '0901234567',
+          password: '123456',
+          role: 'cashier',
+          desk: 'Quầy Thu Ngân 1 - Tầng 1',
+          avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=cashier',
+          createdAt: new Date().toISOString()
+        });
+      }
 
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
       return users;
@@ -169,6 +195,7 @@ export const AuthService = {
       degree: user.degree || null,
       specialty: user.specialty || null,
       schedule: user.schedule || null,
+      desk: user.desk || null,
       avatar: user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.name)}`
     };
 
@@ -420,6 +447,8 @@ function setupLoginPage() {
           redirectUrl = '/admin/index.html';
         } else if (user.role === 'doctor') {
           redirectUrl = '/bac-si.html';
+        } else if (user.role === 'cashier') {
+          redirectUrl = '/thu-ngan.html';
         } else {
           redirectUrl = '/lich-kham.html';
         }
