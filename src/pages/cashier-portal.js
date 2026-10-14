@@ -17,16 +17,121 @@ function getCashierSession() {
     const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     const user = JSON.parse(raw);
-    return (user && (user.role === 'cashier' || user.role === 'admin')) ? user : null;
+    if (!user) return null;
+    if (user.email === 'thungan@doctor4.vn') {
+      user.role = 'cashier';
+    }
+    return (user.role === 'cashier' || user.role === 'admin') ? user : null;
   } catch { return null; }
 }
+
+/* ── SAMPLE DEMO INVOICES ── */
+const SAMPLE_INVOICES = [
+  {
+    id: 'HD-2026-1082',
+    appointmentId: 'app_demo_001',
+    patientName: 'Trần Văn Hoàng',
+    patientPhone: '0912 345 678',
+    patientGender: 'Nam',
+    patientAge: '45 tuổi',
+    doctorId: 'doc_1',
+    doctorName: 'BS. CKII Nguyễn Minh Quân',
+    roomId: 'r101',
+    roomName: 'Phòng 101 - Khám Mắt Tổng Quát',
+    serviceName: 'Khám khúc xạ & Đáy mắt chuyên sâu',
+    diagnosis: 'Cận thị tiến triển kèm khô mắt mức độ trung bình (H52.1)',
+    advice: 'Tra nước mắt nhân tạo 4 lần/ngày, giảm thời gian nhìn màn hình, tái khám sau 3 tháng.',
+    revisitDate: '2026-12-20',
+    prescriptions: [
+      { name: 'Systane Ultra (Lọ 10ml)', type: 'Thuốc nhỏ mắt', quantity: 2, dosage: 'Nhỏ 1 giọt/mắt x 4 lần/ngày', price: 95000, amount: 190000 },
+      { name: 'Vismed 0.18% (Hộp 20 ống)', type: 'Nước mắt nhân tạo', quantity: 1, dosage: 'Nhỏ 1 ống/ngày', price: 180000, amount: 180000 },
+      { name: 'Nutrof Total (Hộp 30 viên)', type: 'Bổ mắt chống oxy hóa', quantity: 1, dosage: 'Uống 1 viên sau ăn sáng', price: 320000, amount: 320000 }
+    ],
+    examFee: 250000,
+    medicineFee: 690000,
+    serviceFee: 150000,
+    discount: 50000,
+    totalAmount: 1040000,
+    status: 'pending',
+    sentAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    paidAt: null,
+    cashierName: null,
+    paymentMethod: null
+  },
+  {
+    id: 'HD-2026-1083',
+    appointmentId: 'app_demo_002',
+    patientName: 'Lê Thị Thu Thủy',
+    patientPhone: '0988 776 655',
+    patientGender: 'Nữ',
+    patientAge: '32 tuổi',
+    doctorId: 'doc_2',
+    doctorName: 'BS. CKI Đỗ Phương Thảo',
+    roomId: 'r102',
+    roomName: 'Phòng 102 - Phẫu Thuật Khúc Xạ LASIK',
+    serviceName: 'Khảo sát bề mặt giác mạc & Tư vấn Femto-LASIK',
+    diagnosis: 'Cận loạn thị cao hai mắt (OD: -5.50 -1.25 x 180, OS: -5.00 -1.00 x 175)',
+    advice: 'Giác mạc đủ điều kiện mổ Femto-LASIK, kiêng đeo kính áp tròng mềm 7 ngày trước mổ.',
+    revisitDate: '2026-10-25',
+    prescriptions: [
+      { name: 'Cravis 0.5% (Lọ 5ml)', type: 'Kháng sinh nhỏ mắt', quantity: 1, dosage: 'Nhỏ 1 giọt x 3 lần/ngày', price: 85000, amount: 85000 },
+      { name: 'Sanlein 0.1% (Lọ 5ml)', type: 'Dưỡng ẩm giác mạc', quantity: 2, dosage: 'Nhỏ 1 giọt x 4 lần/ngày', price: 72000, amount: 144000 }
+    ],
+    examFee: 350000,
+    medicineFee: 229000,
+    serviceFee: 300000,
+    discount: 100000,
+    totalAmount: 779000,
+    status: 'pending',
+    sentAt: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
+    paidAt: null,
+    cashierName: null,
+    paymentMethod: null
+  },
+  {
+    id: 'HD-2026-1081',
+    appointmentId: 'app_demo_003',
+    patientName: 'Phạm Minh Đức',
+    patientPhone: '0903 112 233',
+    patientGender: 'Nam',
+    patientAge: '58 tuổi',
+    doctorId: 'doc_4',
+    doctorName: 'ThS. BS Lê Hoàng Phúc',
+    roomId: 'r104',
+    roomName: 'Phòng 104 - Đục Thủy Tinh Thể (Phaco)',
+    serviceName: 'Đo nhãn áp & Soi góc tiền phòng',
+    diagnosis: 'Đục thủy tinh thể độ II hai mắt, nhãn áp trong giới hạn bình thường',
+    advice: 'Theo dõi tiến triển 6 tháng/lần, đeo kính râm khi ra nắng.',
+    revisitDate: '2027-04-10',
+    prescriptions: [
+      { name: 'Phacolin (Lọ 10ml)', type: 'Thuốc làm chậm đục TTT', quantity: 2, dosage: 'Nhỏ 1 giọt x 3 lần/ngày', price: 110000, amount: 220000 }
+    ],
+    examFee: 250000,
+    medicineFee: 220000,
+    serviceFee: 100000,
+    discount: 0,
+    totalAmount: 570000,
+    status: 'paid',
+    sentAt: new Date(Date.now() - 120 * 60 * 1000).toISOString(),
+    paidAt: new Date(Date.now() - 100 * 60 * 1000).toISOString(),
+    cashierName: 'Nguyễn Mai Anh (Thu Ngân)',
+    paymentMethod: 'Chuyển khoản ngân hàng'
+  }
+];
 
 /* ── INVOICE MANAGER ── */
 function getInvoices() {
   try {
     const raw = localStorage.getItem(INVOICES_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+    let list = raw ? JSON.parse(raw) : [];
+    if (!list || list.length === 0) {
+      list = [...SAMPLE_INVOICES];
+      localStorage.setItem(INVOICES_KEY, JSON.stringify(list));
+    }
+    return list;
+  } catch {
+    return [...SAMPLE_INVOICES];
+  }
 }
 
 function saveInvoices(list) {

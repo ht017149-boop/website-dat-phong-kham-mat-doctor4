@@ -43,8 +43,14 @@ function init() {
       const userSession = localStorage.getItem('doctor4_session') || sessionStorage.getItem('doctor4_session');
       if (userSession) {
         const userData = JSON.parse(userSession);
-        if (userData && userData.role !== 'admin') {
-          renderAccessDenied();
+        if (userData && userData.role === 'cashier') {
+          window.location.href = '/thu-ngan.html';
+          return;
+        } else if (userData && userData.role === 'doctor') {
+          window.location.href = '/bac-si.html';
+          return;
+        } else if (userData && userData.role !== 'admin') {
+          renderAccessDenied(userData);
           return;
         }
       }
@@ -54,14 +60,24 @@ function init() {
 }
 
 // Màn hình từ chối quyền truy cập
-function renderAccessDenied() {
+function renderAccessDenied(userData = null) {
+  const isCashier = userData?.role === 'cashier';
+  const isDoctor = userData?.role === 'doctor';
+  const roleName = isCashier ? 'Thu Ngân' : isDoctor ? 'Bác Sĩ' : 'Bệnh Nhân';
+  const targetLink = isCashier ? '/thu-ngan.html' : isDoctor ? '/bac-si.html' : '/lich-kham.html';
+  const targetLabel = isCashier ? '💵 Vào Cổng Thu Ngân (Viện Phí)' : isDoctor ? '🩺 Vào Cổng Bác Sĩ (Phòng khám)' : '📅 Xem Lịch Khám Của Tôi';
+
   appRoot.innerHTML = `
     <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 20%,#1e3a8a 0%,#0b1329 70%);padding:24px;">
-      <div style="text-align:center;max-width:420px;">
-        <div style="font-size:5rem;margin-bottom:1.5rem;">🚫</div>
-        <h1 style="font-size:1.8rem;font-weight:800;color:#f1f5f9;margin-bottom:0.75rem;">Không có quyền truy cập</h1>
-        <p style="color:#94a3b8;margin-bottom:2rem;line-height:1.6;">Bạn đang đăng nhập bằng tài khoản bệnh nhân. Khu vực Quản trị Admin chỉ dành cho Quản trị viên được cấp phép.</p>
+      <div style="text-align:center;max-width:440px;">
+        <div style="font-size:5rem;margin-bottom:1.5rem;">${isCashier ? '💵' : isDoctor ? '🩺' : '🚫'}</div>
+        <h1 style="font-size:1.8rem;font-weight:800;color:#f1f5f9;margin-bottom:0.75rem;">Bạn đang đăng nhập: ${roleName}</h1>
+        <p style="color:#94a3b8;margin-bottom:2rem;line-height:1.6;">
+          Tài khoản <strong>${escapeHtml(userData?.name || '')}</strong> là tài khoản ${roleName}. 
+          Khu vực Quản trị Admin chỉ dành riêng cho Quản trị viên cấp cao.
+        </p>
         <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          <a href="${targetLink}" style="display:block;padding:0.85rem 1.5rem;background:#22c55e;color:#0b1329;font-weight:800;border-radius:10px;text-decoration:none;">${targetLabel} →</a>
           <a href="/index.html" style="display:block;padding:0.85rem 1.5rem;background:#38bdf8;color:#0b1329;font-weight:700;border-radius:10px;text-decoration:none;">← Quay về Trang chủ</a>
           <a href="/dang-nhap.html" style="display:block;padding:0.85rem 1.5rem;background:rgba(255,255,255,0.08);color:#f1f5f9;font-weight:600;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,0.12);">Đăng nhập bằng tài khoản khác</a>
         </div>
@@ -130,6 +146,11 @@ function renderLoginView() {
 
 
 
+        <div style="display:flex;justify-content:center;gap:16px;margin-top:16px;margin-bottom:8px;font-size:12.5px;">
+          <a href="/thu-ngan.html" style="color:#4ade80;font-weight:700;text-decoration:none;">💵 Cổng Thu Ngân (Viện Phí) →</a>
+          <a href="/bac-si.html" style="color:#38bdf8;font-weight:700;text-decoration:none;">🩺 Cổng Bác Sĩ →</a>
+        </div>
+
         <a href="/" class="adm-back-to-site">← Quay về trang chủ website Doctor4</a>
       </div>
     </div>
@@ -144,15 +165,71 @@ function renderLoginView() {
     const passVal = document.getElementById('adm-password').value.trim();
     const rememberVal = document.getElementById('adm-remember').checked;
 
+    // 1. Kiểm tra tài khoản Admin chính
     const res = AdminAuth.login(userVal, passVal, rememberVal);
     if (res.success) {
       showToast('Đăng nhập thành công! Chào mừng Quản trị viên.', 'success');
       setTimeout(() => {
         renderAdminPortal();
       }, 400);
-    } else {
-      showToast(res.message, 'error');
+      return;
     }
+
+    // 2. Hỗ trợ đăng nhập Thu Ngân hoặc Bác Sĩ ngay tại cổng Admin nếu nhập nhầm cổng
+    try {
+      const allUsers = getAccountUsers();
+      const cleanUser = userVal.toLowerCase();
+      const matched = allUsers.find(u => {
+        const uEmail = (u.email || '').toLowerCase();
+        const uPhone = (u.phone || '').replace(/\s+/g, '');
+        const uDocId = (u.doctorId || '').toLowerCase();
+        const pwdMatch = String(u.password || '123456') === String(passVal);
+        return (uEmail === cleanUser || uPhone === cleanUser || uDocId === cleanUser) && pwdMatch;
+      });
+
+      if (matched) {
+        if (matched.role === 'cashier') {
+          const sessionUser = {
+            id: matched.id,
+            name: matched.name,
+            email: matched.email,
+            phone: matched.phone,
+            role: 'cashier',
+            desk: matched.desk || 'Quầy Thu Ngân 1 - Tầng 1',
+            avatar: matched.avatar
+          };
+          localStorage.setItem('doctor4_session', JSON.stringify(sessionUser));
+          showToast('✅ Đăng nhập Thu Ngân thành công! Đang chuyển đến Cổng Thu Ngân...', 'success');
+          setTimeout(() => {
+            window.location.href = '/thu-ngan.html';
+          }, 600);
+          return;
+        } else if (matched.role === 'doctor') {
+          const sessionUser = {
+            id: matched.id,
+            name: matched.name,
+            email: matched.email,
+            phone: matched.phone,
+            role: 'doctor',
+            doctorId: matched.doctorId,
+            room: matched.room,
+            roomId: matched.roomId,
+            specialty: matched.specialty,
+            avatar: matched.avatar
+          };
+          localStorage.setItem('doctor4_session', JSON.stringify(sessionUser));
+          showToast('✅ Đăng nhập Bác Sĩ thành công! Đang chuyển đến Cổng Bác Sĩ...', 'success');
+          setTimeout(() => {
+            window.location.href = '/bac-si.html';
+          }, 600);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
+    showToast(res.message, 'error');
   });
 }
 
@@ -224,6 +301,20 @@ function renderAdminPortal() {
             <span class="adm-nav-icon">⚙️</span>
             <span>Cài đặt hệ thống</span>
           </div>
+
+          <div class="adm-nav-heading" style="margin-top:16px;">Cổng chuyên môn</div>
+
+          <a href="/thu-ngan.html" target="_blank" class="adm-nav-item" style="text-decoration:none; color:#4ade80;">
+            <span class="adm-nav-icon">💵</span>
+            <span>Cổng Thu Ngân (Viện Phí)</span>
+            <span class="adm-nav-tag" style="background:rgba(74,222,128,0.2);color:#4ade80;">↗</span>
+          </a>
+
+          <a href="/bac-si.html" target="_blank" class="adm-nav-item" style="text-decoration:none; color:#38bdf8;">
+            <span class="adm-nav-icon">🩺</span>
+            <span>Cổng Bác Sĩ (Phòng khám)</span>
+            <span class="adm-nav-tag" style="background:rgba(56,189,248,0.2);color:#38bdf8;">↗</span>
+          </a>
         </div>
 
         <div class="adm-sidebar-footer">
@@ -269,8 +360,12 @@ function renderAdminPortal() {
               </select>
             </div>
 
+            <a href="/thu-ngan.html" target="_blank" class="adm-header-btn" style="border-color: rgba(74,222,128,0.3); color:#4ade80;">
+              <span>💵 Thu Ngân</span>
+              <span>↗</span>
+            </a>
             <button class="adm-header-btn" id="btn-reset-db" title="Khôi phục toàn bộ danh sách 10 bác sĩ & lịch hẹn mẫu">
-              <span>🔄 Khôi phục mẫu gốc</span>
+              <span>🔄 Khôi phục mẫu</span>
             </button>
             <a href="/" target="_blank" class="adm-header-btn">
               <span>🌐 Xem Website</span>
@@ -1082,8 +1177,13 @@ function getAccountUsers() {
       });
     }
 
-    // 2. Đảm bảo tài khoản Thu Ngân mẫu luôn có
-    if (!users.some(u => u.role === 'cashier' || u.email === 'thungan@doctor4.vn')) {
+    // 2. Đảm bảo tài khoản Thu Ngân mẫu luôn có và đúng vai trò cashier
+    const cashierUser = users.find(u => u.email === 'thungan@doctor4.vn' || u.id === 'usr_cashier_001');
+    if (cashierUser) {
+      cashierUser.role = 'cashier';
+      if (!cashierUser.password) cashierUser.password = '123456';
+      if (!cashierUser.desk) cashierUser.desk = 'Quầy Thu Ngân 1 - Tầng 1';
+    } else {
       users.push({
         id: 'usr_cashier_001',
         name: 'Nguyễn Mai Anh (Thu Ngân)',
