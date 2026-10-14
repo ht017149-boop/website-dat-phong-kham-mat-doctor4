@@ -1061,7 +1061,7 @@ function renderDashboardView() {
 }
 
 // ── TAB 5: QUẢN LÝ TÀI KHOẢN (ADMIN TOÀN QUYỀN) ──────────────
-let accountTab = 'patients'; // 'patients' | 'doctors'
+let accountTab = 'patients'; // 'patients' | 'doctors' | 'cashiers'
 let accountSearch = '';
 
 function getAccountUsers() {
@@ -1082,7 +1082,22 @@ function getAccountUsers() {
       });
     }
 
-    // 2. Đảm bảo tài khoản Bệnh nhân mẫu luôn có
+    // 2. Đảm bảo tài khoản Thu Ngân mẫu luôn có
+    if (!users.some(u => u.role === 'cashier' || u.email === 'thungan@doctor4.vn')) {
+      users.push({
+        id: 'usr_cashier_001',
+        name: 'Nguyễn Mai Anh (Thu Ngân)',
+        email: 'thungan@doctor4.vn',
+        phone: '0901234567',
+        password: '123456',
+        role: 'cashier',
+        desk: 'Quầy Thu Ngân 1 - Tầng 1',
+        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=cashier',
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    // 3. Đảm bảo tài khoản Bệnh nhân mẫu luôn có
     if (!users.some(u => u.email === 'benhnhan@doctor4.vn')) {
       users.push({
         id: 'usr_patient_001',
@@ -1149,21 +1164,22 @@ function renderAccountsManagementView() {
   const allUsers = getAccountUsers();
   const patients = allUsers.filter(u => u.role === 'patient');
   const doctors  = allUsers.filter(u => u.role === 'doctor');
+  const cashiers = allUsers.filter(u => u.role === 'cashier');
   const admins   = allUsers.filter(u => u.role === 'admin');
 
   const searchLC = accountSearch.toLowerCase();
-  const filteredPatients = patients.filter(u =>
-    u.name.toLowerCase().includes(searchLC) ||
-    u.email.toLowerCase().includes(searchLC) ||
-    (u.phone || '').includes(searchLC)
-  );
-  const filteredDoctors = doctors.filter(u =>
-    u.name.toLowerCase().includes(searchLC) ||
-    u.email.toLowerCase().includes(searchLC) ||
-    (u.phone || '').includes(searchLC)
-  );
+  const filterFn = (u) =>
+    (u.name && u.name.toLowerCase().includes(searchLC)) ||
+    (u.email && u.email.toLowerCase().includes(searchLC)) ||
+    (u.phone && u.phone.includes(searchLC));
 
-  const list = accountTab === 'patients' ? filteredPatients : filteredDoctors;
+  const filteredPatients = patients.filter(filterFn);
+  const filteredDoctors  = doctors.filter(filterFn);
+  const filteredCashiers = cashiers.filter(filterFn);
+
+  let list = filteredPatients;
+  if (accountTab === 'doctors')  list = filteredDoctors;
+  if (accountTab === 'cashiers') list = filteredCashiers;
 
   return `
     <div class="adm-page-header">
@@ -1172,7 +1188,7 @@ function renderAccountsManagementView() {
         <p>Admin có toàn quyền: xem, sửa, đặt lại mật khẩu và xóa tài khoản người dùng & bác sĩ</p>
       </div>
       <button class="adm-btn-create" id="btn-open-create-account">
-        <span>➕ ${accountTab === 'doctors' ? 'Cấp tài khoản Bác sĩ mới' : 'Thêm Bệnh nhân mới'}</span>
+        <span>➕ ${accountTab === 'doctors' ? 'Cấp tài khoản Bác sĩ mới' : accountTab === 'cashiers' ? 'Cấp tài khoản Thu Ngân mới' : 'Thêm Bệnh nhân mới'}</span>
       </button>
     </div>
 
@@ -1193,6 +1209,13 @@ function renderAccountsManagementView() {
         </div>
       </div>
       <div class="adm-stat-card">
+        <div class="adm-stat-icon warning" style="background:rgba(34,197,94,0.15);color:#22c55e;">💵</div>
+        <div class="adm-stat-meta">
+          <h3>Tài khoản Thu Ngân</h3>
+          <div class="stat-val" style="color:#22c55e;">${cashiers.length}</div>
+        </div>
+      </div>
+      <div class="adm-stat-card">
         <div class="adm-stat-icon accent">🛡️</div>
         <div class="adm-stat-meta">
           <h3>Tài khoản Admin</h3>
@@ -1208,6 +1231,9 @@ function renderAccountsManagementView() {
       </button>
       <button id="acct-tab-doctors" class="adm-btn-secondary" style="${accountTab === 'doctors' ? 'background:#0d9488;color:#fff;border-color:#0d9488;' : ''}">
         🩺 Bác sĩ (${doctors.length})
+      </button>
+      <button id="acct-tab-cashiers" class="adm-btn-secondary" style="${accountTab === 'cashiers' ? 'background:#16a34a;color:#fff;border-color:#16a34a;' : ''}">
+        💵 Thu Ngân (${cashiers.length})
       </button>
     </div>
 
@@ -1235,9 +1261,9 @@ function renderAccountsManagementView() {
         <table class="adm-table">
           <thead>
             <tr>
-              <th>${accountTab === 'doctors' ? 'Bác sĩ' : 'Bệnh nhân'}</th>
+              <th>${accountTab === 'doctors' ? 'Bác sĩ' : accountTab === 'cashiers' ? 'Thu Ngân' : 'Bệnh nhân'}</th>
               <th>Email / SĐT đăng nhập</th>
-              ${accountTab === 'doctors' ? '<th>Chuyên khoa & Phòng</th>' : '<th>Ngày đăng ký</th>'}
+              ${accountTab === 'doctors' ? '<th>Chuyên khoa &amp; Phòng</th>' : accountTab === 'cashiers' ? '<th>Vị trí Quầy</th>' : '<th>Ngày đăng ký</th>'}
               <th>Mật khẩu</th>
               <th style="text-align:right;">Hành động</th>
             </tr>
@@ -1252,18 +1278,29 @@ function renderAccountsManagementView() {
 }
 
 function renderAccountRow(u) {
-  const isDoctor = u.role === 'doctor';
+  const isDoctor  = u.role === 'doctor';
+  const isCashier = u.role === 'cashier';
   const maskedPwd = '●●●●●●';
+  const icon = isDoctor ? '🩺' : isCashier ? '💵' : '👤';
+  const roleLabel = isDoctor ? escapeHtml(u.degree || 'Bác sĩ')
+                  : isCashier ? 'Thu Ngân'
+                  : 'Bệnh nhân';
+  const col3 = isDoctor
+    ? `<div style="font-size:13px;color:#4ade80;font-weight:600;">${escapeHtml(u.specialty || 'Nhãn khoa')}</div>
+       <div style="font-size:11px;color:var(--adm-text-muted);">📍 ${escapeHtml(u.room || '—')}</div>`
+    : isCashier
+    ? `<div style="font-size:13px;color:#22c55e;font-weight:600;">${escapeHtml(u.desk || 'Quầy Thu Ngân')}</div>`
+    : `<div style="font-size:12px;color:var(--adm-text-muted);">${u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : '—'}</div>`;
   return `
     <tr data-uid="${u.id}">
       <td>
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;background:rgba(56,189,248,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;">
-            ${u.avatar ? `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${isDoctor ? '🩺' : '👤'}'"/>` : (isDoctor ? '🩺' : '👤')}
+            ${u.avatar ? `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${icon}'"/>` : icon}
           </div>
           <div>
             <div style="font-weight:700;color:#fff;font-size:14px;">${escapeHtml(u.name)}</div>
-            <div style="font-size:11px;color:var(--adm-text-muted);">${isDoctor ? escapeHtml(u.degree || 'Bác sĩ') : 'Bệnh nhân'}</div>
+            <div style="font-size:11px;color:var(--adm-text-muted);">${roleLabel}</div>
           </div>
         </div>
       </td>
@@ -1271,13 +1308,7 @@ function renderAccountRow(u) {
         <div style="font-weight:600;color:var(--adm-primary);font-size:13px;">${escapeHtml(u.email)}</div>
         <div style="color:var(--adm-text-muted);font-size:12px;">📞 ${escapeHtml(u.phone || '—')}</div>
       </td>
-      <td>
-        ${isDoctor
-          ? `<div style="font-size:13px;color:#4ade80;font-weight:600;">${escapeHtml(u.specialty || 'Nhãn khoa')}</div>
-             <div style="font-size:11px;color:var(--adm-text-muted);">📍 ${escapeHtml(u.room || '—')}</div>`
-          : `<div style="font-size:12px;color:var(--adm-text-muted);">${u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : '—'}</div>`
-        }
-      </td>
+      <td>${col3}</td>
       <td>
         <div class="acct-pwd-cell" data-uid="${u.id}" style="font-family:monospace;font-size:14px;cursor:pointer;color:var(--adm-text-muted);" title="Click để hiện mật khẩu">
           ${maskedPwd}
@@ -1304,7 +1335,7 @@ function openAccountModal(user = null) {
     <div class="adm-modal-overlay" id="adm-modal-overlay">
       <div class="adm-modal" style="max-width:600px;">
         <div class="adm-modal-header">
-          <h3>${isEdit ? '✏️ Sửa tài khoản: ' + escapeHtml(user.name) : (accountTab === 'doctors' ? '🩺 Cấp tài khoản Bác sĩ mới' : '👤 Thêm tài khoản Bệnh nhân')}</h3>
+          <h3>${isEdit ? '✏️ Sửa tài khoản: ' + escapeHtml(user.name) : (accountTab === 'doctors' ? '🩺 Cấp tài khoản Bác sĩ mới' : accountTab === 'cashiers' ? '💵 Cấp tài khoản Thu Ngân mới' : '👤 Thêm tài khoản Bệnh nhân')}</h3>
           <button class="adm-modal-close" id="btn-close-acct-modal">✕</button>
         </div>
         <form id="adm-account-form">
@@ -1331,6 +1362,7 @@ function openAccountModal(user = null) {
                 <select id="acct-role" class="adm-input adm-input-no-icon" ${isEdit ? 'disabled' : ''}>
                   <option value="patient" ${(user?.role === 'patient' || accountTab === 'patients') ? 'selected' : ''}>👤 Bệnh nhân</option>
                   <option value="doctor" ${(user?.role === 'doctor' || accountTab === 'doctors') ? 'selected' : ''}>🩺 Bác sĩ</option>
+                  <option value="cashier" ${(user?.role === 'cashier' || accountTab === 'cashiers') ? 'selected' : ''}>💵 Thu Ngân</option>
                 </select>
               </div>
             </div>
@@ -1389,6 +1421,15 @@ function openAccountModal(user = null) {
               </div>
             </div>
 
+            <!-- Fields riêng cho Thu Ngân -->
+            <div id="cashier-extra-fields" style="display:${(user?.role === 'cashier' || accountTab === 'cashiers') ? 'block' : 'none'}">
+              <div class="adm-form-group">
+                <label class="adm-form-label">Vị trí Quầy / Bàn trực viện phí</label>
+                <input type="text" id="acct-desk" class="adm-input adm-input-no-icon"
+                  value="${user ? escapeHtml(user.desk || '') : 'Quầy Thu Ngân 1 - Tầng 1'}" placeholder="Quầy Thu Ngân 1 - Tầng 1"/>
+              </div>
+            </div>
+
           </div>
           <div class="adm-modal-footer">
             <button type="button" class="adm-btn-secondary" id="btn-cancel-acct-modal">Hủy</button>
@@ -1413,10 +1454,12 @@ function openAccountModal(user = null) {
     document.getElementById('acct-password').value = pwd;
   });
 
-  // Hiện/ẩn field bác sĩ khi đổi vai trò
+  // Hiện/ẩn field bác sĩ / thu ngân khi đổi vai trò
   document.getElementById('acct-role')?.addEventListener('change', (e) => {
     document.getElementById('doctor-extra-fields').style.display =
       e.target.value === 'doctor' ? 'block' : 'none';
+    document.getElementById('cashier-extra-fields').style.display =
+      e.target.value === 'cashier' ? 'block' : 'none';
   });
 
   // Điền thông tin bác sĩ từ dropdown (chỉ khi tạo mới bác sĩ)
@@ -1433,6 +1476,7 @@ function openAccountModal(user = null) {
     document.getElementById('acct-schedule').value = doc.schedule || '';
     document.getElementById('acct-room').value = doc.roomId || '';
     document.getElementById('doctor-extra-fields').style.display = 'block';
+    document.getElementById('cashier-extra-fields').style.display = 'none';
   });
 
   // Submit
@@ -1466,6 +1510,9 @@ function openAccountModal(user = null) {
             room: CLINIC_ROOMS.find(r => r.id === document.getElementById('acct-room').value)?.number || users[idx].room,
             schedule: document.getElementById('acct-schedule').value.trim(),
           } : {}),
+          ...(role === 'cashier' ? {
+            desk: document.getElementById('acct-desk')?.value.trim() || 'Quầy Thu Ngân 1 - Tầng 1'
+          } : {}),
           updatedAt: new Date().toISOString()
         };
         saveAccountUsers(users);
@@ -1490,6 +1537,7 @@ function openAccountModal(user = null) {
       let roomId = role === 'doctor' ? document.getElementById('acct-room').value : '';
       let roomName = CLINIC_ROOMS.find(r => r.id === roomId)?.number || 'Phòng 101';
       let schedule = role === 'doctor' ? document.getElementById('acct-schedule').value.trim() : '';
+      let desk = role === 'cashier' ? (document.getElementById('acct-desk')?.value.trim() || 'Quầy Thu Ngân 1 - Tầng 1') : '';
 
       if (role === 'doctor' && !selectedDocId) {
         // Tự động tạo hồ sơ bác sĩ trong DoctorManager để hiển thị trên danh mục bác sĩ phòng khám
@@ -1512,6 +1560,7 @@ function openAccountModal(user = null) {
         id: 'usr_adm_' + Date.now(),
         name, email, phone, password: pwd,
         role,
+        avatar: role === 'cashier' ? 'https://api.dicebear.com/7.x/bottts/svg?seed=' + Date.now() : undefined,
         createdAt: new Date().toISOString(),
         ...(role === 'doctor' ? {
           doctorId: selectedDocId,
@@ -1520,11 +1569,12 @@ function openAccountModal(user = null) {
           roomId,
           room: roomName,
           schedule
-        } : {})
+        } : {}),
+        ...(role === 'cashier' ? { desk } : {})
       };
       users.push(newUser);
       saveAccountUsers(users);
-      showToast(`✅ Đã cấp tài khoản cho ${name}! Email: ${email} | MK: ${pwd}`, 'success', 7000);
+      showToast(`✅ Đã cấp tài khoản ${role === 'cashier' ? 'Thu Ngân' : role === 'doctor' ? 'Bác Sĩ' : 'Bệnh Nhân'} cho ${name}! Email: ${email} | MK: ${pwd}`, 'success', 7000);
     }
 
     closeModal();
@@ -1548,7 +1598,7 @@ function openResetPasswordModal(uid) {
         <div class="adm-modal-body">
           <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;">
             <div>Email: <strong style="color:var(--adm-primary);">${escapeHtml(user.email)}</strong></div>
-            <div style="margin-top:4px;">Vai trò: <strong>${user.role === 'doctor' ? '🩺 Bác sĩ' : user.role === 'admin' ? '🛡️ Admin' : '👤 Bệnh nhân'}</strong></div>
+            <div style="margin-top:4px;">Vai trò: <strong>${user.role === 'doctor' ? '🩺 Bác sĩ' : user.role === 'cashier' ? '💵 Thu Ngân' : user.role === 'admin' ? '🛡️ Admin' : '👤 Bệnh nhân'}</strong></div>
           </div>
           <div class="adm-form-group">
             <label class="adm-form-label">Mật khẩu mới *</label>
@@ -2033,6 +2083,11 @@ function bindAccountsEvents() {
   });
   document.getElementById('acct-tab-doctors')?.addEventListener('click', () => {
     accountTab = 'doctors';
+    accountSearch = '';
+    refreshMainView();
+  });
+  document.getElementById('acct-tab-cashiers')?.addEventListener('click', () => {
+    accountTab = 'cashiers';
     accountSearch = '';
     refreshMainView();
   });
