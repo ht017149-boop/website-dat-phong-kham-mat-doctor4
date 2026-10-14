@@ -48,12 +48,12 @@ body.doctor-portal-body {
 
 /* ── Top Header ────────────────────────────────────────── */
 .doc-header {
-  background: #0f172a;
-  border-bottom: 1px solid #1e293b;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 14px rgba(2, 132, 199, 0.06);
 }
 
 .doc-header-inner {
@@ -78,7 +78,7 @@ body.doctor-portal-body {
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  color: #ffffff;
+  color: #0f172a;
   font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: -0.5px;
@@ -89,13 +89,13 @@ body.doctor-portal-body {
 }
 
 .doc-logo strong {
-  color: #38bdf8;
+  color: #0284c7;
 }
 
 .doc-portal-badge {
-  background: rgba(14, 165, 233, 0.15);
-  border: 1px solid rgba(14, 165, 233, 0.35);
-  color: #38bdf8;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  color: #0284c7;
   font-size: 0.75rem;
   font-weight: 700;
   padding: 4px 10px;
@@ -114,23 +114,23 @@ body.doctor-portal-body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background: #f8fafc;
   padding: 4px 10px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid #e2e8f0;
 }
 
 .doc-switch-label {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: #64748b;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .doc-switch-select {
-  background: #1e293b;
-  color: #e2e8f0;
-  border: 1px solid #334155;
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 0.85rem;
@@ -144,10 +144,10 @@ body.doctor-portal-body {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.08);
+  background: #f0f9ff;
   padding: 4px 12px 4px 6px;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid #bae6fd;
 }
 
 .doc-profile-avatar {
@@ -155,7 +155,7 @@ body.doctor-portal-body {
   height: 38px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #38bdf8;
+  border: 2px solid #0284c7;
 }
 
 .doc-profile-info {
@@ -166,13 +166,13 @@ body.doctor-portal-body {
 .doc-profile-name {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #0f172a;
 }
 
 .doc-profile-room {
   font-size: 0.72rem;
-  color: #38bdf8;
-  font-weight: 600;
+  color: #0284c7;
+  font-weight: 700;
 }
 
 .doc-header-actions {
@@ -185,28 +185,29 @@ body.doctor-portal-body {
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
   text-decoration: none;
   border-radius: 8px;
   font-size: 0.82rem;
   font-weight: 600;
   transition: all 0.2s;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #e2e8f0;
 }
 
 .doc-btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
+  background: #f0f9ff;
+  border-color: #0284c7;
+  color: #0284c7;
 }
 
 .doc-btn-logout {
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
   border-radius: 8px;
   font-size: 0.82rem;
   font-weight: 600;
@@ -215,7 +216,8 @@ body.doctor-portal-body {
 }
 
 .doc-btn-logout:hover {
-  background: rgba(239, 68, 68, 0.25);
+  background: #dc2626;
+  border-color: #dc2626;
   color: #ffffff;
 }
 
