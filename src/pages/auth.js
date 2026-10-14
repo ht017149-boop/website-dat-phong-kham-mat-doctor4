@@ -130,8 +130,13 @@ export const AuthService = {
         }
       });
 
-      // Đảm bảo tài khoản Thu Ngân mặc định luôn tồn tại
-      if (!users.some(u => u.email === 'thungan@doctor4.vn' || u.role === 'cashier')) {
+      // Đảm bảo tài khoản Thu Ngân mặc định luôn tồn tại và đúng role cashier
+      const cashierUser = users.find(u => u.email === 'thungan@doctor4.vn' || u.id === 'usr_cashier_001');
+      if (cashierUser) {
+        cashierUser.role = 'cashier';
+        if (!cashierUser.password) cashierUser.password = '123456';
+        if (!cashierUser.desk) cashierUser.desk = 'Quầy Thu Ngân 1 - Tầng 1';
+      } else {
         users.push({
           id: 'usr_cashier_001',
           name: 'Nguyễn Mai Anh (Thu Ngân)',
@@ -465,20 +470,18 @@ function setupLoginPage() {
 
       showToast('success', 'Đăng nhập thành công!', `Chào mừng ${user.name} trở lại với Doctor4!`);
 
-      // Lấy query param redirect nếu có
+      // Điều hướng theo vai trò (Role-based redirect ưu tiên cao nhất)
       const urlParams = new URLSearchParams(window.location.search);
       let redirectUrl = urlParams.get('redirect');
 
-      if (!redirectUrl || redirectUrl === '/index.html') {
-        if (user.role === 'admin') {
-          redirectUrl = '/admin/index.html';
-        } else if (user.role === 'doctor') {
-          redirectUrl = '/bac-si.html';
-        } else if (user.role === 'cashier') {
-          redirectUrl = '/thu-ngan.html';
-        } else {
-          redirectUrl = '/lich-kham.html';
-        }
+      if (user.role === 'cashier') {
+        redirectUrl = '/thu-ngan.html';
+      } else if (user.role === 'doctor') {
+        redirectUrl = '/bac-si.html';
+      } else if (user.role === 'admin') {
+        redirectUrl = '/admin/index.html';
+      } else if (!redirectUrl || redirectUrl === '/' || redirectUrl === '/index.html' || redirectUrl === '/dang-nhap.html') {
+        redirectUrl = '/lich-kham.html';
       }
 
       setTimeout(() => {
@@ -683,11 +686,27 @@ function initAuth() {
   // If already logged in on login/register page, show note
   const currentUser = AuthService.getCurrentUser();
   if (currentUser) {
+    let rolePortalLink = '/lich-kham.html';
+    let rolePortalText = 'Xem lịch khám';
+    if (currentUser.role === 'cashier') {
+      rolePortalLink = '/thu-ngan.html';
+      rolePortalText = '💵 Vào Cổng Thu Ngân';
+    } else if (currentUser.role === 'doctor') {
+      rolePortalLink = '/bac-si.html';
+      rolePortalText = '🩺 Vào Cổng Bác Sĩ';
+    } else if (currentUser.role === 'admin') {
+      rolePortalLink = '/admin/index.html';
+      rolePortalText = '👑 Vào Cổng Quản Trị';
+    }
+
     const noticeStrip = document.createElement('div');
-    noticeStrip.style.cssText = 'background: rgba(37,99,235,0.2); border: 1px solid rgba(37,99,235,0.4); padding: 10px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; color: #93C5FD; display: flex; justify-content: space-between; align-items: center;';
+    noticeStrip.style.cssText = 'background: rgba(37,99,235,0.2); border: 1px solid rgba(37,99,235,0.4); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; color: #93C5FD; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;';
     noticeStrip.innerHTML = `
-      <span>Bạn đang đăng nhập dưới tên: <strong>${currentUser.name}</strong></span>
-      <a href="/index.html" style="color: #38BDF8; font-weight: 600; text-decoration: underline;">Về trang chủ</a>
+      <span>Bạn đang đăng nhập: <strong>${currentUser.name}</strong> (${currentUser.role === 'cashier' ? 'Thu Ngân' : currentUser.role === 'doctor' ? 'Bác Sĩ' : currentUser.role === 'admin' ? 'Quản Trị' : 'Bệnh Nhân'})</span>
+      <div style="display:flex;gap:12px;">
+        <a href="${rolePortalLink}" style="color: #4ade80; font-weight: 700; text-decoration: none;">${rolePortalText} →</a>
+        <a href="/index.html" style="color: #38BDF8; font-weight: 600; text-decoration: underline;">Về trang chủ</a>
+      </div>
     `;
     const formHeader = document.querySelector('.auth-panel-header');
     if (formHeader && formHeader.parentNode) {

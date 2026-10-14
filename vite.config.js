@@ -17,6 +17,8 @@ export default defineConfig({
 
         profile: resolve(__dirname, 'ho-so.html'),
 
+        cashier: resolve(__dirname, 'thu-ngan.html'),
+
         admin: resolve(__dirname, 'admin/index.html')
       }
     }
