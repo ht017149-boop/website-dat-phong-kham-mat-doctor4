@@ -275,7 +275,10 @@ function renderInvoiceTable() {
               <tr class="${!isPaid ? 'new-invoice-pulse' : ''}">
                 <td>
                   <span class="invoice-id-badge">${inv.id}</span>
-                  <div style="font-size:11px;color:#64748b;margin-top:4px;">${inv.appointmentId || ''}</div>
+                  <div style="font-size:11px;color:#64748b;margin-top:4px;display:flex;align-items:center;gap:4px;">
+                    <span>${inv.appointmentId || ''}</span>
+                    ${(inv.queueNumber || inv.stt) ? `<span style="background:rgba(56,189,248,0.2);color:#38bdf8;padding:1px 6px;border-radius:4px;font-size:10.5px;font-weight:700;">STT #${String(inv.queueNumber || inv.stt).padStart(2, '0')}</span>` : ''}
+                  </div>
                 </td>
                 <td>
                   <div class="patient-name-box">

@@ -240,6 +240,7 @@ function getCurrentContext() {
     serviceName,
     roomName,
     paymentId,
+    queueNumber: (app ? (app.queueNumber || app.stt) : (inv ? (inv.queueNumber || inv.stt) : 1)) || 1,
     transferContent: "THANHTOAN " + effectiveApptId,
     hasPrescription,
     prescriptionList,
@@ -266,6 +267,12 @@ function renderPaymentUI(ctx) {
   // Điền thông tin lịch khám
   const elApptId = document.getElementById("valAppointmentId");
   if (elApptId) elApptId.textContent = ctx.appointmentId;
+
+  const elQueue = document.getElementById("valQueueNumber");
+  if (elQueue) {
+    const qNum = ctx.queueNumber || (ctx.app ? (ctx.app.queueNumber || ctx.app.stt) : 1) || 1;
+    elQueue.textContent = `STT #${String(qNum).padStart(2, '0')}`;
+  }
 
   const elPatient = document.getElementById("valPatientName");
   if (elPatient) elPatient.textContent = ctx.patientName;
@@ -769,6 +776,13 @@ function renderReceipt(payment) {
 
   document.getElementById("receiptIdText").textContent = payment.id || ctx.paymentId;
   document.getElementById("receiptApptCode").textContent = payment.appointmentId || ctx.appointmentId;
+  
+  const elReceiptQueue = document.getElementById("receiptQueueNumber");
+  if (elReceiptQueue) {
+    const qNum = payment.queueNumber || payment.stt || ctx.queueNumber || 1;
+    elReceiptQueue.textContent = `STT #${String(qNum).padStart(2, '0')}`;
+  }
+
   document.getElementById("receiptTimestamp").textContent = payment.confirmedAt || payment.paidAt || new Date().toLocaleString("vi-VN");
 
   let methodLabel = "Chuyển khoản VietQR (MB Bank)";

@@ -6,7 +6,7 @@
 import '../css/style.css';
 import '../css/home.css';
 import { renderHeader, renderFooter, setupHeaderEvents } from '../components/layout.js';
-import { CLINIC_ROOMS } from '../data/clinic-data.js';
+import { CLINIC_ROOMS, formatQueueNumber } from '../data/clinic-data.js';
 import { openPatientMedicalRecordModal } from './my-appointments.js';
 
 const APPOINTMENTS_STORAGE_KEY = 'doctor4_appointments_db';
@@ -178,14 +178,22 @@ function renderTicketCard(app) {
     cancelled: '<span style="background: #fee2e2; color: #b91c1c; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">❌ Đã hủy</span>'
   };
 
+  const sttFormatted = formatQueueNumber(app.queueNumber || app.stt || 1);
+
   return `
     <div style="background: #ffffff; border: 2px solid #e0f2fe; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(2,132,199,0.08); transition: transform 0.2s, box-shadow 0.2s; position: relative;">
       
       <!-- Ticket Header -->
-      <div style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #fff; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <span style="font-size: 11px; opacity: 0.85; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">MÃ VÉ KHÁM ĐIỆN TỬ</span>
-          <div style="font-family: monospace; font-size: 17px; font-weight: 800; letter-spacing: 0.5px; margin-top: 2px;">${app.id}</div>
+      <div style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #fff; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div>
+            <span style="font-size: 11px; opacity: 0.85; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">MÃ VÉ KHÁM ĐIỆN TỬ</span>
+            <div style="font-family: monospace; font-size: 17px; font-weight: 800; letter-spacing: 0.5px; margin-top: 2px;">${app.id}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.22); border: 1.5px solid rgba(255,255,255,0.4); padding: 4px 10px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 9px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Số thứ tự</div>
+            <div style="font-size: 15px; font-weight: 900; line-height: 1.1;">STT #${sttFormatted}</div>
+          </div>
         </div>
         <div>
           <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">
@@ -214,7 +222,7 @@ function renderTicketCard(app) {
         <!-- Chi tiết Bác sĩ & Bệnh nhân -->
         <div style="font-size: 13.5px; line-height: 1.8; color: var(--clr-dark); margin-bottom: 16px;">
           <div>👨‍⚕️ <strong>Bác sĩ khám:</strong> <span style="color: #2563eb; font-weight: 700;">${app.doctorName}</span></div>
-          <div>🕒 <strong>Khung giờ hẹn:</strong> <span style="color: #d97706; font-weight: 700;">${app.timeSlot}</span></div>
+          <div>🕒 <strong>Khung giờ hẹn:</strong> <span style="color: #d97706; font-weight: 700;">${app.timeSlot}</span> <span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; margin-left: 6px;">🎟️ STT #${sttFormatted}</span></div>
           <div>🩺 <strong>Dịch vụ:</strong> ${app.serviceName}</div>
           <div>👤 <strong>Bệnh nhân:</strong> ${app.patientName} (📞 ${app.patientPhone})</div>
           <div>💬 <strong>Triệu chứng:</strong> <span style="color: #64748b;">${escapeHtml(app.symptoms || 'Khám thông thường')}</span></div>
