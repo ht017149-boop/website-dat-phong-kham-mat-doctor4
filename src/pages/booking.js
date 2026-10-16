@@ -227,26 +227,12 @@ export function setupBookingForm() {
   const srvSelect = document.getElementById('book-service');
   if (!form || !srvSelect) return;
 
-  // Cập nhật tính tiền trực tiếp
+  // Cập nhật tính tiền trực tiếp (Số tiền viện phí sẽ hiển thị sau khi Bác sĩ kê đơn)
   function updateFeePreview(code) {
-    const services = getClinicServices();
-    const s = services.find(item => item.code === code || item.id === code) || services[0];
-    const prepaidEl = document.getElementById('preview-prepaid-amount');
-    const prepaidDescEl = document.getElementById('preview-prepaid-desc');
-    const postpaidEl = document.getElementById('preview-postpaid-amount');
-    const postpaidDescEl = document.getElementById('preview-postpaid-desc');
-    const totalDueEl = document.getElementById('preview-total-due');
     const submitTextEl = document.getElementById('btn-submit-booking-text');
-
-    const examFee = Number(s.examFee || 200000);
-    const serviceFeeText = s.price || (s.serviceFee ? `${Number(s.serviceFee).toLocaleString('vi-VN')}đ` : 'Không có');
-
-    if (prepaidEl) prepaidEl.textContent = `${examFee.toLocaleString('vi-VN')}đ`;
-    if (prepaidDescEl) prepaidDescEl.textContent = s.prepaidDesc || 'Phí khám ban đầu & giữ chỗ lịch hẹn';
-    if (postpaidEl) postpaidEl.textContent = serviceFeeText;
-    if (postpaidDescEl) postpaidDescEl.textContent = s.postpaidDesc || 'Chi phí phát sinh nếu thực hiện thủ thuật';
-    if (totalDueEl) totalDueEl.textContent = `${examFee.toLocaleString('vi-VN')}đ`;
-    if (submitTextEl) submitTextEl.textContent = `✨ XÁC NHẬN ĐẶT LỊCH & TIẾP TỤC THANH TOÁN (${examFee.toLocaleString('vi-VN')}đ)`;
+    if (submitTextEl) {
+      submitTextEl.textContent = '✨ XÁC NHẬN ĐẶT LỊCH KHÁM';
+    }
   }
 
   // Khởi tạo Options & tính tiền ban đầu
