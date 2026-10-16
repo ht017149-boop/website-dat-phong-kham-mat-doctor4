@@ -249,7 +249,7 @@ function renderAppointmentCard(app) {
       </div>
 
       ${hasRecord ? `
-      <!-- Banner Ca Khám Đã Hoàn Thành & Nút Xem Bệnh Án -->
+      <!-- Banner Ca Khám Đã Hoàn Thành & Nút Xem Bệnh Án & Thanh Toán -->
       <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1.5px solid #86efac; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
         <div>
           <div style="font-size: 13.5px; font-weight: 800; color: #166534; display: flex; align-items: center; gap: 6px;">
@@ -259,9 +259,16 @@ function renderAppointmentCard(app) {
             Bác sĩ ${app.doctorName} đã cập nhật hồ sơ bệnh án và đơn thuốc điện tử.
           </div>
         </div>
-        <button type="button" class="btn-view-medical-record" data-id="${app.id}" style="padding: 9px 16px; background: #16a34a; color: #ffffff; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(22,163,74,0.25);">
-          📄 Xem Bệnh Án & Đơn Thuốc
-        </button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="btn-view-medical-record" data-id="${app.id}" style="padding: 9px 16px; background: #16a34a; color: #ffffff; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(22,163,74,0.25);">
+            📄 Xem Đơn Thuốc
+          </button>
+          ${app.billing?.paymentStatus !== 'paid' ? `
+            <a href="/payment.html?appointmentId=${encodeURIComponent(app.id)}" style="padding: 9px 16px; background: #0284c7; color: #ffffff; font-weight: 700; border-radius: 10px; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(2,132,199,0.25);">
+              💳 Thanh Toán Viện Phí
+            </a>
+          ` : ''}
+        </div>
       </div>
       ` : ''}
 
@@ -460,13 +467,20 @@ export function openPatientMedicalRecordModal(app) {
               ` : ''}
             </div>
 
-            <div style="margin-top: 12px; padding-top: 10px; border-top: 2px solid #cbd5e1; display: flex; justify-content: space-between; align-items: center;">
+            <div style="margin-top: 12px; padding-top: 10px; border-top: 2px solid #cbd5e1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
               <div>
                 <span style="font-size: 14px; font-weight: 800; color: #0f172a;">TỔNG VIỆN PHÍ THANH TOÁN:</span>
                 <div style="font-size: 11.5px; color: #64748b;">Hình thức: ${billing.paymentMethod || 'Tiền mặt / Thẻ tại quầy'}</div>
               </div>
-              <div style="font-size: 20px; font-weight: 800; color: #0284c7;">
-                ${Number(billing.totalAmount || 0).toLocaleString('vi-VN')} đ
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div style="font-size: 20px; font-weight: 800; color: #0284c7;">
+                  ${Number(billing.totalAmount || 0).toLocaleString('vi-VN')} đ
+                </div>
+                ${billing.paymentStatus === 'unpaid' ? `
+                  <a href="/payment.html?appointmentId=${encodeURIComponent(app.id)}" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: linear-gradient(135deg, #16a34a, #22c55e); color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 12.5px; box-shadow: 0 4px 10px rgba(22,163,74,0.25);">
+                    💳 Thanh toán ngay
+                  </a>
+                ` : ''}
               </div>
             </div>
           </div>

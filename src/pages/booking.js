@@ -485,35 +485,27 @@ function showBookingSuccessModal(app, serviceInfo = null, paymentId = null) {
           <div>👨‍⚕️ <strong>Bác sĩ:</strong> ${app.doctorName}</div>
           <div>🏥 <strong>Phòng khám:</strong> <span style="color:#0284c7;font-weight:700;">${app.roomName || 'Phòng 101'}</span></div>
           <div>📅 <strong>Thời gian:</strong> <strong style="color:#d97706;">${app.timeSlot} — Ngày ${app.date}</strong></div>
-          <div>💳 <strong>Phí khám ban đầu:</strong> <span style="color:#16a34a;font-weight:800;">${examFee.toLocaleString('vi-VN')}đ</span></div>
+          <div>💳 <strong>Viện phí thanh toán:</strong> <span style="color:#0369a1;font-weight:700;">Hiển thị sau khi Bác sĩ kê đơn</span></div>
         </div>
 
-        <!-- 4 Bước quy trình -->
-        <div style="text-align:left;margin-bottom:18px;">
-          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">📋 Quy Trình Tại Doctor4</div>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#dcfce7;border-radius:10px;">
-              <span style="font-size:18px;flex-shrink:0;">✅</span>
-              <div><strong style="color:#166534;font-size:12.5px;">Bước 1 — Đặt lịch khám</strong><div style="font-size:11.5px;color:#166534;">Hoàn tất! Hệ thống đã ghi nhận lịch hẹn của bạn.</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#e0f2fe;border-radius:10px;">
-              <span style="font-size:18px;flex-shrink:0;">💳</span>
-              <div><strong style="color:#0369a1;font-size:12.5px;">Bước 2 — Thanh toán QR / Quầy</strong><div style="font-size:11.5px;color:#0369a1;">Chuyển khoản QR trực tuyến hoặc thanh toán tại quầy lễ tân.</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fef3c7;border-radius:10px;">
-              <span style="font-size:18px;flex-shrink:0;">🩺</span>
-              <div><strong style="color:#92400e;font-size:12.5px;">Bước 3 — Khám chuyên khoa & Kê đơn</strong><div style="font-size:11.5px;color:#92400e;">Bác sĩ khám lâm sàng và cập nhật bệnh án trực tuyến.</div></div>
+        <!-- Quy trình thanh toán mới -->
+        <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:flex-start;gap:12px;text-align:left;">
+          <span style="font-size:24px;flex-shrink:0;">ℹ️</span>
+          <div>
+            <strong style="color:#0369a1;font-size:13px;display:block;margin-bottom:3px;">Quy trình khám & thanh toán:</strong>
+            <div style="font-size:12px;color:#0369a1;line-height:1.5;">
+              Quý khách vui lòng đến đúng giờ tại phòng khám được chỉ định để Bác sĩ thăm khám. <strong>Số tiền viện phí và đơn thuốc sẽ được hiển thị để quý khách thanh toán sau khi Bác sĩ hoàn thành kê đơn thuốc</strong>.
             </div>
           </div>
         </div>
 
         <!-- Buttons -->
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button type="button" id="btn-payment-qr" style="flex:1;min-width:140px;padding:13px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-size:13.5px;">
-            💳 Thanh toán QR
+          <button type="button" id="btn-view-ticket-now" style="flex:1.2;min-width:140px;padding:13px;background:linear-gradient(135deg,#0284c7,#2563eb);color:#fff;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-size:13.5px;">
+            🎫 Xem vé khám & phòng
           </button>
-          <button type="button" id="btn-view-ticket-now" style="flex:1;min-width:140px;padding:13px;background:linear-gradient(135deg,#0284c7,#2563eb);color:#fff;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-size:13.5px;">
-            🎫 Xem vé khám
+          <button type="button" id="btn-payment-qr" style="flex:1;min-width:140px;padding:13px;background:#e0f2fe;color:#0369a1;font-weight:700;border:1px solid #bae6fd;border-radius:12px;cursor:pointer;font-size:13px;">
+            💳 Cổng thanh toán
           </button>
           <button type="button" id="btn-close-success-modal" style="padding:13px 20px;background:#e2e8f0;color:#334155;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-size:13px;">
             Đóng
@@ -538,7 +530,7 @@ function showBookingSuccessModal(app, serviceInfo = null, paymentId = null) {
   });
 
   document.getElementById('btn-payment-qr')?.addEventListener('click', () => {
-    const paymentUrl = `/payment.html?appointmentId=${encodeURIComponent(app.id)}&amount=${examFee}&name=${encodeURIComponent(app.patientName)}&doctor=${encodeURIComponent(app.doctorName)}&date=${encodeURIComponent(app.date)}&time=${encodeURIComponent(app.timeSlot)}`;
+    const paymentUrl = `/payment.html?appointmentId=${encodeURIComponent(app.id)}&name=${encodeURIComponent(app.patientName)}&doctor=${encodeURIComponent(app.doctorName)}&date=${encodeURIComponent(app.date)}&time=${encodeURIComponent(app.timeSlot)}`;
     window.location.href = paymentUrl;
   });
 }

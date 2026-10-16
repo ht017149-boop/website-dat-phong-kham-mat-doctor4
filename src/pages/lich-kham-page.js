@@ -231,6 +231,11 @@ function renderTicketCard(app) {
               <button class="btn-view-medical-record" data-id="${app.id}" style="background: linear-gradient(135deg, #0284c7, #0ea5e9); color: #ffffff; border: none; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(2,132,199,0.25);">
                 <span>📄 Bệnh Án & Đơn Thuốc</span>
               </button>
+              ${app.billing?.paymentStatus !== 'paid' ? `
+                <a href="/payment.html?appointmentId=${encodeURIComponent(app.id)}" style="background: linear-gradient(135deg, #16a34a, #22c55e); color: #ffffff; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(22,163,74,0.25);">
+                  <span>💳 Thanh Toán</span>
+                </a>
+              ` : ''}
             ` : ''}
             ${app.status !== 'cancelled' && app.status !== 'completed' ? `
               <button class="btn-cancel-appt" data-id="${app.id}" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
