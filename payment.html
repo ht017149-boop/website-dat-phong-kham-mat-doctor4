@@ -99,64 +99,188 @@
             opacity: 0.92;
         }
 
-        /* Steps Bar */
-        .steps-bar-wrapper {
-            background: #f8fafc;
-            border-bottom: 1px solid var(--border);
-            padding: 18px 24px;
+        /* Waiting / Completed Prescription Banner */
+        .prescription-banner {
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            border: 1.5px solid transparent;
+            transition: all 0.3s;
         }
 
-        .steps-bar {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
-            position: relative;
+        .prescription-banner.waiting {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #92400e;
         }
 
-        .step-pill {
-            text-align: center;
-            padding: 8px 6px;
-            border-radius: 12px;
-            background: #ffffff;
-            border: 1px solid var(--border);
-            font-size: 0.78rem;
-            color: var(--gray);
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .step-pill.completed {
+        .prescription-banner.completed {
             background: #f0fdf4;
             border-color: #86efac;
             color: #166534;
         }
 
-        .step-pill.active {
-            background: #e0f2fe;
-            border-color: #38bdf8;
-            color: #0369a1;
-            font-weight: 700;
-            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
+        .prescription-banner-icon {
+            font-size: 2.2rem;
+            line-height: 1;
+            flex-shrink: 0;
         }
 
-        .step-pill .step-dot {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            line-height: 18px;
-            border-radius: 50%;
-            background: #e2e8f0;
-            color: #475569;
-            font-size: 10px;
-            margin-right: 4px;
+        .prescription-banner-body h3 {
+            margin: 0 0 6px 0;
+            font-size: 1.15rem;
+            font-weight: 800;
         }
-        .step-pill.completed .step-dot {
-            background: #22c55e;
-            color: #ffffff;
+
+        .prescription-banner-body p {
+            margin: 0 0 10px 0;
+            font-size: 0.92rem;
+            line-height: 1.55;
+            opacity: 0.95;
         }
-        .step-pill.active .step-dot {
+
+        .prescription-banner-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .btn-banner-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-banner-refresh {
+            background: #ffffff;
+            color: #b45309;
+            border: 1.5px solid #fcd34d;
+        }
+        .btn-banner-refresh:hover {
+            background: #fef3c7;
+        }
+
+        .btn-banner-doctor {
             background: #0284c7;
             color: #ffffff;
+        }
+        .btn-banner-doctor:hover {
+            background: #0369a1;
+        }
+
+        .btn-banner-simulate {
+            background: #16a34a;
+            color: #ffffff;
+        }
+        .btn-banner-simulate:hover {
+            background: #15803d;
+        }
+
+        /* Prescription Details Box */
+        .prescription-box {
+            background: #ffffff;
+            border: 1.5px solid #bae6fd;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.05);
+        }
+
+        .prescription-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1.5px dashed #cbd5e1;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .prescription-box-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0369a1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rx-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        .rx-table th {
+            background: #f0f9ff;
+            color: #0369a1;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 700;
+            border-bottom: 1px solid #bae6fd;
+        }
+
+        .rx-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .rx-table tr:hover td {
+            background: #f8fafc;
+        }
+
+        /* Payment Locked State */
+        .payment-locked-card {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 18px;
+            padding: 32px 20px;
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+
+        .badge-waiting-amount {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fef3c7;
+            color: #b45309;
+            font-size: 0.95rem;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #fcd34d;
+        }
+
+        .status-badge-inline {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .status-badge-inline.waiting {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .status-badge-inline.completed {
+            background: #dcfce7;
+            color: #15803d;
         }
 
         /* Content Body */
@@ -666,49 +790,53 @@
 
         <!-- Header -->
         <div class="payment-header">
-            <h1>💳 Thanh toán & Xác minh Đặt lịch khám</h1>
-            <p>Quy trình thanh toán minh bạch chuẩn y khoa theo quy định Phòng khám Doctor4</p>
-        </div>
-
-        <!-- 6 Steps Indicator Bar -->
-        <div class="steps-bar-wrapper">
-            <div class="steps-bar">
-                <div class="step-pill completed">
-                    <span class="step-dot">✓</span>
-                    <span>1. Đặt lịch</span>
-                </div>
-                <div class="step-pill completed" id="pill-step-2">
-                    <span class="step-dot">2</span>
-                    <span>2. Tính tiền</span>
-                </div>
-                <div class="step-pill active" id="pill-step-3">
-                    <span class="step-dot">3</span>
-                    <span>3. Chọn PTTT</span>
-                </div>
-                <div class="step-pill" id="pill-step-4">
-                    <span class="step-dot">4</span>
-                    <span>4. Chuyển tiền</span>
-                </div>
-                <div class="step-pill" id="pill-step-5">
-                    <span class="step-dot">5</span>
-                    <span>5. Xác minh</span>
-                </div>
-                <div class="step-pill" id="pill-step-6">
-                    <span class="step-dot">6</span>
-                    <span>6. Biên nhận</span>
-                </div>
-            </div>
+            <h1>💳 Thanh toán Viện phí & Đơn thuốc</h1>
+            <p>Hệ thống thanh toán minh bạch chuẩn y khoa theo quy định Phòng khám Doctor4</p>
         </div>
 
         <div class="payment-body">
 
-            <!-- BƯỚC 2: HỆ THỐNG TÍNH TIỀN (PHÂN ĐỊNH KHOẢN THU TRƯỚC & KHOẢN THANH TOÁN SAU) -->
+            <!-- Banner 1: Chờ bác sĩ kê đơn thuốc -->
+            <div id="prescriptionWaitingBanner" class="prescription-banner waiting" style="display: none;">
+                <div class="prescription-banner-icon">🩺 ⏳</div>
+                <div class="prescription-banner-body">
+                    <h3>Bác sĩ chưa hoàn thành kê đơn thuốc</h3>
+                    <p>Theo quy trình y khoa tại Phòng khám Doctor4, <strong>số tiền thanh toán (bao gồm tiền khám và đơn thuốc điều trị) sẽ được hệ thống hiển thị sau khi Bác sĩ hoàn thành ca khám và kê đơn thuốc</strong> cho quý khách.</p>
+                    <div style="font-size: 0.85rem; color: #b45309; margin-top: 4px;">
+                        💡 <em>Quý khách vui lòng vào phòng khám để Bác sĩ thăm khám trước. Màn hình thanh toán sẽ tự động cập nhật ngay khi Bác sĩ hoàn tất đơn thuốc.</em>
+                    </div>
+                    <div class="prescription-banner-actions">
+                        <button type="button" class="btn-banner-action btn-banner-refresh" onclick="checkRealtimeStatus(true)">
+                            <span>🔄 Cập nhật trạng thái</span>
+                        </button>
+                        <a href="/bac-si.html" target="_blank" class="btn-banner-action btn-banner-doctor" title="Mở cổng bác sĩ để kê đơn">
+                            <span>👨‍⚕️ Cổng Bác sĩ (Khám & Kê đơn)</span>
+                        </a>
+                        <button type="button" class="btn-banner-action btn-banner-simulate" onclick="simulateDoctorPrescribe()" title="Giả lập bác sĩ kê đơn ngay để thử nghiệm nhanh">
+                            <span>⚡ Giả lập Bác sĩ kê đơn ngay</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banner 2: Bác sĩ đã kê đơn thuốc xong -->
+            <div id="prescriptionCompletedBanner" class="prescription-banner completed" style="display: none;">
+                <div class="prescription-banner-icon">✅</div>
+                <div class="prescription-banner-body">
+                    <h3>Bác sĩ đã hoàn tất khám & kê đơn thuốc</h3>
+                    <p id="prescriptionDiagnosisText" style="margin: 0; font-weight: 600; color: #15803d;">
+                        Chẩn đoán: Đang tải thông tin...
+                    </p>
+                </div>
+            </div>
+
+            <!-- CARD 1: THÔNG TIN LỊCH KHÁM & BẢNG KÊ CHI PHÍ -->
             <div class="step-card highlight">
                 <div class="card-heading">
                     <h2 class="card-title">
-                        <span>💰</span> Bước 2: Hệ thống tính tiền minh bạch
+                        <span>💰</span> Thông tin Viện phí & Chi phí Khám
                     </h2>
-                    <span class="card-tag">Bảng kê chi phí niêm yết</span>
+                    <span class="card-tag" id="statusBadgeHeader">Bảng kê chi phí niêm yết</span>
                 </div>
 
                 <div class="fee-calc-grid">
@@ -731,62 +859,140 @@
                             <strong id="valDoctorName">-</strong>
                         </div>
                         <div class="appt-summary-row">
+                            <span>Phòng khám chỉ định:</span>
+                            <strong id="valRoomName" style="color: #0369a1;">Phòng 101</strong>
+                        </div>
+                        <div class="appt-summary-row">
                             <span>Ngày & Giờ khám:</span>
                             <strong id="valDateTime">-</strong>
+                        </div>
+                        <div class="appt-summary-row">
+                            <span>Trạng thái khám:</span>
+                            <span id="valExamStatus" class="status-badge-inline waiting">Chờ bác sĩ kê đơn</span>
                         </div>
                     </div>
 
                     <!-- Bảng tính viện phí -->
                     <div class="fee-breakdown-box">
                         <div style="font-size: 0.82rem; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 8px;">
-                            Phân định chi phí phòng khám:
+                            Bảng kê viện phí phòng khám:
                         </div>
 
-                        <!-- Khoản 1: Thu trước -->
+                        <!-- Khoản 1: Tiền khám -->
                         <div class="fee-row prepaid">
                             <div>
-                                <strong style="color: #166534; display: block;">1. Khoản thu trước (Thanh toán ngay):</strong>
-                                <span style="font-size: 0.78rem; color: #15803d;" id="valPrepaidDesc">Phí khám ban đầu & giữ chỗ bác sĩ</span>
+                                <strong style="color: #166534; display: block;">1. Tiền khám chuyên khoa mắt:</strong>
+                                <span style="font-size: 0.78rem; color: #15803d;" id="valPrepaidDesc">Khám lâm sàng, kiểm tra thị lực & nhãn áp</span>
                             </div>
                             <div style="text-align: right;">
-                                <strong style="font-size: 1.15rem; color: #166534;" id="valPrepaidAmount">200.000đ</strong>
+                                <strong style="font-size: 1.05rem; color: #166534;" id="valExamFee">Chờ bác sĩ kết luận</strong>
                             </div>
                         </div>
 
-                        <!-- Khoản 2: Thanh toán sau -->
+                        <!-- Khoản 2: Tiền thuốc -->
                         <div class="fee-row postpaid">
                             <div>
-                                <strong style="color: #334155; display: block;">2. Khoản thanh toán sau (Tại phòng khám):</strong>
-                                <span style="font-size: 0.78rem; color: #64748b;" id="valPostpaidDesc">Chi phí phẫu thuật / thủ thuật / thuốc phát sinh</span>
+                                <strong style="color: #334155; display: block;">2. Tiền thuốc điều trị theo đơn:</strong>
+                                <span style="font-size: 0.78rem; color: #64748b;" id="valMedicineDesc">Thuốc nhỏ mắt, kháng viêm hoặc dinh dưỡng nhãn cầu</span>
                             </div>
                             <div style="text-align: right;">
-                                <strong style="font-size: 1rem; color: #475569;" id="valPostpaidAmount">Theo chỉ định</strong>
+                                <strong style="font-size: 1rem; color: #475569;" id="valMedicineFee">Chờ bác sĩ kê đơn</strong>
                             </div>
                         </div>
 
-                        <!-- Tổng tiền cần thanh toán bây giờ -->
+                        <!-- Khoản 3: Phí dịch vụ/thủ thuật bổ sung (nếu có) -->
+                        <div class="fee-row" id="rowServiceFee" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; margin-bottom: 10px;">
+                            <div>
+                                <strong style="color: #334155; display: block;">3. Phí dịch vụ / Cận lâm sàng:</strong>
+                                <span style="font-size: 0.78rem; color: #64748b;" id="valServiceFeeDesc">Chụp OCT / Laser tạo hình</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <strong style="font-size: 1rem; color: #475569;" id="valServiceFee">0đ</strong>
+                            </div>
+                        </div>
+
+                        <!-- Khoản 4: Miễn giảm / BHYT (nếu có) -->
+                        <div class="fee-row" id="rowDiscount" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 14px; margin-bottom: 10px;">
+                            <div>
+                                <strong style="color: #16a34a; display: block;">4. Miễn giảm / Ưu đãi:</strong>
+                                <span style="font-size: 0.78rem; color: #16a34a;" id="valDiscountDesc">Chính sách ưu đãi phòng khám</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <strong style="font-size: 1rem; color: #16a34a;" id="valDiscount">-0đ</strong>
+                            </div>
+                        </div>
+
+                        <!-- Tổng tiền cần thanh toán -->
                         <div class="fee-total">
                             <div>
-                                <span style="font-size: 0.85rem; color: #64748b; display: block;">TỔNG TIỀN PHẢI TRẢ ĐỢT NÀY:</span>
-                                <strong style="font-size: 0.95rem; color: var(--dark);">Thanh toán xác nhận giữ chỗ</strong>
+                                <span style="font-size: 0.85rem; color: #64748b; display: block;">TỔNG VIỆN PHÍ PHẢI THANH TOÁN:</span>
+                                <strong style="font-size: 0.95rem; color: var(--dark);" id="valTotalDueNote">Chờ bác sĩ kê đơn thuốc</strong>
                             </div>
                             <div class="total-amount-highlight" id="valTotalDue">
-                                200.000đ
+                                <span class="badge-waiting-amount">⏳ Chờ kê đơn</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- KHUNG ĐƠN THUỐC CHI TIẾT (HIỂN THỊ KHI BÁC SĨ KÊ XONG) -->
+                <div class="prescription-box" id="prescriptionBox" style="display: none;">
+                    <div class="prescription-box-header">
+                        <div class="prescription-box-title">
+                            <span>📋</span> Đơn Thuốc Điều Trị Do Bác Sĩ Kê
+                        </div>
+                        <div style="font-size: 0.82rem; color: #64748b;">
+                            Bác sĩ kê đơn: <strong id="valDoctorPrescriber" style="color: #0369a1;">-</strong>
+                        </div>
+                    </div>
+
+                    <div id="valDoctorAdviceWrap" style="margin-bottom: 14px; font-size: 0.88rem; color: #475569; background: #f8fafc; padding: 10px 14px; border-radius: 10px; border-left: 3px solid #0284c7;">
+                        <strong>💬 Lời dặn Bác sĩ:</strong> <span id="valDoctorAdviceText">Chưa có lời dặn</span>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="rx-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px; text-align: center;">STT</th>
+                                    <th>Tên thuốc & Dạng bào chế</th>
+                                    <th style="width: 70px; text-align: center;">SL</th>
+                                    <th style="width: 100px; text-align: right;">Đơn giá</th>
+                                    <th>Liều dùng & Hướng dẫn</th>
+                                    <th style="width: 110px; text-align: right;">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prescriptionTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div style="margin-top: 14px; font-size: 0.8rem; color: #64748b; background: #f8fafc; padding: 10px 14px; border-radius: 10px; border-left: 3px solid #38bdf8;">
-                    💡 <strong>Quy định phòng khám:</strong> Khách hàng thanh toán khoản thu trước để hệ thống xác nhận giữ chỗ với Bác sĩ chuyên khoa. Các chi phí cận lâm sàng, thủ thuật hoặc thuốc điều trị (nếu có) sẽ được thanh toán sau tại quầy thu ngân tầng 1 khi kết thúc ca khám.
+                    💡 <strong>Quy định thanh toán:</strong> Viện phí và đơn thuốc điều trị chỉ được tính chính xác sau khi Bác sĩ hoàn thành khám mắt lâm sàng và kê đơn thuốc. Khách hàng kiểm tra đúng danh mục thuốc và số tiền trước khi thanh toán.
                 </div>
             </div>
 
-            <!-- BƯỚC 3: KHÁCH CHỌN PHƯƠNG THỨC THANH TOÁN -->
-            <div class="step-card" id="step-3-container">
+            <!-- THÔNG BÁO KHÓA KHI CHƯA CÓ ĐƠN THUỐC -->
+            <div id="paymentLockedNotice" class="payment-locked-card">
+                <div style="font-size: 42px; margin-bottom: 10px;">🔒</div>
+                <h3 style="margin: 0 0 8px; color: #1e293b; font-size: 1.15rem;">Chưa hiển thị số tiền thanh toán</h3>
+                <p style="margin: 0 auto; max-width: 520px; font-size: 0.92rem; line-height: 1.6;">
+                    Mã QR chuyển khoản và các phương thức thanh toán sẽ <strong>tự động kích hoạt khi Bác sĩ hoàn thành ca khám và kê đơn thuốc</strong> cho quý khách.
+                </p>
+                <div style="margin-top: 16px;">
+                    <a href="/lich-kham.html" class="btn-banner-action btn-banner-refresh" style="text-decoration:none;">
+                        <span>🎫 Xem số phòng khám & giờ hẹn</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- CHỌN PHƯƠNG THỨC THANH TOÁN (CHỈ HIỆN KHI ĐÃ CÓ ĐƠN THUỐC) -->
+            <div class="step-card" id="step-3-container" style="display: none;">
                 <div class="card-heading">
                     <h2 class="card-title">
-                        <span>💳</span> Bước 3: Chọn phương thức thanh toán
+                        <span>💳</span> Chọn phương thức thanh toán
                     </h2>
                     <span class="card-tag">3 hình thức linh hoạt</span>
                 </div>
@@ -804,7 +1010,7 @@
                     <div class="method-card" id="method-card-counter" onclick="selectPaymentMethod('counter')">
                         <div class="method-icon">🏢</div>
                         <div class="method-name">Thanh toán tại quầy</div>
-                        <div class="method-sub">Nộp tiền mặt hoặc quẹt thẻ POS tại quầy lễ tân Tầng 1 trước khi vào phòng khám</div>
+                        <div class="method-sub">Nộp tiền mặt hoặc quẹt thẻ POS tại quầy thu ngân Tầng 1</div>
                     </div>
 
                     <!-- Phương thức 3: Cổng điện tử -->
@@ -816,11 +1022,11 @@
                 </div>
             </div>
 
-            <!-- BƯỚC 4: KHÁCH THỰC HIỆN THANH TOÁN -->
-            <div class="step-card" id="step-4-container">
+            <!-- THỰC HIỆN THANH TOÁN (CHỈ HIỆN KHI ĐÃ CÓ ĐƠN THUỐC) -->
+            <div class="step-card" id="step-4-container" style="display: none;">
                 <div class="card-heading">
                     <h2 class="card-title">
-                        <span>📲</span> Bước 4: Khách thực hiện thanh toán
+                        <span>📲</span> Thực hiện thanh toán
                     </h2>
                     <span class="card-tag" id="current-method-tag">Chuyển khoản VietQR</span>
                 </div>
@@ -861,9 +1067,9 @@
                             </div>
 
                             <div class="bank-data-row">
-                                <span class="bank-data-label">Số tiền:</span>
+                                <span class="bank-data-label">Số tiền thanh toán:</span>
                                 <div class="bank-data-val-group">
-                                    <span class="bank-data-val" id="valTransferAmount" style="color: #dc2626; font-size: 1.25rem;">200.000đ</span>
+                                    <span class="bank-data-val" id="valTransferAmount" style="color: #dc2626; font-size: 1.25rem;">0đ</span>
                                     <button class="btn-copy" onclick="copyRawText(currentAmount, 'Đã chép số tiền!')">📋 Chép</button>
                                 </div>
                             </div>
@@ -887,9 +1093,9 @@
                 <div class="exec-panel" id="panel-counter">
                     <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 16px; padding: 24px; text-align: center;">
                         <div style="font-size: 48px; margin-bottom: 12px;">🏢</div>
-                        <h3 style="font-size: 1.2rem; color: #0f172a; margin: 0 0 8px;">Thanh toán trực tiếp tại Quầy Lễ Tân</h3>
+                        <h3 style="font-size: 1.2rem; color: #0f172a; margin: 0 0 8px;">Thanh toán trực tiếp tại Quầy Thu Ngân</h3>
                         <p style="color: #64748b; font-size: 0.95rem; max-width: 500px; margin: 0 auto 16px;">
-                            Quý khách vui lòng đến trước giờ hẹn <strong>15 phút</strong> tại <strong>Quầy Lễ Tân (Tầng 1)</strong> Phòng khám Doctor4 và xuất trình mã đặt lịch:
+                            Quý khách vui lòng đến <strong>Quầy Thu Ngân (Tầng 1)</strong> Phòng khám Doctor4 và xuất trình mã đặt lịch:
                         </p>
 
                         <div style="display: inline-block; background: #e0f2fe; border: 2px dashed #0284c7; border-radius: 12px; padding: 12px 24px; margin-bottom: 16px;">
@@ -911,7 +1117,7 @@
                         <div style="font-size: 48px; margin-bottom: 12px;">⚡</div>
                         <h3 style="font-size: 1.2rem; color: #0f172a; margin: 0 0 8px;">Cổng thanh toán điện tử VNPAY & MoMo</h3>
                         <p style="color: #64748b; font-size: 0.92rem; max-width: 520px; margin: 0 auto 20px;">
-                            Hệ thống đã kết nối cổng thanh toán an toàn, bảo mật tiêu chuẩn ngân hàng. Bấm vào nút bên dưới để thanh toán ngay số tiền <strong id="gatewayAmountText" style="color: #16a34a;">200.000đ</strong>:
+                            Hệ thống đã kết nối cổng thanh toán an toàn, bảo mật tiêu chuẩn ngân hàng. Bấm vào nút bên dưới để thanh toán số tiền <strong id="gatewayAmountText" style="color: #16a34a;">0đ</strong>:
                         </p>
 
                         <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
@@ -925,14 +1131,14 @@
                     </div>
                 </div>
 
-                <!-- BƯỚC 5: XÁC MINH GIAO DỊCH -->
+                <!-- XÁC MINH GIAO DỊCH -->
                 <div class="verification-box waiting" id="verificationStatusBox">
                     <div style="font-size: 28px; margin-bottom: 6px;" id="verificationIcon">⏳</div>
                     <div style="font-size: 1.05rem; font-weight: 800; margin-bottom: 4px;" id="verificationTitle">
-                        Bước 5: Đang chờ đối chiếu giao dịch...
+                        Đang chờ đối chiếu giao dịch...
                     </div>
                     <div style="font-size: 0.88rem; opacity: 0.9;" id="verificationSubtitle">
-                        Hệ thống tự động lắng nghe xác nhận từ ngân hàng hoặc Admin phòng khám.
+                        Hệ thống tự động lắng nghe xác nhận từ ngân hàng hoặc Quầy thu ngân phòng khám.
                     </div>
                 </div>
 
@@ -952,12 +1158,12 @@
                 </div>
             </div>
 
-            <!-- BƯỚC 6: CẬP NHẬT TRẠNG THÁI VÀ GỬI BIÊN NHẬN -->
+            <!-- BIÊN NHẬN ĐIỆN TỬ CHÍNH THỨC -->
             <div class="receipt-card" id="step-6-receipt">
                 <div class="receipt-header">
                     <div>
                         <div style="font-size: 0.8rem; color: #15803d; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
-                            BƯỚC 6: BIÊN NHẬN ĐIỆN TỬ CHÍNH THỨC
+                            BIÊN NHẬN ĐIỆN TỬ CHÍNH THỨC
                         </div>
                         <h2 style="margin: 4px 0 2px; font-size: 1.45rem; color: #0f172a; font-weight: 800;">
                             PHÒNG KHÁM CHUYÊN KHOA MẮT DOCTOR4
@@ -1018,15 +1224,15 @@
                 <div style="margin-top: 20px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <div>
                         <span style="font-size: 0.85rem; color: #166534; font-weight: 700; text-transform: uppercase;">SỐ TIỀN ĐÃ THANH TOÁN THÀNH CÔNG:</span>
-                        <div style="font-size: 0.8rem; color: #15803d;">Khoản thu trước: Phí khám chuyên sâu & Đặt lịch giữ chỗ</div>
+                        <div style="font-size: 0.8rem; color: #15803d;">Bao gồm tiền khám chuyên sâu & đơn thuốc điều trị do Bác sĩ kê</div>
                     </div>
                     <div style="font-size: 1.6rem; font-weight: 800; color: #15803d;" id="receiptPaidAmount">
-                        200.000đ
+                        0đ
                     </div>
                 </div>
 
                 <div style="margin-top: 12px; font-size: 0.82rem; color: #64748b; line-height: 1.5;">
-                    * <em>Ghi chú:</em> Biên nhận điện tử này có giá trị xác thực lịch hẹn. Khi đến khám, quý khách chỉ cần xuất trình mã lịch hẹn trên điện thoại tại Quầy tiếp đón Tầng 1 để được hướng dẫn vào đúng số phòng khám.
+                    * <em>Ghi chú:</em> Biên nhận điện tử này có giá trị xác thực thanh toán viện phí và đơn thuốc tại Doctor4 Eye Clinic. Quý khách có thể xuất trình biên nhận này tại Quầy Dược (Tầng 1) để nhận thuốc.
                 </div>
 
                 <div class="receipt-actions">
