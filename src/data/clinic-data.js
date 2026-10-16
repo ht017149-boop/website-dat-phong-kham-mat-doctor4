@@ -356,6 +356,8 @@ export const INITIAL_10_DOCTORS = [
 export const INITIAL_APPOINTMENTS = [
   {
     id: 'AP-1001',
+    queueNumber: 1,
+    stt: 1,
     patientName: 'Trần Văn Hùng',
     patientPhone: '0918 123 456',
     patientEmail: 'hung.tv@gmail.com',
@@ -373,6 +375,8 @@ export const INITIAL_APPOINTMENTS = [
   },
   {
     id: 'AP-1002',
+    queueNumber: 1,
+    stt: 1,
     patientName: 'Lê Thị Thu Thảo',
     patientPhone: '0988 765 432',
     patientEmail: 'thao.le@gmail.com',
@@ -390,6 +394,8 @@ export const INITIAL_APPOINTMENTS = [
   },
   {
     id: 'AP-1003',
+    queueNumber: 1,
+    stt: 1,
     patientName: 'Vũ Văn Nam (58 tuổi)',
     patientPhone: '0903 111 222',
     patientEmail: 'namvu58@gmail.com',
@@ -407,6 +413,8 @@ export const INITIAL_APPOINTMENTS = [
   },
   {
     id: 'AP-1004',
+    queueNumber: 1,
+    stt: 1,
     patientName: 'Cụ Bùi Thị Huệ (72 tuổi)',
     patientPhone: '0913 888 999',
     patientEmail: 'huebui@gmail.com',
@@ -424,6 +432,8 @@ export const INITIAL_APPOINTMENTS = [
   },
   {
     id: 'AP-1005',
+    queueNumber: 1,
+    stt: 1,
     patientName: 'Nguyễn Đình Trọng (65 tuổi)',
     patientPhone: '0917 222 333',
     patientEmail: 'trongnd@gmail.com',
@@ -441,6 +451,8 @@ export const INITIAL_APPOINTMENTS = [
   },
   {
     id: 'AP-1006',
+    queueNumber: 1,
+    stt: 1,
     patientName: 'Bé Nguyễn Gia Hân (9 tuổi)',
     patientPhone: '0903 555 777',
     patientEmail: 'giahunmom@gmail.com',
@@ -458,6 +470,8 @@ export const INITIAL_APPOINTMENTS = [
   },
   {
     id: 'AP-1007',
+    queueNumber: 1,
+    stt: 1,
     patientName: 'Đặng Quốc Huy (34 tuổi)',
     patientPhone: '0938 444 555',
     patientEmail: 'huy.dang@gmail.com',
@@ -475,6 +489,8 @@ export const INITIAL_APPOINTMENTS = [
   },
   {
     id: 'AP-1008',
+    queueNumber: 1,
+    stt: 1,
     patientName: 'Bà Mai Thị Ngọc (60 tuổi)',
     patientPhone: '0909 333 444',
     patientEmail: 'ngocmai@gmail.com',
@@ -492,6 +508,8 @@ export const INITIAL_APPOINTMENTS = [
   },
   {
     id: 'AP-1009',
+    queueNumber: 1,
+    stt: 1,
     patientName: 'Chị Hoàng Thị Lan Phương (32 tuổi)',
     patientPhone: '0933 999 888',
     patientEmail: 'lanphuong.hoang@gmail.com',
@@ -509,6 +527,8 @@ export const INITIAL_APPOINTMENTS = [
   },
   {
     id: 'AP-1010',
+    queueNumber: 1,
+    stt: 1,
     patientName: 'Anh Phạm Văn Long (28 tuổi)',
     patientPhone: '0977 888 111',
     patientEmail: 'longpham@gmail.com',
@@ -523,5 +543,100 @@ export const INITIAL_APPOINTMENTS = [
     symptoms: 'Bụi kim loại bay vào mắt khi làm việc, mắt sưng cộm đỏ cần gắp dị vật khẩn cấp.',
     status: 'confirmed',
     createdAt: '2026-10-01T07:30:00.000Z'
+  },
+  {
+    id: 'AP-1011',
+    queueNumber: 2,
+    stt: 2,
+    patientName: 'Đỗ Hoàng Nam (26 tuổi)',
+    patientPhone: '0966 222 333',
+    patientEmail: 'namdo@gmail.com',
+    serviceCode: 'lasik',
+    serviceName: 'Phẫu thuật Khúc xạ (LASIK / SMILE)',
+    doctorId: 'doc_1',
+    doctorName: 'BS. CKII Nguyễn Minh Quân',
+    roomId: 'R101',
+    roomName: 'Phòng 101 - Khám LASIK A',
+    date: '2026-10-02',
+    timeSlot: '08:30 - 09:30',
+    symptoms: 'Khám kiểm tra độ cận và tư vấn mổ Femto-LASIK (Cùng khung giờ với AP-1001, nhận STT 02)',
+    status: 'confirmed',
+    createdAt: '2026-10-01T08:45:00.000Z'
   }
 ];
+
+/**
+ * Định dạng số thứ tự khám (STT): 1 -> "01", 2 -> "02", 10 -> "10"
+ */
+export function formatQueueNumber(num) {
+  const n = parseInt(num, 10);
+  if (isNaN(n) || n <= 0) return '01';
+  return String(n).padStart(2, '0');
+}
+
+/**
+ * Tính số thứ tự khám (STT) cho ca khám mới:
+ * Khi có nhiều người đặt cùng ngày, cùng khung giờ (và cùng Bác sĩ / Phòng khám),
+ * hệ thống sẽ phát số thứ tự nối tiếp (1, 2, 3...) theo thời gian đăng ký.
+ */
+export function calculateQueueNumber(appointments = [], { date, timeSlot, doctorId = null, roomId = null } = {}) {
+  if (!date || !timeSlot) return 1;
+
+  const sameSlot = appointments.filter(a => {
+    if (!a || a.status === 'cancelled') return false;
+    const sameDate = String(a.date || '').trim() === String(date || '').trim();
+    const sameTime = String(a.timeSlot || a.time || '').trim() === String(timeSlot || '').trim();
+    if (!sameDate || !sameTime) return false;
+
+    // Khớp theo Bác sĩ hoặc Phòng khám
+    if (doctorId && a.doctorId && String(a.doctorId) === String(doctorId)) return true;
+    if (roomId && a.roomId && String(a.roomId) === String(roomId)) return true;
+    
+    // Nếu không xác định rõ Bác sĩ/Phòng khám thì tính chung theo khung giờ
+    if (!doctorId && !roomId) return true;
+    return false;
+  });
+
+  const maxQueue = sameSlot.reduce((max, a) => {
+    const q = parseInt(a.queueNumber || a.stt || 0, 10);
+    return !isNaN(q) && q > max ? q : max;
+  }, 0);
+
+  return Math.max(maxQueue, sameSlot.length) + 1;
+}
+
+/**
+ * Lấy thông tin thống kê số người đã đặt trong khung giờ đó
+ * Để hiển thị thông báo trực tiếp trên form đặt lịch
+ */
+export function getSlotBookingInfo(appointments = [], { date, timeSlot, doctorId = null, roomId = null } = {}) {
+  if (!date || !timeSlot) {
+    return { count: 0, nextQueueNumber: 1, formattedQueue: '01' };
+  }
+
+  const sameSlot = appointments.filter(a => {
+    if (!a || a.status === 'cancelled') return false;
+    const sameDate = String(a.date || '').trim() === String(date || '').trim();
+    const sameTime = String(a.timeSlot || a.time || '').trim() === String(timeSlot || '').trim();
+    if (!sameDate || !sameTime) return false;
+
+    if (doctorId && a.doctorId && String(a.doctorId) === String(doctorId)) return true;
+    if (roomId && a.roomId && String(a.roomId) === String(roomId)) return true;
+    if (!doctorId && !roomId) return true;
+    return false;
+  });
+
+  const maxQueue = sameSlot.reduce((max, a) => {
+    const q = parseInt(a.queueNumber || a.stt || 0, 10);
+    return !isNaN(q) && q > max ? q : max;
+  }, 0);
+
+  const nextQueueNumber = Math.max(maxQueue, sameSlot.length) + 1;
+
+  return {
+    count: sameSlot.length,
+    nextQueueNumber,
+    formattedQueue: formatQueueNumber(nextQueueNumber),
+    existingPatients: sameSlot.map(a => a.patientName || 'Bệnh nhân')
+  };
+}

@@ -3,7 +3,7 @@
    Xử lý toàn bộ tính năng Đặt Lịch Khám Người Dùng & Hiển thị Bác Sĩ
    ============================================================ */
 
-import { INITIAL_10_DOCTORS, CLINIC_ROOMS, CLINIC_SERVICES, getClinicServices } from '../data/clinic-data.js';
+import { INITIAL_10_DOCTORS, CLINIC_ROOMS, CLINIC_SERVICES, getClinicServices, calculateQueueNumber, formatQueueNumber, getSlotBookingInfo } from '../data/clinic-data.js';
 import { compressImageFile, getDefaultPatientPhotos, getPatientProfileData } from '../utils/patient-profile.js';
 
 const DOCTORS_STORAGE_KEY = 'doctor4_doctors_db';
@@ -45,8 +45,18 @@ function saveAppointment(data) {
   const examFee = Number(data.examFee || 200000);
   const serviceFee = Number(data.serviceFee || 0);
 
+  // Tính số thứ tự khám (STT) khi nhiều người đặt cùng ngày, giờ, bác sĩ/phòng
+  const queueNumber = calculateQueueNumber(list, {
+    date: data.date,
+    timeSlot: data.timeSlot,
+    doctorId: data.doctorId,
+    roomId: data.roomId
+  });
+
   const newAppointment = {
     id: `DOC-${new Date().getFullYear()}-${randomCode}`,
+    queueNumber: queueNumber,
+    stt: queueNumber,
     patientName: data.patientName,
     patientPhone: data.patientPhone,
     patientEmail: data.patientEmail || 'Chưa cập nhật',
@@ -235,14 +245,74 @@ export function setupBookingForm() {
     }
   }
 
-  // Khởi tạo Options & tính tiền ban đầu
+  // Cập nhật thông báo STT dự kiến theo khung giờ và bác sĩ
+  function updateQueueLiveNotice() {
+    const dateInput = document.getElementById('book-date');
+    const timeInput = document.getElementById('book-time');
+    const docSelect = document.getElementById('book-doctor');
+    const roomSelect = document.getElementById('book-room');
+    const noticeText = document.getElementById('booking-queue-notice-text');
+    const badge = document.getElementById('booking-queue-badge');
+
+    if (!noticeText || !badge) return;
+
+    const dateVal = dateInput?.value || '';
+    const timeVal = timeInput?.value || '';
+    const docId = docSelect?.value || '';
+    const roomId = roomSelect?.value || '';
+
+    let list = [];
+    try {
+      const stored = localStorage.getItem(APPOINTMENTS_STORAGE_KEY);
+      if (stored) list = JSON.parse(stored);
+    } catch (e) {
+      list = [];
+    }
+
+    const info = getSlotBookingInfo(list, {
+      date: dateVal,
+      timeSlot: timeVal,
+      doctorId: docId,
+      roomId: roomId
+    });
+
+    badge.textContent = `STT: #${info.formattedQueue}`;
+
+    if (info.count === 0) {
+      noticeText.innerHTML = `Khung giờ <strong>${timeVal}</strong> ngày <strong>${dateVal || 'đã chọn'}</strong> chưa có ca đặt. Quý khách là <strong>người đầu tiên</strong> (STT #01).`;
+      badge.style.background = 'linear-gradient(135deg, #0284c7, #2563eb)';
+    } else {
+      noticeText.innerHTML = `Khung giờ này đã có <strong>${info.count} người</strong> đặt trước. Quý khách đặt sẽ nhận <strong>Số thứ tự (STT) #${info.formattedQueue}</strong> để khám lần lượt.`;
+      badge.style.background = 'linear-gradient(135deg, #d97706, #ea580c)';
+    }
+  }
+
+  // Khởi tạo ngày mặc định (hôm nay) nếu chưa có
+  const dateInput = document.getElementById('book-date');
+  if (dateInput && !dateInput.value) {
+    const todayStr = new Date().toISOString().split('T')[0];
+    dateInput.value = todayStr;
+    dateInput.min = todayStr;
+  }
+
+  // Khởi tạo Options & tính tiền ban đầu & STT ban đầu
   updateDoctorAndRoomOptions(srvSelect.value);
   updateFeePreview(srvSelect.value);
+  updateQueueLiveNotice();
 
   // Khi thay đổi dịch vụ
   srvSelect.addEventListener('change', () => {
     updateDoctorAndRoomOptions(srvSelect.value);
     updateFeePreview(srvSelect.value);
+    updateQueueLiveNotice();
+  });
+
+  // Gắn sự kiện cập nhật STT khi đổi ngày, giờ, bác sĩ, phòng khám
+  ['change', 'input'].forEach(evt => {
+    document.getElementById('book-date')?.addEventListener(evt, updateQueueLiveNotice);
+    document.getElementById('book-time')?.addEventListener(evt, updateQueueLiveNotice);
+    document.getElementById('book-doctor')?.addEventListener(evt, updateQueueLiveNotice);
+    document.getElementById('book-room')?.addEventListener(evt, updateQueueLiveNotice);
   });
 
   // Biến lưu Base64 ảnh upload từ form đặt lịch
@@ -405,6 +475,8 @@ export function setupBookingForm() {
       id: paymentId,
       paymentId: paymentId,
       appointmentId: newApp.id,
+      queueNumber: newApp.queueNumber,
+      stt: newApp.stt,
       patientName: newApp.patientName,
       name: newApp.patientName,
       doctorName: newApp.doctorName,
@@ -438,6 +510,7 @@ export function setupBookingForm() {
     form.reset();
     updateDoctorAndRoomOptions(srvSelect.value);
     updateFeePreview(srvSelect.value);
+    updateQueueLiveNotice();
   });
 }
 
@@ -454,18 +527,36 @@ function showBookingSuccessModal(app, serviceInfo = null, paymentId = null) {
   }
 
   const examFee = Number(app.examFee || 200000);
+  const sttFormatted = formatQueueNumber(app.queueNumber || app.stt || 1);
+  const isMultiple = Number(app.queueNumber || 1) > 1;
 
   modal.innerHTML = `
     <div style="position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(10px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
       <div style="background:#ffffff;color:#0f172a;max-width:540px;width:100%;border-radius:24px;padding:28px 30px;box-shadow:0 25px 50px rgba(0,0,0,0.35);text-align:center;animation:admScaleIn 0.3s ease-out;max-height:90vh;overflow-y:auto;">
 
-        <div style="font-size:56px;margin-bottom:10px;">✅</div>
+        <div style="font-size:52px;margin-bottom:8px;">✅</div>
         <h2 style="font-size:22px;font-weight:800;color:#16a34a;margin-bottom:6px;">Đặt Lịch Thành Công!</h2>
-        <p style="color:#64748b;font-size:13.5px;margin-bottom:20px;">Doctor4 đã tiếp nhận ca hẹn của bạn. Vui lòng đến đúng giờ để được khám.</p>
+        <p style="color:#64748b;font-size:13.5px;margin-bottom:18px;">Doctor4 đã tiếp nhận ca hẹn. Hệ thống đã phát số thứ tự khám cho bạn.</p>
+
+        <!-- Thẻ Số Thứ Tự Khám (STT) Nổi Bật -->
+        <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2.5px dashed #2563eb; border-radius: 18px; padding: 18px 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 8px 25px rgba(37,99,235,0.12);">
+          <div style="font-size: 11px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 1.2px;">
+            🎟️ SỐ THỨ TỰ KHÁM CỦA BẠN (STT)
+          </div>
+          <div style="font-size: 50px; font-weight: 900; color: #1d4ed8; line-height: 1.1; margin: 4px 0 6px; letter-spacing: 1px;">
+            STT: #${sttFormatted}
+          </div>
+          <div style="font-size: 13.5px; color: #1e3a8a; line-height: 1.5; font-weight: 600;">
+            ${isMultiple 
+              ? `Đã có <strong>${app.queueNumber - 1} người</strong> đặt cùng khung giờ <strong>${app.timeSlot}</strong>. Quý khách giữ <strong>STT #${sttFormatted}</strong> và sẽ được Bác sĩ tiếp đón khám lần lượt theo số này.` 
+              : `Quý khách là người đầu tiên trong khung giờ <strong>${app.timeSlot}</strong>. Vui lòng giữ <strong>STT #${sttFormatted}</strong> khi đến phòng khám.`}
+          </div>
+        </div>
 
         <!-- Thông tin lịch hẹn -->
         <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px 18px;text-align:left;font-size:13px;line-height:2;margin-bottom:18px;">
           <div>🔖 <strong>Mã lịch hẹn:</strong> <span style="font-family:monospace;color:#2563eb;font-weight:800;font-size:14px;">${app.id}</span></div>
+          <div>🔢 <strong>Số thứ tự (STT):</strong> <span style="background: #2563eb; color: #fff; padding: 2px 10px; border-radius: 6px; font-weight: 800; font-size: 13px;">STT #${sttFormatted}</span> (Khung giờ: ${app.timeSlot})</div>
           <div>👤 <strong>Bệnh nhân:</strong> ${app.patientName} (📞 ${app.patientPhone})</div>
           <div>🎯 <strong>Dịch vụ:</strong> ${app.serviceName}</div>
           <div>👨‍⚕️ <strong>Bác sĩ:</strong> ${app.doctorName}</div>

@@ -3,7 +3,7 @@
    Quản lý Đặt Lịch Khám (10 Phòng - 10 Bác Sĩ)
    ============================================================ */
 
-import { CLINIC_ROOMS, CLINIC_SERVICES, INITIAL_APPOINTMENTS } from '../data/clinic-data.js';
+import { CLINIC_ROOMS, CLINIC_SERVICES, INITIAL_APPOINTMENTS, calculateQueueNumber, formatQueueNumber } from '../data/clinic-data.js';
 import { DoctorManager } from './doctor-manager.js';
 import { getPatientProfileData } from '../utils/patient-profile.js';
 
@@ -61,9 +61,22 @@ export const AppointmentManager = {
       selectedRoom = rooms[0];
     }
 
+    const appointmentDate = data.date || new Date().toISOString().split('T')[0];
+    const appointmentTimeSlot = data.timeSlot || '08:30 - 09:30';
+
+    // Tính STT khi có nhiều người đặt cùng giờ
+    const queueNumber = calculateQueueNumber(list, {
+      date: appointmentDate,
+      timeSlot: appointmentTimeSlot,
+      doctorId: doc.id,
+      roomId: selectedRoom.id
+    });
+
     const randomCode = Math.floor(1000 + Math.random() * 9000);
     const newAppointment = {
       id: `DOC-${new Date().getFullYear()}-${randomCode}`,
+      queueNumber: queueNumber,
+      stt: queueNumber,
       patientName: (data.patientName || '').trim(),
       patientPhone: (data.patientPhone || '').trim(),
       patientEmail: (data.patientEmail || '').trim() || 'Chưa cập nhật',
@@ -73,8 +86,8 @@ export const AppointmentManager = {
       doctorName: doc.name.startsWith('BS') || doc.name.startsWith('TS') || doc.name.startsWith('ThS') ? doc.name : `${doc.degree ? doc.degree.split(' - ')[0] : 'BS.'} ${doc.name}`,
       roomId: selectedRoom.id,
       roomName: `${selectedRoom.number} - ${selectedRoom.name.split(' & ')[0]}`,
-      date: data.date || new Date().toISOString().split('T')[0],
-      timeSlot: data.timeSlot || '08:30 - 09:30',
+      date: appointmentDate,
+      timeSlot: appointmentTimeSlot,
       symptoms: (data.symptoms || '').trim() || 'Khám mắt theo nhu cầu',
       status: data.status || 'pending', // 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled'
       patientProfile: getPatientProfileData(data),

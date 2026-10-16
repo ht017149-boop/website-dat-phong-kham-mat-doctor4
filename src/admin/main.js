@@ -923,7 +923,12 @@ function renderAppointmentRow(app) {
       </td>
       <td>
         <div style="color: #fff; font-weight: 500;">📅 ${escapeHtml(app.date)}</div>
-        <div style="color: var(--adm-warning); font-size: 12px; font-weight: 600; margin-top: 2px;">🕒 ${escapeHtml(app.timeSlot)}</div>
+        <div style="color: var(--adm-warning); font-size: 12px; font-weight: 600; margin-top: 2px;">
+          🕒 ${escapeHtml(app.timeSlot)}
+          <span style="background: rgba(56,189,248,0.2); color: #38bdf8; border: 1px solid rgba(56,189,248,0.35); padding: 1px 7px; border-radius: 4px; font-weight: 700; font-size: 11px; margin-left: 4px;">
+            STT #${String(app.queueNumber || app.stt || 1).padStart(2, '0')}
+          </span>
+        </div>
       </td>
       <td>
         ${statusHtml[app.status] || statusHtml.pending}

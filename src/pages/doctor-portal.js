@@ -250,11 +250,25 @@ function renderPatientQueue() {
     list = list.filter(a => a.status === 'completed');
   }
 
-  // Sắp xếp: Ca chờ khám lên trước theo giờ hẹn
+  // Sắp xếp: Ca chờ khám lên trước theo ngày & giờ hẹn; cùng ngày & giờ -> sắp xếp theo STT đã phát
   list.sort((a, b) => {
     if (a.status !== 'completed' && b.status === 'completed') return -1;
     if (a.status === 'completed' && b.status !== 'completed') return 1;
-    return (a.time || '').localeCompare(b.time || '');
+
+    // So sánh ngày
+    const dateComp = (a.date || '').localeCompare(b.date || '');
+    if (dateComp !== 0) return dateComp;
+
+    // So sánh giờ
+    const timeA = a.timeSlot || a.time || '';
+    const timeB = b.timeSlot || b.time || '';
+    const timeComp = timeA.localeCompare(timeB);
+    if (timeComp !== 0) return timeComp;
+
+    // Cùng ngày & cùng giờ -> sắp xếp theo STT đã phát
+    const qA = Number(a.queueNumber || a.stt || 0);
+    const qB = Number(b.queueNumber || b.stt || 0);
+    return qA - qB;
   });
 
   if (list.length === 0) {
@@ -284,7 +298,7 @@ function renderPatientQueue() {
         </thead>
         <tbody>
           ${list.map((app, index) => {
-            const sttNumber = String(index + 1).padStart(2, '0');
+            const sttNumber = String(app.queueNumber || app.stt || (index + 1)).padStart(2, '0');
             const isCompleted = app.status === 'completed';
             const statusBadge = isCompleted 
               ? `<span class="doc-status-badge completed">✅ Đã khám xong</span>`
@@ -302,7 +316,7 @@ function renderPatientQueue() {
                 <td>
                   <div class="ticket-badge">${app.id || 'DOC-2026'}</div>
                   <div class="appointment-time-badge">
-                    <span>⏰ ${app.time || '08:30'}</span> &nbsp;|&nbsp; <span>📅 ${app.date || 'Hôm nay'}</span>
+                    <span>⏰ ${app.timeSlot || app.time || '08:30'}</span> &nbsp;|&nbsp; <span>📅 ${app.date || 'Hôm nay'}</span> &nbsp;|&nbsp; <strong style="color: #0284c7;">STT #${sttNumber}</strong>
                   </div>
                 </td>
                 <td>

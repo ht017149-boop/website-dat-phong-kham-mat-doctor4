@@ -4,7 +4,7 @@
    (Nằm hoàn toàn ở phía Người Dùng / Client)
    ============================================================ */
 
-import { CLINIC_ROOMS } from '../data/clinic-data.js';
+import { CLINIC_ROOMS, formatQueueNumber } from '../data/clinic-data.js';
 
 const APPOINTMENTS_STORAGE_KEY = 'doctor4_appointments_db';
 
@@ -195,17 +195,26 @@ function renderAppointmentCard(app) {
   };
 
   const hasRecord = app.status === 'completed' || !!app.medicalRecord;
+  const sttFormatted = formatQueueNumber(app.queueNumber || app.stt || 1);
 
   return `
     <div style="border: 2px solid ${hasRecord ? '#bbf7d0' : '#e0f2fe'}; border-radius: 16px; background: #ffffff; padding: 20px; box-shadow: 0 4px 12px rgba(2,132,199,0.06); position: relative;">
       
-      <!-- Top Bar: Code + Status -->
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 14px;">
-        <div>
-          <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Mã Vé Khám</span>
-          <div style="font-family: monospace; font-size: 16px; font-weight: 800; color: #0284c7;">${app.id}</div>
+      <!-- Top Bar: Code + STT + Status -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div>
+            <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Mã Vé Khám</span>
+            <div style="font-family: monospace; font-size: 16px; font-weight: 800; color: #0284c7;">${app.id}</div>
+          </div>
+          <div style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; padding: 4px 12px; border-radius: 8px; text-align: center; box-shadow: 0 2px 6px rgba(2,132,199,0.3);">
+            <div style="font-size: 9.5px; text-transform: uppercase; font-weight: 700; opacity: 0.9;">Số thứ tự</div>
+            <div style="font-size: 15px; font-weight: 900; line-height: 1.1;">STT: #${sttFormatted}</div>
+          </div>
         </div>
-        ${statusBadge[app.status] || statusBadge.confirmed}
+        <div>
+          ${statusBadge[app.status] || statusBadge.confirmed}
+        </div>
       </div>
 
       <!-- Main: ROOM HIGHLIGHT BOX -->
@@ -237,6 +246,9 @@ function renderAppointmentCard(app) {
         <div>
           <div style="color: #64748b;">🕒 Thời gian hẹn khám:</div>
           <strong style="color: #d97706; font-size: 14px;">${app.timeSlot} — ${app.date}</strong>
+          <div style="color: #0369a1; font-size: 12px; font-weight: 700; margin-top: 2px;">
+            🎟️ Quý khách giữ <strong>Số thứ tự #${sttFormatted}</strong> trong khung giờ này
+          </div>
         </div>
         <div>
           <div style="color: #64748b;">🩺 Dịch vụ khám:</div>
