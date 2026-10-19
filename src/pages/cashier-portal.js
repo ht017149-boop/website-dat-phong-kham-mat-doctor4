@@ -9,6 +9,12 @@ const APPOINTMENTS_KEY = 'doctor4_appointments_db';
 const PAYMENTS_KEY     = 'payments';
 const SESSION_KEY      = 'doctor4_session';
 
+/* ── CẤU HÌNH TÀI KHOẢN NHẬN TIỀN (VietQR) ── */
+const CASHIER_BANK_ID      = 'MB';
+const CASHIER_BANK_ACCOUNT = '0123456789';
+const CASHIER_BANK_NAME    = 'PHONG KHAM MAT DOCTOR4';
+const CASHIER_BANK_LABEL   = 'MB Bank (Ngân hàng TMCP Quân đội)';
+
 /* ── CASHIER SESSION ── */
 let currentCashier = null;
 
@@ -685,9 +691,36 @@ function openCollectModal(inv) {
             <label>Phương Thức Thanh Toán</label>
             <div class="method-options">
               <button class="method-btn selected" data-method="Tiền mặt tại quầy">💵 Tiền mặt</button>
-              <button class="method-btn" data-method="Chuyển khoản ngân hàng">🏦 Chuyển khoản</button>
+              <button class="method-btn" data-method="Chuyển khoản ngân hàng" id="btn-method-transfer">🏦 Chuyển khoản QR</button>
               <button class="method-btn" data-method="Thẻ tín dụng / Thẻ ATM">💳 Thẻ ngân hàng</button>
               <button class="method-btn" data-method="MoMo / VNPay">📱 Ví điện tử</button>
+            </div>
+          </div>
+
+          <!-- VietQR Panel (ẩn mặc định, hiện khi chọn Chuyển khoản) -->
+          <div id="cashier-vietqr-panel" style="display:none;margin:12px 0;background:linear-gradient(135deg,#f0f9ff,#eff6ff);border:1.5px solid #bae6fd;border-radius:14px;padding:16px;text-align:center;">
+            <div style="font-size:11px;font-weight:800;color:#0284c7;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">
+              📱 Mã QR Chuyển Khoản VietQR
+            </div>
+            <img id="cashier-qr-img"
+                 src=""
+                 alt="Mã QR VietQR thanh toán"
+                 style="width:200px;height:200px;border-radius:12px;border:3px solid #bae6fd;background:#fff;display:block;margin:0 auto 12px;" />
+            <div style="font-size:12.5px;color:#0f172a;font-weight:700;margin-bottom:4px;">
+              🏦 <span id="cashier-qr-bank-label">${CASHIER_BANK_LABEL}</span>
+            </div>
+            <div style="font-size:12px;color:#475569;margin-bottom:2px;">
+              STK: <strong style="font-family:monospace;color:#0284c7;">${CASHIER_BANK_ACCOUNT}</strong>
+            </div>
+            <div style="font-size:12px;color:#475569;margin-bottom:6px;">
+              Chủ TK: <strong>${CASHIER_BANK_NAME}</strong>
+            </div>
+            <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 12px;display:inline-block;margin-top:4px;">
+              <div style="font-size:11px;color:#15803d;font-weight:700;">SỐ TIỀN CHUYỂN KHOẢN:</div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:800;color:#16a34a;">${formatMoney(inv.totalAmount)}</div>
+            </div>
+            <div style="font-size:11px;color:#64748b;margin-top:8px;">
+              Nội dung CK: <strong style="color:#0f172a;">${inv.id} ${inv.patientName || ''}</strong>
             </div>
           </div>
 
@@ -710,12 +743,29 @@ function openCollectModal(inv) {
     </div>
   `;
 
-  // Method selection
+  // Build QR URL helper
+  function buildQrUrl(amount) {
+    const content = encodeURIComponent(`${inv.id} ${inv.patientName || ''}`.trim());
+    return `https://img.vietqr.io/image/${CASHIER_BANK_ID}-${CASHIER_BANK_ACCOUNT}-compact2.png?amount=${amount}&addInfo=${content}&accountName=${encodeURIComponent(CASHIER_BANK_NAME)}`;
+  }
+
+  // Method selection — toggle QR panel
   modalRoot.querySelectorAll('.method-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       modalRoot.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       selectedPaymentMethod = btn.getAttribute('data-method');
+
+      const qrPanel = document.getElementById('cashier-vietqr-panel');
+      if (qrPanel) {
+        if (selectedPaymentMethod === 'Chuyển khoản ngân hàng') {
+          const qrImg = document.getElementById('cashier-qr-img');
+          if (qrImg) qrImg.src = buildQrUrl(inv.totalAmount);
+          qrPanel.style.display = 'block';
+        } else {
+          qrPanel.style.display = 'none';
+        }
+      }
     });
   });
 
