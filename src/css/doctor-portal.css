@@ -912,3 +912,49 @@ body.doctor-portal-body {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+/* ── Print styles for Doctor Portal ── */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .doc-header,
+  .doc-main-container,
+  .doc-modal-header,
+  .doc-modal-footer,
+  .doc-toast-container {
+    display: none !important;
+  }
+
+  .doc-modal-overlay {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .doc-modal-window {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #print-area {
+    padding: 0 !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+  }
+}
+
