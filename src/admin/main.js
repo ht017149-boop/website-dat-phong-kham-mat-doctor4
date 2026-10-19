@@ -315,6 +315,12 @@ function renderAdminPortal() {
             <span>Cổng Bác Sĩ (Phòng khám)</span>
             <span class="adm-nav-tag" style="background:rgba(56,189,248,0.2);color:#38bdf8;">↗</span>
           </a>
+
+          <a href="/admin/admin-payment.html" class="adm-nav-item" style="text-decoration:none; color:#f59e0b;">
+            <span class="adm-nav-icon">💳</span>
+            <span>Quản lý Thanh toán</span>
+            <span class="adm-nav-tag" style="background:rgba(245,158,11,0.2);color:#f59e0b;">↗</span>
+          </a>
         </div>
 
         <div class="adm-sidebar-footer">
@@ -2782,49 +2788,49 @@ function openMedicalExamModal(app, initialTab = 'info') {
                 <!-- 3 Ảnh Giấy Tờ Bệnh Nhân -->
                 <div style="display: grid; grid-template-columns: 1fr 1.3fr 1.3fr; gap: 14px; margin-bottom: 22px;">
                   <!-- Ảnh 4x6 -->
-                  <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(56,189,248,0.25); border-radius: 10px; padding: 12px; text-align: center;">
-                    <div style="font-size: 11.5px; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 8px;">📷 Ảnh Chân Dung 4x6</div>
-                    <div style="width: 100px; height: 130px; margin: 0 auto; border-radius: 8px; overflow: hidden; border: 2px solid #38bdf8; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                  <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #0284c7; text-transform: uppercase; margin-bottom: 8px;">📷 Ảnh Chân Dung 4x6</div>
+                    <div style="width: 100px; height: 130px; margin: 0 auto; border-radius: 8px; overflow: hidden; border: 2px solid #38bdf8; box-shadow: 0 4px 12px rgba(2,132,199,0.15);">
                       <img src="${profile.photo4x6}" style="width: 100%; height: 100%; object-fit: cover;" alt="Ảnh 4x6"/>
                     </div>
-                    <div style="font-size: 11px; color: #94a3b8; margin-top: 8px;">Định dạng chuẩn y tế</div>
+                    <div style="font-size: 11px; color: #64748b; margin-top: 8px;">Định dạng chuẩn y tế</div>
                   </div>
 
                   <!-- CCCD Mặt Trước -->
-                  <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(56,189,248,0.25); border-radius: 10px; padding: 12px; text-align: center;">
-                    <div style="font-size: 11.5px; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 8px;">💳 CCCD Mặt Trước</div>
-                    <div style="width: 100%; height: 130px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.15);">
-                      <img src="${profile.cccdFront}" style="width: 100%; height: 100%; object-fit: contain; background: #0f172a;" alt="CCCD Mặt trước"/>
+                  <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #0284c7; text-transform: uppercase; margin-bottom: 8px;">💳 CCCD Mặt Trước</div>
+                    <div style="width: 100%; height: 130px; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1;">
+                      <img src="${profile.cccdFront}" style="width: 100%; height: 100%; object-fit: contain; background: #f8fafc;" alt="CCCD Mặt trước"/>
                     </div>
-                    <div style="font-size: 11px; color: #94a3b8; margin-top: 8px;">Mã CCCD: ${escapeHtml(profile.cccdNumber)}</div>
+                    <div style="font-size: 11px; color: #64748b; margin-top: 8px;">Mã CCCD: <strong style="color: #0f172a;">${escapeHtml(profile.cccdNumber)}</strong></div>
                   </div>
 
                   <!-- CCCD Mặt Sau -->
-                  <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(56,189,248,0.25); border-radius: 10px; padding: 12px; text-align: center;">
-                    <div style="font-size: 11.5px; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 8px;">💳 CCCD Mặt Sau</div>
-                    <div style="width: 100%; height: 130px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.15);">
-                      <img src="${profile.cccdBack}" style="width: 100%; height: 100%; object-fit: contain; background: #0f172a;" alt="CCCD Mặt sau"/>
+                  <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #0284c7; text-transform: uppercase; margin-bottom: 8px;">💳 CCCD Mặt Sau</div>
+                    <div style="width: 100%; height: 130px; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1;">
+                      <img src="${profile.cccdBack}" style="width: 100%; height: 100%; object-fit: contain; background: #f8fafc;" alt="CCCD Mặt sau"/>
                     </div>
-                    <div style="font-size: 11px; color: #94a3b8; margin-top: 8px;">Vân tay & Con dấu Bộ Công An</div>
+                    <div style="font-size: 11px; color: #64748b; margin-top: 8px;">Vân tay & Con dấu Bộ Công An</div>
                   </div>
                 </div>
 
                 <!-- Bảng Chi Tiết Thông Tin Bệnh Nhân -->
-                <div style="background: rgba(15,23,42,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px; font-size: 13px;">
-                  <div style="font-weight: 700; color: #fff; margin-bottom: 12px; font-size: 14px; text-transform: uppercase;">📑 Chi Tiết Lý Lịch Bệnh Nhân</div>
+                <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px; font-size: 13px;">
+                  <div style="font-weight: 800; color: #0f172a; margin-bottom: 14px; font-size: 14px; text-transform: uppercase;">📑 Chi Tiết Lý Lịch Bệnh Nhân</div>
                   
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; line-height: 1.8;">
-                    <div>• Họ và tên: <strong style="color: #fff;">${escapeHtml(profile.fullName)}</strong></div>
-                    <div>• Giới tính: <strong style="color: #fff;">${escapeHtml(profile.gender)}</strong></div>
-                    <div>• Ngày tháng năm sinh: <strong style="color: #38bdf8;">${escapeHtml(profile.dob)}</strong></div>
-                    <div>• Số CCCD/CMND: <strong style="color: #38bdf8; font-family: monospace;">${escapeHtml(profile.cccdNumber)}</strong></div>
-                    <div>• Số điện thoại: <strong style="color: #fff;">${escapeHtml(profile.phone)}</strong></div>
-                    <div>• Email liên hệ: <strong style="color: #fff;">${escapeHtml(profile.email)}</strong></div>
-                    <div style="grid-column: span 2;">• Địa chỉ thường trú: <strong style="color: #fff;">${escapeHtml(profile.address)}</strong></div>
-                    <div>• Số thẻ BHYT: <strong style="color: #fbbf24; font-family: monospace;">${escapeHtml(profile.bhytCode)}</strong></div>
-                    <div>• Nhóm máu: <strong style="color: #ef4444;">${escapeHtml(profile.bloodType)}</strong></div>
-                    <div style="grid-column: span 2;">• Tiền sử bệnh lý: <span style="color: #e2e8f0;">${escapeHtml(profile.medicalHistory)}</span></div>
-                    <div style="grid-column: span 2;">• Dị ứng thuốc: <span style="color: #f87171;">${escapeHtml(profile.allergies)}</span></div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; line-height: 1.8; color: #334155;">
+                    <div>• Họ và tên: <strong style="color: #0f172a;">${escapeHtml(profile.fullName)}</strong></div>
+                    <div>• Giới tính: <strong style="color: #0f172a;">${escapeHtml(profile.gender)}</strong></div>
+                    <div>• Ngày tháng năm sinh: <strong style="color: #0284c7;">${escapeHtml(profile.dob)}</strong></div>
+                    <div>• Số CCCD/CMND: <strong style="color: #0284c7; font-family: monospace;">${escapeHtml(profile.cccdNumber)}</strong></div>
+                    <div>• Số điện thoại: <strong style="color: #0f172a;">${escapeHtml(profile.phone)}</strong></div>
+                    <div>• Email liên hệ: <strong style="color: #0f172a;">${escapeHtml(profile.email)}</strong></div>
+                    <div style="grid-column: span 2;">• Địa chỉ thường trú: <strong style="color: #0f172a;">${escapeHtml(profile.address)}</strong></div>
+                    <div>• Số thẻ BHYT: <strong style="color: #d97706; font-family: monospace;">${escapeHtml(profile.bhytCode)}</strong></div>
+                    <div>• Nhóm máu: <strong style="color: #dc2626;">${escapeHtml(profile.bloodType)}</strong></div>
+                    <div style="grid-column: span 2;">• Tiền sử bệnh lý: <span style="color: #0f172a; font-weight: 600;">${escapeHtml(profile.medicalHistory)}</span></div>
+                    <div style="grid-column: span 2;">• Dị ứng thuốc: <span style="color: #dc2626; font-weight: 700;">${escapeHtml(profile.allergies)}</span></div>
                   </div>
                 </div>
 
@@ -2855,28 +2861,28 @@ function openMedicalExamModal(app, initialTab = 'info') {
                 `}
 
                 <!-- Patient Banner -->
-                <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 18px; margin-bottom: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
+                <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; margin-bottom: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
                   <div>
-                    <div style="color: var(--adm-text-muted);">Mã lịch hẹn: <strong style="font-family: monospace; color: #38bdf8; font-size: 14px;">${app.id}</strong></div>
-                    <div style="margin-top: 4px;">Bệnh nhân: <strong style="color: #fff; font-size: 15px;">${escapeHtml(app.patientName)}</strong> (📞 ${escapeHtml(app.patientPhone)})</div>
-                    <div style="color: var(--adm-text-dim); margin-top: 4px;">Nhu cầu khám: <em>${escapeHtml(app.symptoms || app.serviceName)}</em></div>
+                    <div style="color: #64748b;">Mã lịch hẹn: <strong style="font-family: monospace; color: #0284c7; font-size: 14px;">${app.id}</strong></div>
+                    <div style="margin-top: 4px; color: #334155;">Bệnh nhân: <strong style="color: #0f172a; font-size: 15px;">${escapeHtml(app.patientName)}</strong> (📞 ${escapeHtml(app.patientPhone)})</div>
+                    <div style="color: #64748b; margin-top: 4px;">Nhu cầu khám: <em>${escapeHtml(app.symptoms || app.serviceName)}</em></div>
                   </div>
                   <div>
-                    <div>Phòng khám: <strong style="color: #fbbf24;">${escapeHtml(app.roomName || 'Phòng 101')}</strong></div>
-                    <div style="margin-top: 4px;">
+                    <div style="color: #334155;">Phòng khám: <strong style="color: #d97706;">${escapeHtml(app.roomName || 'Phòng 101')}</strong></div>
+                    <div style="margin-top: 4px; color: #334155;">
                       Bác sĩ điều trị: 
                       ${isAdmin ? `
-                        <select id="exam-doctor-select" class="adm-select" style="padding: 2px 6px; font-size: 12.5px; height: auto; margin-left: 4px;">
+                        <select id="exam-doctor-select" class="adm-select" style="padding: 2px 6px; font-size: 12.5px; height: auto; margin-left: 4px; background: #fff;">
                           ${allDocs.map(d => `
                             <option value="${d.id}" ${d.name === app.doctorName || d.id === app.doctorId ? 'selected' : ''}>
                               ${d.name} (${d.degree})
                             </option>
                           `).join('')}
                         </select>
-                      ` : `<strong style="color: #38bdf8;">${escapeHtml(app.doctorName)}</strong>`}
+                      ` : `<strong style="color: #0284c7;">${escapeHtml(app.doctorName)}</strong>`}
                     </div>
-                    <div style="color: var(--adm-text-muted); margin-top: 4px;">Trạng thái: 
-                      <span style="font-weight: 700; color: ${isCompleted ? '#4ade80' : '#fbbf24'};">
+                    <div style="color: #64748b; margin-top: 4px;">Trạng thái: 
+                      <span style="font-weight: 700; color: ${isCompleted ? '#16a34a' : '#d97706'};">
                         ${isCompleted ? '✅ Đã hoàn thành ca khám' : '⏳ Đang tiếp nhận khám'}
                       </span>
                     </div>
@@ -2899,7 +2905,7 @@ function openMedicalExamModal(app, initialTab = 'info') {
 
                 <!-- SECTION 1: ĐO KHÁM CHUYÊN KHOA MẮT -->
                 <div style="margin-bottom: 20px;">
-                  <div style="font-size: 12.5px; font-weight: 700; color: #fff; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                  <div style="font-size: 13px; font-weight: 800; color: #0284c7; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
                     <span>👁️</span> 1. Kết Quả Đo Khám Thị Lực & Bệnh Án
                   </div>
                   
@@ -2934,26 +2940,26 @@ function openMedicalExamModal(app, initialTab = 'info') {
                 <!-- SECTION 2: KÊ ĐƠN THUỐC ĐIỆN TỬ KÈM GIÁ TIỀN -->
                 <div style="margin-bottom: 20px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <div style="font-size: 12.5px; font-weight: 700; color: #fff; text-transform: uppercase;">
+                    <div style="font-size: 13px; font-weight: 800; color: #0284c7; text-transform: uppercase;">
                       💊 2. Đơn Thuốc Điều Trị & Giá Thuốc
                     </div>
-                    <button type="button" id="btn-add-drug-row" style="padding: 4px 10px; font-size: 11.5px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    <button type="button" id="btn-add-drug-row" style="padding: 5px 12px; font-size: 12px; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; border-radius: 6px; cursor: pointer; font-weight: 700;">
                       ➕ Thêm thuốc
                     </button>
                   </div>
 
                   <!-- Quick Drugs -->
                   <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
-                    <span style="font-size: 11px; color: var(--adm-text-muted); align-self: center;">Thuốc mẫu:</span>
+                    <span style="font-size: 11.5px; color: #475569; font-weight: 600; align-self: center;">Thuốc mẫu:</span>
                     ${SAMPLE_EYE_DRUGS.slice(0, 5).map((dr, idx) => `
-                      <button type="button" class="btn-quick-drug" data-idx="${idx}" style="padding: 3px 8px; font-size: 11px; background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; cursor: pointer;">
+                      <button type="button" class="btn-quick-drug" data-idx="${idx}" style="padding: 4px 10px; font-size: 11.5px; background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; border-radius: 6px; cursor: pointer; font-weight: 600;">
                         + ${escapeHtml(dr.name.split(' (')[0])} (${formatMoney(dr.price)})
                       </button>
                     `).join('')}
                   </div>
 
-                  <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px;">
-                    <div style="display: flex; gap: 8px; font-size: 11px; color: var(--adm-text-muted); text-transform: uppercase; font-weight: 700; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 8px;">
+                  <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px;">
+                    <div style="display: flex; gap: 8px; font-size: 11.5px; color: #334155; text-transform: uppercase; font-weight: 800; padding-bottom: 8px; border-bottom: 1.5px solid #cbd5e1; margin-bottom: 10px;">
                       <span style="flex: 3;">Tên Thuốc / Quy Cách</span>
                       <span style="width: 65px; text-align: center;">SL</span>
                       <span style="width: 100px;">Đơn Giá (đ)</span>
@@ -2969,12 +2975,12 @@ function openMedicalExamModal(app, initialTab = 'info') {
                         const amount = qty * price;
                         return `
                           <div class="drug-row" style="display: flex; gap: 8px; align-items: center;" data-row-idx="${idx}">
-                            <input type="text" class="adm-input adm-input-no-icon drug-name" style="flex: 3;" placeholder="Tên thuốc" value="${escapeHtml(p.name)}" required/>
-                            <input type="number" min="1" max="50" class="adm-input adm-input-no-icon drug-qty" style="width: 65px; text-align: center;" value="${qty}" required/>
-                            <input type="number" min="0" step="1000" class="adm-input adm-input-no-icon drug-price" style="width: 100px;" value="${price}" required/>
-                            <input type="text" class="adm-input adm-input-no-icon drug-dosage" style="flex: 3;" placeholder="Cách dùng" value="${escapeHtml(p.dosage)}" required/>
-                            <span class="drug-amount-display" style="width: 90px; text-align: right; font-weight: 700; color: #38bdf8; font-size: 12.5px;">${formatMoney(amount)}</span>
-                            <button type="button" class="btn-remove-drug" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; width: 32px; height: 36px; border-radius: 6px; cursor: pointer;">✕</button>
+                            <input type="text" class="adm-input adm-input-no-icon drug-name" style="flex: 3; background: #fff;" placeholder="Tên thuốc" value="${escapeHtml(p.name)}" required/>
+                            <input type="number" min="1" max="50" class="adm-input adm-input-no-icon drug-qty" style="width: 65px; text-align: center; background: #fff; font-weight: 700;" value="${qty}" required/>
+                            <input type="number" min="0" step="1000" class="adm-input adm-input-no-icon drug-price" style="width: 100px; background: #fff; font-weight: 700;" value="${price}" required/>
+                            <input type="text" class="adm-input adm-input-no-icon drug-dosage" style="flex: 3; background: #fff;" placeholder="Cách dùng" value="${escapeHtml(p.dosage)}" required/>
+                            <span class="drug-amount-display" style="width: 90px; text-align: right; font-weight: 800; color: #0284c7; font-size: 13px;">${formatMoney(amount)}</span>
+                            <button type="button" class="btn-remove-drug" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; width: 32px; height: 36px; border-radius: 6px; cursor: pointer; font-weight: 700;">✕</button>
                           </div>
                         `;
                       }).join('')}
@@ -2983,46 +2989,46 @@ function openMedicalExamModal(app, initialTab = 'info') {
                 </div>
 
                 <!-- SECTION 3: BẢNG KÊ CHI PHÍ & VIỆN PHÍ (HOSPITAL BILLING) -->
-                <div style="background: linear-gradient(135deg, rgba(30,41,59,0.7), rgba(15,23,42,0.9)); border: 1.5px solid rgba(56,189,248,0.3); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
-                  <div style="font-size: 13px; font-weight: 800; color: #38bdf8; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="background: #f8fafc; border: 1.5px solid #bae6fd; border-radius: 14px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(2,132,199,0.06);">
+                  <div style="font-size: 13px; font-weight: 800; color: #0284c7; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
                     <span>💳 3. Bảng Kê Chi Phí & Hóa Đơn Viện Phí</span>
-                    <span style="font-size: 11px; color: var(--adm-text-muted); font-weight: 500;">
+                    <span style="font-size: 11.5px; color: #0369a1; font-weight: 600; background: #e0f2fe; padding: 2px 10px; border-radius: 20px;">
                       ${isAdmin ? '👑 Admin có quyền sửa mọi khoản phí' : 'Bác sĩ nhập chi phí ca khám'}
                     </span>
                   </div>
 
-                  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px;">
                     <div>
-                      <label class="adm-form-label">Tiền khám chuyên khoa (VNĐ)</label>
-                      <input type="number" id="exam-fee-input" class="adm-input adm-input-no-icon" value="${examFee}" min="0" step="10000"/>
+                      <label class="adm-form-label" style="color: #0f172a; font-weight: 700; margin-bottom: 6px;">Tiền khám chuyên khoa (VNĐ)</label>
+                      <input type="number" id="exam-fee-input" class="adm-input adm-input-no-icon" value="${examFee}" min="0" step="10000" style="background: #ffffff; font-weight: 700; color: #0f172a;"/>
                     </div>
                     <div>
-                      <label class="adm-form-label">Tiền thuốc (Tự động cộng dồn)</label>
-                      <div id="billing-medicine-fee" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 9px 12px; font-weight: 700; color: #38bdf8; font-size: 14px;">
+                      <label class="adm-form-label" style="color: #0f172a; font-weight: 700; margin-bottom: 6px;">Tiền thuốc (Tự động cộng dồn)</label>
+                      <div id="billing-medicine-fee" style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 9px 12px; font-weight: 800; color: #0284c7; font-size: 14px;">
                         0 đ
                       </div>
                     </div>
                     <div>
-                      <label class="adm-form-label">Phí dịch vụ / Cận lâm sàng (VNĐ)</label>
-                      <input type="number" id="service-fee-input" class="adm-input adm-input-no-icon" value="${serviceFee}" min="0" step="10000"/>
+                      <label class="adm-form-label" style="color: #0f172a; font-weight: 700; margin-bottom: 6px;">Phí dịch vụ / Cận lâm sàng (VNĐ)</label>
+                      <input type="number" id="service-fee-input" class="adm-input adm-input-no-icon" value="${serviceFee}" min="0" step="10000" style="background: #ffffff; font-weight: 700; color: #0f172a;"/>
                     </div>
                   </div>
 
-                  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px;">
                     <div>
-                      <label class="adm-form-label">Miễn giảm / BHYT chi trả (VNĐ)</label>
-                      <input type="number" id="discount-input" class="adm-input adm-input-no-icon" value="${discount}" min="0" step="10000"/>
+                      <label class="adm-form-label" style="color: #0f172a; font-weight: 700; margin-bottom: 6px;">Miễn giảm / BHYT chi trả (VNĐ)</label>
+                      <input type="number" id="discount-input" class="adm-input adm-input-no-icon" value="${discount}" min="0" step="10000" style="background: #ffffff; font-weight: 700; color: #0f172a;"/>
                     </div>
                     <div>
-                      <label class="adm-form-label">Trạng thái thanh toán</label>
-                      <select id="exam-payment-status" class="adm-select" style="width: 100%;">
+                      <label class="adm-form-label" style="color: #0f172a; font-weight: 700; margin-bottom: 6px;">Trạng thái thanh toán</label>
+                      <select id="exam-payment-status" class="adm-select" style="width: 100%; background: #ffffff; font-weight: 600;">
                         <option value="paid" ${paymentStatus === 'paid' ? 'selected' : ''}>✅ Đã thanh toán viện phí</option>
                         <option value="unpaid" ${paymentStatus === 'unpaid' ? 'selected' : ''}>⏳ Chờ thanh toán tại quầy</option>
                       </select>
                     </div>
                     <div>
-                      <label class="adm-form-label">Hình thức thanh toán</label>
-                      <select id="exam-payment-method" class="adm-select" style="width: 100%;">
+                      <label class="adm-form-label" style="color: #0f172a; font-weight: 700; margin-bottom: 6px;">Hình thức thanh toán</label>
+                      <select id="exam-payment-method" class="adm-select" style="width: 100%; background: #ffffff; font-weight: 600;">
                         <option value="Tiền mặt / Thẻ tại quầy" ${paymentMethod.includes('Tiền mặt') ? 'selected' : ''}>💵 Tiền mặt tại quầy</option>
                         <option value="Chuyển khoản QR Napas" ${paymentMethod.includes('QR') ? 'selected' : ''}>📱 Quét mã QR Ngân hàng</option>
                         <option value="Thẻ tín dụng / POS" ${paymentMethod.includes('Thẻ') ? 'selected' : ''}>💳 Thẻ Visa / Master</option>
@@ -3030,9 +3036,10 @@ function openMedicalExamModal(app, initialTab = 'info') {
                     </div>
                   </div>
 
-                  <div style="background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25); border-radius: 10px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 14px; font-weight: 700; color: #fff;">TỔNG TIỀN BỆNH NHÂN THANH TOÁN:</span>
-                    <span id="billing-total-amount" style="font-size: 20px; font-weight: 800; color: #38bdf8;">0 đ</span>
+                  <!-- TỔNG TIỀN BANNER -->
+                  <div style="background: linear-gradient(135deg, #0284c7, #0369a1); border-radius: 10px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 14px rgba(2,132,199,0.25);">
+                    <span style="font-size: 14px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px;">TỔNG TIỀN BỆNH NHÂN THANH TOÁN:</span>
+                    <span id="billing-total-amount" style="font-size: 22px; font-weight: 900; color: #ffffff;">0 đ</span>
                   </div>
                 </div>
 
@@ -3095,17 +3102,17 @@ function openMedicalExamModal(app, initialTab = 'info') {
 
     const switchTab = (tab) => {
       if (tab === 'info') {
-        btnTabInfo.style.background = '#0ea5e9';
+        btnTabInfo.style.background = '#0284c7';
         btnTabInfo.style.color = '#fff';
         btnTabExam.style.background = 'transparent';
-        btnTabExam.style.color = '#94a3b8';
+        btnTabExam.style.color = '#475569';
         paneInfo.style.display = 'block';
         paneExam.style.display = 'none';
       } else {
-        btnTabExam.style.background = '#0ea5e9';
+        btnTabExam.style.background = '#0284c7';
         btnTabExam.style.color = '#fff';
         btnTabInfo.style.background = 'transparent';
-        btnTabInfo.style.color = '#94a3b8';
+        btnTabInfo.style.color = '#475569';
         paneExam.style.display = 'block';
         paneInfo.style.display = 'none';
       }

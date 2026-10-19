@@ -13,7 +13,7 @@ export default defineConfig({
         register: resolve(__dirname, 'dang-ky.html'),
 
         payment: resolve(__dirname, 'payment.html'),
-        adminPayment: resolve(__dirname, 'admin-payment.html'),
+        adminPayment: resolve(__dirname, 'admin/admin-payment.html'),
 
         profile: resolve(__dirname, 'ho-so.html'),
 
