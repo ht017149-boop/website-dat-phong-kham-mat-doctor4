@@ -9,6 +9,12 @@ const APPOINTMENTS_KEY = 'doctor4_appointments_db';
 const PAYMENTS_KEY     = 'payments';
 const SESSION_KEY      = 'doctor4_session';
 
+/* ── CẤU HÌNH TÀI KHOẢN NHẬN TIỀN (VietQR) ── */
+const CASHIER_BANK_ID      = 'MB';
+const CASHIER_BANK_ACCOUNT = '0123456789';
+const CASHIER_BANK_NAME    = 'PHONG KHAM MAT DOCTOR4';
+const CASHIER_BANK_LABEL   = 'MB Bank (Ngân hàng TMCP Quân đội)';
+
 /* ── CASHIER SESSION ── */
 let currentCashier = null;
 
@@ -124,12 +130,188 @@ function getInvoices() {
   try {
     const raw = localStorage.getItem(INVOICES_KEY);
     let list = raw ? JSON.parse(raw) : [];
-    if (!list || list.length === 0) {
+    if (!Array.isArray(list)) list = [];
+
+    // Nếu chưa có hóa đơn nào, nạp mẫu ban đầu
+    if (list.length === 0) {
       list = [...SAMPLE_INVOICES];
-      localStorage.setItem(INVOICES_KEY, JSON.stringify(list));
     }
+
+    // ── Tự động đồng bộ các ca Đặt Lịch từ doctor4_appointments_db ──
+    const rawApps = localStorage.getItem(APPOINTMENTS_KEY);
+    if (rawApps) {
+      const appointments = JSON.parse(rawApps);
+      if (Array.isArray(appointments)) {
+        let hasChanges = false;
+        appointments.forEach(app => {
+          if (!app || !app.id) return;
+
+          // Tìm xem ca này đã có hóa đơn trong list chưa
+          const existingIdx = list.findIndex(i =>
+            String(i.appointmentId) === String(app.id) ||
+            String(i.id) === String(app.invoiceId) ||
+            String(i.id) === String(app.id)
+          );
+
+          if (existingIdx >= 0) {
+            const cur = list[existingIdx];
+            // Đồng bộ thêm thông tin đặt lịch nếu còn thiếu
+            if (!cur.appointmentDate && app.date) {
+              cur.appointmentDate = app.date;
+              hasChanges = true;
+            }
+            if (!cur.appointmentTime && app.timeSlot) {
+              cur.appointmentTime = app.timeSlot;
+              hasChanges = true;
+            }
+            if (!cur.queueNumber && (app.queueNumber || app.stt)) {
+              cur.queueNumber = app.queueNumber || app.stt;
+              cur.stt = cur.queueNumber;
+              hasChanges = true;
+            }
+            if (!cur.patientPhone && app.patientPhone) {
+              cur.patientPhone = app.patientPhone;
+              hasChanges = true;
+            }
+            if (app.patientName && cur.patientName !== app.patientName) {
+              cur.patientName = app.patientName;
+              hasChanges = true;
+            }
+            if (app.doctorName && cur.doctorName !== app.doctorName) {
+              cur.doctorName = app.doctorName;
+              hasChanges = true;
+            }
+            if (app.roomName && cur.roomName !== app.roomName) {
+              cur.roomName = app.roomName;
+              hasChanges = true;
+            }
+            if (app.serviceName && cur.serviceName !== app.serviceName) {
+              cur.serviceName = app.serviceName;
+              hasChanges = true;
+            }
+
+            // Đồng bộ kết quả chẩn đoán và đơn thuốc từ bác sĩ sau khi khám
+            if (app.medicalRecord) {
+              if (app.medicalRecord.diagnosis && cur.diagnosis !== app.medicalRecord.diagnosis) {
+                cur.diagnosis = app.medicalRecord.diagnosis;
+                hasChanges = true;
+              }
+              if (app.medicalRecord.advice && cur.advice !== app.medicalRecord.advice) {
+                cur.advice = app.medicalRecord.advice;
+                hasChanges = true;
+              }
+              if (app.medicalRecord.revisitDate && cur.revisitDate !== app.medicalRecord.revisitDate) {
+                cur.revisitDate = app.medicalRecord.revisitDate;
+                hasChanges = true;
+              }
+              const recPrescriptions = app.medicalRecord.prescriptions || app.medicalRecord.prescription;
+              if (Array.isArray(recPrescriptions) && recPrescriptions.length > 0) {
+                if (JSON.stringify(cur.prescriptions) !== JSON.stringify(recPrescriptions)) {
+                  cur.prescriptions = recPrescriptions;
+                  hasChanges = true;
+                }
+              }
+            }
+
+            // Đồng bộ viện phí khi bác sĩ đã chỉnh sửa hoặc kê đơn
+            const billingObj = app.billing || app.medicalRecord;
+            if (billingObj && (billingObj.totalAmount !== undefined || billingObj.examFee !== undefined || billingObj.medicineFee !== undefined)) {
+              const bExam = Number(billingObj.examFee ?? cur.examFee ?? 200000);
+              const bMed = Number(billingObj.medicineFee ?? cur.medicineFee ?? 0);
+              const bServ = Number(billingObj.serviceFee ?? cur.serviceFee ?? 0);
+              const bDisc = Number(billingObj.discount ?? cur.discount ?? 0);
+              const bTotal = Number(billingObj.totalAmount ?? (bExam + bMed + bServ - bDisc));
+
+              if (cur.examFee !== bExam) {
+                cur.examFee = bExam;
+                hasChanges = true;
+              }
+              if (cur.medicineFee !== bMed) {
+                cur.medicineFee = bMed;
+                hasChanges = true;
+              }
+              if (cur.serviceFee !== bServ) {
+                cur.serviceFee = bServ;
+                hasChanges = true;
+              }
+              if (cur.discount !== bDisc) {
+                cur.discount = bDisc;
+                hasChanges = true;
+              }
+              if (cur.totalAmount !== bTotal) {
+                cur.totalAmount = bTotal;
+                hasChanges = true;
+              }
+            }
+
+            // Đồng bộ trạng thái thanh toán
+            if ((app.billing?.paymentStatus === 'paid' || app.isPaid === true) && cur.status !== 'paid') {
+              cur.status = 'paid';
+              cur.paidAt = app.billing?.paidAt || cur.paidAt || new Date().toISOString();
+              cur.paymentMethod = app.billing?.paymentMethod || cur.paymentMethod || 'Đã thanh toán trực tuyến';
+              hasChanges = true;
+            } else if (app.billing?.paymentStatus === 'unpaid' && cur.status === 'paid' && !cur.cashierName) {
+              cur.status = 'pending';
+              cur.paidAt = null;
+              cur.paymentMethod = null;
+              hasChanges = true;
+            }
+          } else {
+            // Chưa có hóa đơn cho lịch hẹn đặt lịch này -> Tự động tạo hóa đơn viện phí
+            const invoiceId = app.invoiceId || ('HD-' + new Date(app.createdAt || Date.now()).getFullYear() + '-' + (String(app.id).replace(/\D/g, '').slice(-4) || Math.floor(1000 + Math.random() * 9000)));
+            const isPaid = app.billing?.paymentStatus === 'paid' || app.isPaid === true;
+            const examFee = Number(app.billing?.examFee ?? (app.medicalRecord?.examFee ?? (app.examFee || 200000)));
+            const medicineFee = Number(app.billing?.medicineFee ?? (app.medicalRecord?.medicineFee || 0));
+            const serviceFee = Number(app.billing?.serviceFee ?? (app.medicalRecord?.serviceFee ?? (app.serviceFee || 0)));
+            const discount = Number(app.billing?.discount ?? (app.medicalRecord?.discount || 0));
+            const totalAmount = Number(app.billing?.totalAmount ?? (app.medicalRecord?.totalAmount ?? (examFee + medicineFee + serviceFee - discount)));
+
+            const newInv = {
+              id: invoiceId,
+              appointmentId: app.id,
+              patientName: app.patientName || 'Bệnh nhân',
+              patientPhone: app.patientPhone || '',
+              patientGender: app.patientGender || app.patientProfile?.gender || '',
+              patientAge: app.patientAge || (app.patientProfile?.dob ? (new Date().getFullYear() - new Date(app.patientProfile.dob).getFullYear() + ' tuổi') : ''),
+              doctorId: app.doctorId || 'doc_1',
+              doctorName: app.doctorName || 'Bác sĩ chuyên khoa',
+              roomId: app.roomId || 'r101',
+              roomName: app.roomName || 'Phòng 101',
+              serviceName: app.serviceName || 'Khám Mắt',
+              diagnosis: app.medicalRecord?.diagnosis || 'Khám mắt theo lịch hẹn trực tuyến',
+              advice: app.medicalRecord?.advice || app.symptoms || '',
+              revisitDate: app.medicalRecord?.revisitDate || '',
+              prescriptions: app.medicalRecord?.prescriptions || app.medicalRecord?.prescription || [],
+              examFee: examFee,
+              medicineFee: medicineFee,
+              serviceFee: serviceFee,
+              discount: discount,
+              totalAmount: totalAmount > 0 ? totalAmount : examFee,
+              status: isPaid ? 'paid' : 'pending',
+              sentAt: app.createdAt || new Date().toISOString(),
+              paidAt: isPaid ? (app.billing?.paidAt || new Date().toISOString()) : null,
+              cashierName: isPaid ? (app.billing?.cashierName || 'Thu ngân / Online') : null,
+              paymentMethod: isPaid ? (app.billing?.paymentMethod || 'Chuyển khoản / VietQR') : null,
+              queueNumber: app.queueNumber || app.stt || 1,
+              stt: app.stt || app.queueNumber || 1,
+              appointmentDate: app.date || '',
+              appointmentTime: app.timeSlot || ''
+            };
+
+            list.unshift(newInv);
+            hasChanges = true;
+          }
+        });
+
+        if (hasChanges) {
+          localStorage.setItem(INVOICES_KEY, JSON.stringify(list));
+        }
+      }
+    }
+
     return list;
-  } catch {
+  } catch (err) {
+    console.error('Lỗi getInvoices:', err);
     return [...SAMPLE_INVOICES];
   }
 }
@@ -148,6 +330,17 @@ function formatTime(isoString) {
   try {
     return new Date(isoString).toLocaleString('vi-VN');
   } catch { return isoString; }
+}
+
+/* ── NORMALIZE SEARCH (Chuẩn hóa tìm kiếm không dấu, không ký tự đặc biệt) ── */
+function normalizeSearchText(str) {
+  if (!str) return '';
+  return str
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Bỏ dấu tiếng Việt
+    .replace(/[^a-z0-9]/g, '');      // Bỏ khoảng trắng, dấu gạch nối, ký tự đặc biệt
 }
 
 /* ── TOAST ── */
@@ -210,22 +403,55 @@ function renderInvoiceTable() {
     const newest = invoices.filter(i => i.status === 'pending').slice(0, invoices.length - lastInvoiceCount);
     newest.forEach(inv => {
       showToast('info', '🔔 Hóa đơn mới!',
-        `BS đã kê xong cho ${inv.patientName} — ${formatMoney(inv.totalAmount)}`);
+        `Khách hàng: ${inv.patientName} — ${formatMoney(inv.totalAmount)}`);
     });
   }
   lastInvoiceCount = invoices.length;
 
   renderStats(invoices);
 
-  // Filter
-  const q = searchQuery.toLowerCase().trim();
-  if (q) {
-    invoices = invoices.filter(i =>
-      (i.id && i.id.toLowerCase().includes(q)) ||
-      (i.patientName && i.patientName.toLowerCase().includes(q)) ||
-      (i.patientPhone && i.patientPhone.includes(q)) ||
-      (i.doctorName && i.doctorName.toLowerCase().includes(q))
-    );
+  // ── SMART SEARCH (Tìm kiếm thông minh: mã hóa đơn, mã đặt lịch, tên, SĐT, bác sĩ, phòng, dịch vụ) ──
+  const rawQ = searchQuery.trim().toLowerCase();
+  const cleanQ = normalizeSearchText(searchQuery);
+
+  if (rawQ) {
+    invoices = invoices.filter(i => {
+      // 1. Mã hóa đơn (HD-2026-1082, 1082, hd1082)
+      const idMatch = (i.id && i.id.toLowerCase().includes(rawQ)) ||
+                      (i.id && normalizeSearchText(i.id).includes(cleanQ));
+
+      // 2. Mã lịch hẹn / mã đặt lịch (DOC-2026-1082, DOC1082, 8192, AP-1001)
+      const apptMatch = (i.appointmentId && i.appointmentId.toLowerCase().includes(rawQ)) ||
+                        (i.appointmentId && normalizeSearchText(i.appointmentId).includes(cleanQ));
+
+      // 3. Tên bệnh nhân / khách hàng đặt lịch (có dấu hoặc không dấu)
+      const nameMatch = (i.patientName && i.patientName.toLowerCase().includes(rawQ)) ||
+                        (i.patientName && normalizeSearchText(i.patientName).includes(cleanQ));
+
+      // 4. Số điện thoại khách hàng (có khoảng trắng hoặc không)
+      const phoneDigits = i.patientPhone ? i.patientPhone.replace(/\D/g, '') : '';
+      const queryDigits = rawQ.replace(/\D/g, '');
+      const phoneMatch = (i.patientPhone && i.patientPhone.includes(rawQ)) ||
+                         (queryDigits && phoneDigits && phoneDigits.includes(queryDigits));
+
+      // 5. Bác sĩ phụ trách
+      const doctorMatch = (i.doctorName && i.doctorName.toLowerCase().includes(rawQ)) ||
+                          (i.doctorName && normalizeSearchText(i.doctorName).includes(cleanQ));
+
+      // 6. Dịch vụ đặt khám
+      const serviceMatch = (i.serviceName && i.serviceName.toLowerCase().includes(rawQ)) ||
+                           (i.serviceName && normalizeSearchText(i.serviceName).includes(cleanQ));
+
+      // 7. Phòng khám
+      const roomMatch = (i.roomName && i.roomName.toLowerCase().includes(rawQ)) ||
+                        (i.roomName && normalizeSearchText(i.roomName).includes(cleanQ));
+
+      // 8. Số thứ tự (STT: 1, #01, STT 1)
+      const sttStr = String(i.queueNumber || i.stt || '');
+      const sttMatch = sttStr === rawQ || ('stt' + sttStr) === cleanQ || ('#' + sttStr) === rawQ;
+
+      return idMatch || apptMatch || nameMatch || phoneMatch || doctorMatch || serviceMatch || roomMatch || sttMatch;
+    });
   }
 
   if (currentFilter === 'pending') invoices = invoices.filter(i => i.status === 'pending');
@@ -242,8 +468,8 @@ function renderInvoiceTable() {
     container.innerHTML = `
       <div class="cashier-empty">
         <div class="empty-icon">🧾</div>
-        <h3>${currentFilter === 'pending' ? 'Không có hóa đơn chờ thu' : 'Chưa có hóa đơn nào'}</h3>
-        <p>Hóa đơn sẽ hiện ở đây khi bác sĩ kê xong và bấm "Báo Xong & Chuyển Thu Ngân".</p>
+        <h3>${searchQuery ? 'Không tìm thấy hóa đơn hoặc ca đặt lịch phù hợp' : (currentFilter === 'pending' ? 'Không có hóa đơn chờ thu' : 'Chưa có hóa đơn nào')}</h3>
+        <p>${searchQuery ? `Không có kết quả nào khớp với từ khóa "<strong>${searchQuery}</strong>". Bạn có thể thử tìm theo Mã Hóa Đơn (HD-...), Mã Đặt Lịch (DOC-...), Tên hoặc Số Điện Thoại khách hàng.` : 'Hóa đơn sẽ tự động cập nhật khi khách hàng đặt lịch hoặc bác sĩ chuyển về.'}</p>
       </div>
     `;
     return;
@@ -254,52 +480,66 @@ function renderInvoiceTable() {
       <table class="cashier-table">
         <thead>
           <tr>
-            <th>Mã Hóa Đơn</th>
-            <th>Bệnh Nhân</th>
+            <th>Mã Hóa Đơn & Đặt Lịch</th>
+            <th>Khách Hàng Đặt Lịch</th>
             <th>Bác Sĩ / Phòng</th>
-            <th>Dịch Vụ</th>
-            <th>Thời Gian Kê</th>
-            <th>Tổng Viện Phí</th>
+            <th>Dịch Vụ Khám</th>
+            <th>Thời Gian Hẹn</th>
+            <th>Viện Phí Cần Thu</th>
             <th>Trạng Thái</th>
             <th style="text-align:right;">Thao Tác</th>
           </tr>
         </thead>
         <tbody>
           ${invoices.map(inv => {
-            const isPaid    = inv.status === 'paid';
+            const isPaid = inv.status === 'paid';
             const statusBadge = isPaid
               ? `<span class="status-badge paid">✅ Đã thu tiền</span>`
               : `<span class="status-badge pending">⏳ Chờ thu tiền</span>`;
 
+            const sttVal = inv.queueNumber || inv.stt || 1;
+            const sttBadge = `<span style="background:#e0f2fe;color:#0284c7;border:1px solid #bae6fd;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:800;letter-spacing:0.5px;">STT #${String(sttVal).padStart(2, '0')}</span>`;
+
             return `
               <tr class="${!isPaid ? 'new-invoice-pulse' : ''}">
                 <td>
-                  <span class="invoice-id-badge">${inv.id}</span>
-                  <div style="font-size:11px;color:#64748b;margin-top:4px;display:flex;align-items:center;gap:4px;">
-                    <span>${inv.appointmentId || ''}</span>
-                    ${(inv.queueNumber || inv.stt) ? `<span style="background:rgba(56,189,248,0.2);color:#38bdf8;padding:1px 6px;border-radius:4px;font-size:10.5px;font-weight:700;">STT #${String(inv.queueNumber || inv.stt).padStart(2, '0')}</span>` : ''}
+                  <span class="invoice-id-badge" title="Mã hóa đơn viện phí">${inv.id}</span>
+                  <div style="font-size:12px;color:#0284c7;font-weight:700;margin-top:4px;display:flex;align-items:center;gap:6px;">
+                    <span title="Mã lịch hẹn đặt lịch">🔖 ${inv.appointmentId || '—'}</span>
+                    ${sttBadge}
                   </div>
                 </td>
                 <td>
                   <div class="patient-name-box">
-                    <div class="name">${inv.patientName || '—'}</div>
-                    <div class="meta">📞 ${inv.patientPhone || '—'} &nbsp;•&nbsp; ${inv.patientGender || ''} ${inv.patientAge || ''}</div>
+                    <div class="name" style="color:#0f172a;font-weight:700;font-size:14px;">${inv.patientName || '—'}</div>
+                    <div class="meta" style="color:#475569;font-size:12px;margin-top:2px;">
+                      📞 <strong style="color:#0f172a;">${inv.patientPhone || '—'}</strong>
+                      ${(inv.patientGender || inv.patientAge) ? `&nbsp;•&nbsp; ${inv.patientGender || ''} ${inv.patientAge || ''}` : ''}
+                    </div>
                   </div>
                 </td>
                 <td>
                   <div class="doctor-room-box">
-                    <div class="doc">👨‍⚕️ ${inv.doctorName || '—'}</div>
-                    <div class="room">🏥 ${inv.roomName || '—'}</div>
+                    <div class="doc" style="font-weight:700;color:#0369a1;font-size:13px;">👨‍⚕️ ${inv.doctorName || '—'}</div>
+                    <div class="room" style="font-size:12px;color:#64748b;margin-top:2px;">🏥 ${inv.roomName || 'Phòng khám'}</div>
                   </div>
                 </td>
                 <td>
-                  <div style="font-size:13px;font-weight:600;color:#e2e8f0;max-width:180px;">${inv.serviceName || '—'}</div>
-                  <div style="font-size:11px;color:#64748b;margin-top:2px;">${inv.diagnosis ? inv.diagnosis.slice(0, 60) + (inv.diagnosis.length > 60 ? '…' : '') : ''}</div>
+                  <div style="font-size:13.5px;font-weight:700;color:#0f172a;max-width:210px;line-height:1.4;">${inv.serviceName || '—'}</div>
+                  <div style="font-size:11.5px;color:#64748b;margin-top:2px;max-width:210px;">${inv.diagnosis ? (inv.diagnosis.slice(0, 50) + (inv.diagnosis.length > 50 ? '…' : '')) : (inv.advice || 'Khám theo lịch hẹn')}</div>
                 </td>
-                <td style="font-size:12px;color:#94a3b8;white-space:nowrap;">${formatTime(inv.sentAt)}</td>
+                <td style="font-size:12.5px;color:#334155;white-space:nowrap;">
+                  ${inv.appointmentTime ? `<div style="font-weight:700;color:#d97706;">🕒 ${inv.appointmentTime}</div>` : ''}
+                  ${inv.appointmentDate ? `<div style="color:#64748b;font-size:11.5px;">📅 ${inv.appointmentDate}</div>` : `<div style="color:#94a3b8;font-size:11px;">${formatTime(inv.sentAt)}</div>`}
+                </td>
                 <td>
-                  <div class="amount-badge">${formatMoney(inv.totalAmount)}</div>
-                  ${isPaid ? `<div style="font-size:11px;color:#22c55e;margin-top:2px;">${inv.paymentMethod || ''}</div>` : ''}
+                  <div class="amount-badge" style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:800;color:#16a34a;">${formatMoney(inv.totalAmount)}</div>
+                  <div style="font-size:11px;color:#64748b;margin-top:2px;">
+                    Phí khám: <strong>${formatMoney(inv.examFee)}</strong>
+                    ${inv.medicineFee > 0 ? ` + Thuốc: <strong>${formatMoney(inv.medicineFee)}</strong>` : ''}
+                    ${inv.serviceFee > 0 ? ` + DV: <strong>${formatMoney(inv.serviceFee)}</strong>` : ''}
+                  </div>
+                  ${isPaid ? `<div style="font-size:11px;color:#16a34a;font-weight:700;margin-top:2px;">💳 ${inv.paymentMethod || 'Đã thanh toán'}</div>` : ''}
                 </td>
                 <td>${statusBadge}</td>
                 <td>
@@ -362,55 +602,72 @@ function openCollectModal(inv) {
         </div>
         <div class="cashier-modal-body">
 
+          <!-- Mã Hóa Đơn & Mã Lịch Hẹn Đặt Lịch -->
+          <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div>
+              <span style="font-size:11px;color:#0284c7;font-weight:800;text-transform:uppercase;">MÃ HÓA ĐƠN:</span>
+              <span style="font-family:monospace;font-size:14px;font-weight:800;color:#0284c7;margin-left:4px;">${inv.id}</span>
+            </div>
+            <div>
+              <span style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;">MÃ ĐẶT LỊCH:</span>
+              <span style="font-family:monospace;font-size:13px;font-weight:800;color:#2563eb;margin-left:4px;">${inv.appointmentId || '—'}</span>
+            </div>
+            ${(inv.queueNumber || inv.stt) ? `
+            <div style="background:#0284c7;color:#fff;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:800;">
+              STT #${String(inv.queueNumber || inv.stt).padStart(2, '0')}
+            </div>` : ''}
+          </div>
+
           <!-- Patient & Doctor Info -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(148,163,184,0.15);border-radius:10px;padding:12px;">
-              <div style="font-size:11px;color:#94a3b8;font-weight:700;margin-bottom:6px;text-transform:uppercase;">Bệnh Nhân</div>
-              <div style="font-weight:700;color:#fff;font-size:14px;">${inv.patientName}</div>
-              <div style="font-size:12px;color:#94a3b8;">📞 ${inv.patientPhone || '—'}</div>
-              <div style="font-size:12px;color:#94a3b8;">${inv.patientGender || ''} ${inv.patientAge || ''}</div>
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;">
+              <div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:6px;text-transform:uppercase;">👤 Khách Hàng Đặt Lịch</div>
+              <div style="font-weight:800;color:#0f172a;font-size:15px;">${inv.patientName}</div>
+              <div style="font-size:13px;color:#0f172a;margin-top:2px;font-weight:600;">📞 ${inv.patientPhone || '—'}</div>
+              <div style="font-size:12px;color:#64748b;margin-top:2px;">${inv.patientGender || ''} ${inv.patientAge || ''}</div>
+              ${(inv.appointmentDate || inv.appointmentTime) ? `<div style="font-size:12px;color:#d97706;font-weight:700;margin-top:4px;">📅 ${inv.appointmentTime || ''} (${inv.appointmentDate || ''})</div>` : ''}
             </div>
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(148,163,184,0.15);border-radius:10px;padding:12px;">
-              <div style="font-size:11px;color:#94a3b8;font-weight:700;margin-bottom:6px;text-transform:uppercase;">Bác Sĩ</div>
-              <div style="font-weight:700;color:#a5f3fc;font-size:13px;">👨‍⚕️ ${inv.doctorName}</div>
-              <div style="font-size:12px;color:#94a3b8;">🏥 ${inv.roomName || '—'}</div>
-              <div style="font-size:12px;color:#94a3b8;">🎯 ${inv.serviceName || '—'}</div>
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;">
+              <div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:6px;text-transform:uppercase;">👨‍⚕️ Bác Sĩ & Khám Bệnh</div>
+              <div style="font-weight:700;color:#0369a1;font-size:13.5px;">👨‍⚕️ ${inv.doctorName}</div>
+              <div style="font-size:12px;color:#475569;margin-top:2px;">🏥 ${inv.roomName || 'Phòng khám'}</div>
+              <div style="font-size:12px;color:#0f172a;font-weight:700;margin-top:4px;">🎯 ${inv.serviceName || '—'}</div>
             </div>
           </div>
 
           <!-- Diagnosis & Advice -->
           ${inv.diagnosis ? `
-          <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2);border-radius:10px;padding:12px;margin-bottom:14px;">
-            <div style="font-size:11px;color:#38bdf8;font-weight:700;margin-bottom:4px;">🔬 CHẨN ĐOÁN</div>
-            <div style="font-size:13px;color:#e2e8f0;font-weight:600;">${inv.diagnosis}</div>
-            ${inv.advice ? `<div style="font-size:12px;color:#94a3b8;margin-top:4px;">📋 ${inv.advice}</div>` : ''}
-            ${inv.revisitDate ? `<div style="font-size:12px;color:#fbbf24;margin-top:4px;">🗓️ Tái khám: ${inv.revisitDate}</div>` : ''}
+          <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px;margin-bottom:14px;">
+            <div style="font-size:11px;color:#0284c7;font-weight:800;margin-bottom:4px;">🔬 CHẨN ĐOÁN / LÝ DO KHÁM</div>
+            <div style="font-size:13px;color:#0f172a;font-weight:600;">${inv.diagnosis}</div>
+            ${inv.advice ? `<div style="font-size:12px;color:#475569;margin-top:4px;">📋 ${inv.advice}</div>` : ''}
+            ${inv.revisitDate ? `<div style="font-size:12px;color:#d97706;margin-top:4px;">🗓️ Tái khám: ${inv.revisitDate}</div>` : ''}
           </div>
           ` : ''}
 
           <!-- Fee Breakdown -->
-          <div style="margin-bottom:12px;">
-            <div style="font-size:11px;color:#94a3b8;font-weight:700;margin-bottom:8px;text-transform:uppercase;">💰 Bảng Kê Viện Phí</div>
+          <div style="margin-bottom:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;">
+            <div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:8px;text-transform:uppercase;">💰 Bảng Kê Viện Phí</div>
             <div class="invoice-detail-row">
               <span class="label">Phí khám lâm sàng:</span>
-              <span class="value">${formatMoney(inv.examFee)}</span>
+              <span class="value" style="color:#0f172a;">${formatMoney(inv.examFee)}</span>
             </div>
             ${(inv.prescriptions || []).length > 0 ? `
             <div class="invoice-detail-row">
               <span class="label">Tiền thuốc (${(inv.prescriptions || []).length} loại):</span>
-              <span class="value">${formatMoney(inv.medicineFee)}</span>
+              <span class="value" style="color:#0f172a;">${formatMoney(inv.medicineFee)}</span>
             </div>
             ` : ''}
             ${inv.serviceFee > 0 ? `
             <div class="invoice-detail-row">
               <span class="label">Dịch vụ / Kỹ thuật bổ sung:</span>
-              <span class="value">${formatMoney(inv.serviceFee)}</span>
+              <span class="value" style="color:#0f172a;">${formatMoney(inv.serviceFee)}</span>
             </div>
             ` : ''}
             ${inv.discount > 0 ? `
             <div class="invoice-detail-row">
               <span class="label">Giảm trừ BHYT / Ưu đãi:</span>
-              <span class="value" style="color:#22c55e;">- ${formatMoney(inv.discount)}</span>
+              <span class="value" style="color:#16a34a;">- ${formatMoney(inv.discount)}</span>
             </div>
             ` : ''}
           </div>
@@ -418,7 +675,7 @@ function openCollectModal(inv) {
           <!-- Prescriptions mini list -->
           ${prescRows ? `
           <div style="margin-bottom:12px;">
-            <div style="font-size:11px;color:#94a3b8;font-weight:700;margin-bottom:6px;text-transform:uppercase;">📋 Đơn Thuốc Điều Trị</div>
+            <div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:6px;text-transform:uppercase;">📋 Đơn Thuốc Điều Trị</div>
             <div class="prescription-mini-list">${prescRows}</div>
           </div>
           ` : ''}
@@ -434,15 +691,42 @@ function openCollectModal(inv) {
             <label>Phương Thức Thanh Toán</label>
             <div class="method-options">
               <button class="method-btn selected" data-method="Tiền mặt tại quầy">💵 Tiền mặt</button>
-              <button class="method-btn" data-method="Chuyển khoản ngân hàng">🏦 Chuyển khoản</button>
+              <button class="method-btn" data-method="Chuyển khoản ngân hàng" id="btn-method-transfer">🏦 Chuyển khoản QR</button>
               <button class="method-btn" data-method="Thẻ tín dụng / Thẻ ATM">💳 Thẻ ngân hàng</button>
               <button class="method-btn" data-method="MoMo / VNPay">📱 Ví điện tử</button>
             </div>
           </div>
 
+          <!-- VietQR Panel (ẩn mặc định, hiện khi chọn Chuyển khoản) -->
+          <div id="cashier-vietqr-panel" style="display:none;margin:12px 0;background:linear-gradient(135deg,#f0f9ff,#eff6ff);border:1.5px solid #bae6fd;border-radius:14px;padding:16px;text-align:center;">
+            <div style="font-size:11px;font-weight:800;color:#0284c7;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">
+              📱 Mã QR Chuyển Khoản VietQR
+            </div>
+            <img id="cashier-qr-img"
+                 src=""
+                 alt="Mã QR VietQR thanh toán"
+                 style="width:200px;height:200px;border-radius:12px;border:3px solid #bae6fd;background:#fff;display:block;margin:0 auto 12px;" />
+            <div style="font-size:12.5px;color:#0f172a;font-weight:700;margin-bottom:4px;">
+              🏦 <span id="cashier-qr-bank-label">${CASHIER_BANK_LABEL}</span>
+            </div>
+            <div style="font-size:12px;color:#475569;margin-bottom:2px;">
+              STK: <strong style="font-family:monospace;color:#0284c7;">${CASHIER_BANK_ACCOUNT}</strong>
+            </div>
+            <div style="font-size:12px;color:#475569;margin-bottom:6px;">
+              Chủ TK: <strong>${CASHIER_BANK_NAME}</strong>
+            </div>
+            <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 12px;display:inline-block;margin-top:4px;">
+              <div style="font-size:11px;color:#15803d;font-weight:700;">SỐ TIỀN CHUYỂN KHOẢN:</div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:800;color:#16a34a;">${formatMoney(inv.totalAmount)}</div>
+            </div>
+            <div style="font-size:11px;color:#64748b;margin-top:8px;">
+              Nội dung CK: <strong style="color:#0f172a;">${inv.id} ${inv.patientName || ''}</strong>
+            </div>
+          </div>
+
           <!-- Cashier name -->
           <div style="margin-top:10px;">
-            <label style="font-size:12px;color:#94a3b8;font-weight:600;">Thu ngân xác nhận:</label>
+            <label style="font-size:12px;color:#64748b;font-weight:600;">Thu ngân xác nhận:</label>
             <input type="text" id="cashier-name-input" class="cashier-input"
                    value="${currentCashier?.name || 'Thu Ngân Quầy 1'}"
                    placeholder="Họ tên thu ngân xác nhận" />
@@ -459,12 +743,29 @@ function openCollectModal(inv) {
     </div>
   `;
 
-  // Method selection
+  // Build QR URL helper
+  function buildQrUrl(amount) {
+    const content = encodeURIComponent(`${inv.id} ${inv.patientName || ''}`.trim());
+    return `https://img.vietqr.io/image/${CASHIER_BANK_ID}-${CASHIER_BANK_ACCOUNT}-compact2.png?amount=${amount}&addInfo=${content}&accountName=${encodeURIComponent(CASHIER_BANK_NAME)}`;
+  }
+
+  // Method selection — toggle QR panel
   modalRoot.querySelectorAll('.method-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       modalRoot.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       selectedPaymentMethod = btn.getAttribute('data-method');
+
+      const qrPanel = document.getElementById('cashier-vietqr-panel');
+      if (qrPanel) {
+        if (selectedPaymentMethod === 'Chuyển khoản ngân hàng') {
+          const qrImg = document.getElementById('cashier-qr-img');
+          if (qrImg) qrImg.src = buildQrUrl(inv.totalAmount);
+          qrPanel.style.display = 'block';
+        } else {
+          qrPanel.style.display = 'none';
+        }
+      }
     });
   });
 
@@ -872,31 +1173,32 @@ function openReceiptModal(inv) {
         <div class="cashier-modal-body">
 
           <!-- Header info -->
-          <div style="text-align:center;margin-bottom:16px;padding-bottom:16px;border-bottom:1px dashed rgba(148,163,184,0.2);">
-            <div style="font-size:22px;margin-bottom:4px;">👁️ Doctor<strong style="color:#38bdf8;">4</strong> Eye Clinic</div>
-            <div style="font-size:12px;color:#94a3b8;">Phòng Khám Mắt Chuyên Sâu | Hotline: 1800 1234</div>
-            <div style="font-size:13px;font-weight:700;color:#22c55e;margin-top:8px;">✅ BIÊN NHẬN VIỆN PHÍ</div>
+          <div style="text-align:center;margin-bottom:16px;padding-bottom:16px;border-bottom:1px dashed #cbd5e1;">
+            <div style="font-size:22px;margin-bottom:4px;font-weight:800;color:#0f172a;">👁️ Doctor<strong style="color:#0284c7;">4</strong> Eye Clinic</div>
+            <div style="font-size:12.5px;color:#64748b;">Phòng Khám Mắt Chuyên Sâu | Hotline: 1800 1234</div>
+            <div style="font-size:13.5px;font-weight:800;color:#16a34a;margin-top:8px;">✅ BIÊN NHẬN VIỆN PHÍ & DỊCH VỤ</div>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;font-size:13px;">
-            <div><span style="color:#94a3b8;">Mã hóa đơn:</span> <strong style="color:#38bdf8;">${inv.id}</strong></div>
-            <div><span style="color:#94a3b8;">Mã lịch hẹn:</span> <strong>${inv.appointmentId || '—'}</strong></div>
-            <div><span style="color:#94a3b8;">Bệnh nhân:</span> <strong>${inv.patientName}</strong></div>
-            <div><span style="color:#94a3b8;">SĐT:</span> <strong>${inv.patientPhone || '—'}</strong></div>
-            <div><span style="color:#94a3b8;">Bác sĩ:</span> <strong>${inv.doctorName}</strong></div>
-            <div><span style="color:#94a3b8;">Phòng:</span> <strong>${inv.roomName || '—'}</strong></div>
-            <div><span style="color:#94a3b8;">Dịch vụ:</span> <strong>${inv.serviceName || '—'}</strong></div>
-            <div><span style="color:#94a3b8;">Chẩn đoán:</span> <strong>${inv.diagnosis || '—'}</strong></div>
-            ${inv.revisitDate ? `<div><span style="color:#94a3b8;">Tái khám:</span> <strong style="color:#fbbf24;">${inv.revisitDate}</strong></div>` : ''}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;font-size:13px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;">
+            <div><span style="color:#64748b;">Mã hóa đơn:</span> <strong style="color:#0284c7;font-family:monospace;">${inv.id}</strong></div>
+            <div><span style="color:#64748b;">Mã đặt lịch:</span> <strong style="color:#2563eb;font-family:monospace;">${inv.appointmentId || '—'}</strong></div>
+            <div><span style="color:#64748b;">Khách hàng:</span> <strong style="color:#0f172a;">${inv.patientName}</strong></div>
+            <div><span style="color:#64748b;">SĐT:</span> <strong style="color:#0f172a;">${inv.patientPhone || '—'}</strong></div>
+            <div><span style="color:#64748b;">Bác sĩ:</span> <strong style="color:#0369a1;">${inv.doctorName}</strong></div>
+            <div><span style="color:#64748b;">Phòng:</span> <strong style="color:#0f172a;">${inv.roomName || '—'}</strong></div>
+            <div><span style="color:#64748b;">Dịch vụ:</span> <strong style="color:#0f172a;">${inv.serviceName || '—'}</strong></div>
+            <div><span style="color:#64748b;">Chẩn đoán:</span> <strong style="color:#0f172a;">${inv.diagnosis || '—'}</strong></div>
+            ${(inv.appointmentTime || inv.appointmentDate) ? `<div><span style="color:#64748b;">Thời gian hẹn:</span> <strong style="color:#d97706;">${inv.appointmentTime || ''} ${inv.appointmentDate ? '(' + inv.appointmentDate + ')' : ''}</strong></div>` : ''}
+            ${inv.revisitDate ? `<div><span style="color:#64748b;">Tái khám:</span> <strong style="color:#d97706;">${inv.revisitDate}</strong></div>` : ''}
           </div>
 
           <!-- Prescriptions -->
           ${prescRows ? `
           <div style="margin-bottom:14px;">
-            <div style="font-size:11px;color:#94a3b8;font-weight:700;margin-bottom:6px;text-transform:uppercase;">Đơn Thuốc</div>
-            <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+            <div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:6px;text-transform:uppercase;">Đơn Thuốc</div>
+            <table style="width:100%;border-collapse:collapse;font-size:12.5px;border:1px solid #e2e8f0;border-radius:8px;">
               <thead>
-                <tr style="background:rgba(255,255,255,0.03);color:#94a3b8;font-size:11px;">
+                <tr style="background:#f1f5f9;color:#475569;font-size:11px;">
                   <th style="padding:6px 8px;text-align:left;">#</th>
                   <th style="padding:6px 8px;text-align:left;">Tên Thuốc</th>
                   <th style="padding:6px 8px;text-align:center;">SL</th>
@@ -910,28 +1212,28 @@ function openReceiptModal(inv) {
           ` : ''}
 
           <!-- Fee totals -->
-          <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(148,163,184,0.15);border-radius:10px;padding:12px;font-size:13px;margin-bottom:14px;">
-            <div class="invoice-detail-row"><span class="label">Phí khám lâm sàng:</span><span class="value">${formatMoney(inv.examFee)}</span></div>
-            ${inv.medicineFee > 0 ? `<div class="invoice-detail-row"><span class="label">Tiền thuốc:</span><span class="value">${formatMoney(inv.medicineFee)}</span></div>` : ''}
-            ${inv.serviceFee > 0 ? `<div class="invoice-detail-row"><span class="label">Dịch vụ bổ sung:</span><span class="value">${formatMoney(inv.serviceFee)}</span></div>` : ''}
-            ${inv.discount > 0 ? `<div class="invoice-detail-row"><span class="label">Giảm trừ:</span><span class="value" style="color:#22c55e;">- ${formatMoney(inv.discount)}</span></div>` : ''}
-            <div class="invoice-detail-row" style="border-top:2px solid rgba(34,197,94,0.3);margin-top:8px;padding-top:8px;">
-              <span style="font-weight:800;color:#fff;font-size:15px;">TỔNG CỘNG:</span>
-              <span style="font-family:'Space Grotesk';font-size:20px;font-weight:800;color:#22c55e;">${formatMoney(inv.totalAmount)}</span>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;font-size:13px;margin-bottom:14px;">
+            <div class="invoice-detail-row"><span class="label">Phí khám lâm sàng:</span><span class="value" style="color:#0f172a;">${formatMoney(inv.examFee)}</span></div>
+            ${inv.medicineFee > 0 ? `<div class="invoice-detail-row"><span class="label">Tiền thuốc:</span><span class="value" style="color:#0f172a;">${formatMoney(inv.medicineFee)}</span></div>` : ''}
+            ${inv.serviceFee > 0 ? `<div class="invoice-detail-row"><span class="label">Dịch vụ bổ sung:</span><span class="value" style="color:#0f172a;">${formatMoney(inv.serviceFee)}</span></div>` : ''}
+            ${inv.discount > 0 ? `<div class="invoice-detail-row"><span class="label">Giảm trừ:</span><span class="value" style="color:#16a34a;">- ${formatMoney(inv.discount)}</span></div>` : ''}
+            <div class="invoice-detail-row" style="border-top:2px solid #86efac;margin-top:8px;padding-top:8px;">
+              <span style="font-weight:800;color:#0f172a;font-size:15px;">TỔNG CỘNG:</span>
+              <span style="font-family:'Space Grotesk';font-size:22px;font-weight:800;color:#16a34a;">${formatMoney(inv.totalAmount)}</span>
             </div>
           </div>
 
           <!-- Payment confirmation -->
-          <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:10px;padding:12px;font-size:13px;">
-            <div style="font-weight:700;color:#22c55e;margin-bottom:6px;">✅ Đã Thanh Toán</div>
-            <div class="invoice-detail-row"><span class="label">Hình thức:</span><span class="value">${inv.paymentMethod || '—'}</span></div>
-            <div class="invoice-detail-row"><span class="label">Thời gian:</span><span class="value">${formatTime(inv.paidAt)}</span></div>
-            <div class="invoice-detail-row"><span class="label">Thu ngân:</span><span class="value">${inv.cashierName || '—'}</span></div>
+          <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:12px 14px;font-size:13px;">
+            <div style="font-weight:800;color:#166534;margin-bottom:6px;font-size:13.5px;">✅ Đã Thanh Toán</div>
+            <div class="invoice-detail-row"><span class="label">Hình thức:</span><span class="value" style="color:#166534;">${inv.paymentMethod || '—'}</span></div>
+            <div class="invoice-detail-row"><span class="label">Thời gian:</span><span class="value" style="color:#0f172a;">${formatTime(inv.paidAt)}</span></div>
+            <div class="invoice-detail-row"><span class="label">Thu ngân:</span><span class="value" style="color:#0f172a;">${inv.cashierName || '—'}</span></div>
           </div>
 
           ${inv.advice ? `
-          <div style="margin-top:12px;padding:10px;background:rgba(56,189,248,0.06);border-radius:8px;font-size:12px;color:#94a3b8;">
-            <strong style="color:#38bdf8;">📋 Lời dặn của bác sĩ:</strong> ${inv.advice}
+          <div style="margin-top:12px;padding:10px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;font-size:12px;color:#0369a1;">
+            <strong style="color:#0284c7;">📋 Lời dặn của bác sĩ:</strong> ${inv.advice}
           </div>` : ''}
 
         </div>
