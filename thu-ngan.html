@@ -325,7 +325,8 @@
         background: #f8fafc;
         color: #0f172a;
         font-size: 13px;
-        width: 240px;
+        width: 320px;
+        max-width: 100%;
         outline: none;
         transition: all 0.2s;
       }
@@ -917,10 +918,10 @@
         <div class="cashier-section-header">
           <div>
             <h2 class="cashier-section-title">
-              <span>🧾</span> Danh Sách Hóa Đơn Viện Phí Cần Thu
+              <span>🧾</span> Danh Sách Hóa Đơn & Viện Phí Cần Thu
             </h2>
             <p class="cashier-section-subtitle">
-              Bác sĩ kê xong tự động hiện ở đây. Bấm "Thu Tiền" để xác nhận thanh toán từ bệnh nhân.
+              Tự động đồng bộ khách hàng đặt lịch khám & đơn thuốc từ Bác sĩ chuyển về. Tìm kiếm theo mã hóa đơn (HD-...), mã đặt lịch (DOC-...), tên khách hàng hoặc SĐT.
             </p>
           </div>
 
@@ -932,8 +933,9 @@
             </div>
 
             <input type="text" id="cashier-search"
-                   placeholder="🔍 Tìm bệnh nhân, mã hóa đơn..."
-                   class="cashier-search-input" />
+                   placeholder="🔍 Tìm mã hóa đơn (HD-...), mã đặt lịch (DOC-...), tên KH, SĐT..."
+                   class="cashier-search-input"
+                   style="min-width: 320px;" />
 
             <button type="button" id="btn-refresh-invoices" class="cashier-btn-refresh">
               🔄 Làm mới
