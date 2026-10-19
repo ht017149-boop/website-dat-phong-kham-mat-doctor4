@@ -325,6 +325,17 @@ function formatMoney(num) {
   return Number(num || 0).toLocaleString('vi-VN') + 'đ';
 }
 
+/* Tạo URL ảnh VietQR (Napas 247) cho hóa đơn */
+function buildVietQRUrl(inv) {
+  const params = new URLSearchParams({
+    amount: String(Math.max(0, Math.round(Number(inv.totalAmount) || 0))),
+    addInfo: ((inv.id || '') + ' ' + (inv.patientName || '')).trim(),
+    accountName: CASHIER_BANK_NAME
+  });
+  return 'https://img.vietqr.io/image/' + CASHIER_BANK_ID + '-' + CASHIER_BANK_ACCOUNT +
+    '-compact2.png?' + params.toString();
+}
+
 function formatTime(isoString) {
   if (!isoString) return '—';
   try {
@@ -703,9 +714,9 @@ function openCollectModal(inv) {
               📱 Mã QR Chuyển Khoản VietQR
             </div>
             <img id="cashier-qr-img"
-                 src=""
+                 src="${buildVietQRUrl(inv)}"
                  alt="Mã QR VietQR thanh toán"
-                 style="width:200px;height:200px;border-radius:12px;border:3px solid #bae6fd;background:#fff;display:block;margin:0 auto 12px;" />
+                 style="width:200px;height:200px;border-radius:12px;border:3px solid #bae6fd;background:#fff;display:block;margin:0 auto 12px;object-fit:contain;" />
             <div style="font-size:12.5px;color:#0f172a;font-weight:700;margin-bottom:4px;">
               🏦 <span id="cashier-qr-bank-label">${CASHIER_BANK_LABEL}</span>
             </div>
@@ -828,6 +839,9 @@ function openCollectModal(inv) {
       if (selectedPaymentMethod === 'Chuyển khoản ngân hàng') {
         const p = document.getElementById('cashier-vietqr-panel');
         if (p) p.style.display = 'block';
+        // Gán lại ảnh QR mỗi lần mở panel (ảnh có thể bị trình duyệt bỏ khi modal được render lại)
+        const qrImg = document.getElementById('cashier-qr-img');
+        if (qrImg && !qrImg.getAttribute('src')) qrImg.src = buildVietQRUrl(inv);
       } else if (selectedPaymentMethod === 'Thẻ tín dụng / Thẻ ATM') {
         const p = document.getElementById('cashier-panel-card');
         if (p) p.style.display = 'block';
