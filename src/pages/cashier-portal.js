@@ -691,7 +691,7 @@ function openCollectModal(inv) {
             <label>Phương Thức Thanh Toán</label>
             <div class="method-options">
               <button class="method-btn selected" data-method="Tiền mặt tại quầy">💵 Tiền mặt</button>
-              <button class="method-btn" data-method="Chuyển khoản ngân hàng" id="btn-method-transfer">🏦 Chuyển khoản QR</button>
+              <button class="method-btn" data-method="Chuyển khoản ngân hàng">🏦 Chuyển khoản QR</button>
               <button class="method-btn" data-method="Thẻ tín dụng / Thẻ ATM">💳 Thẻ ngân hàng</button>
               <button class="method-btn" data-method="MoMo / VNPay">📱 Ví điện tử</button>
             </div>
@@ -724,6 +724,72 @@ function openCollectModal(inv) {
             </div>
           </div>
 
+          <!-- ── PANEL: Thẻ ngân hàng / POS ── -->
+          <div id="cashier-panel-card" style="display:none;margin:10px 0;background:linear-gradient(135deg,#faf5ff,#f0f9ff);border:1.5px solid #c4b5fd;border-radius:14px;padding:20px;text-align:center;">
+            <div style="font-size:11px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">💳 Thanh Toán Qua Máy POS / Thẻ Ngân Hàng</div>
+            <div style="font-size:48px;margin-bottom:10px;">🖥️</div>
+            <div style="font-size:13.5px;font-weight:700;color:#0f172a;margin-bottom:10px;">Hướng dẫn thanh toán thẻ tại quầy</div>
+            <div style="text-align:left;background:#fff;border:1px solid #e9d5ff;border-radius:10px;padding:14px;font-size:13px;color:#374151;line-height:1.9;margin-bottom:12px;">
+              <div>① Mời bệnh nhân đưa thẻ ATM / Visa / Master / JCB</div>
+              <div>② Cắm hoặc chạm thẻ vào máy POS</div>
+              <div>③ Khách nhập mã PIN xác nhận giao dịch</div>
+              <div>④ Máy POS in biên lai — giao 1 liên cho khách lưu</div>
+            </div>
+            <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:10px;padding:10px 18px;display:inline-block;">
+              <div style="font-size:10px;color:#7c3aed;font-weight:700;text-transform:uppercase;margin-bottom:2px;">Số tiền POS cần thu</div>
+              <div style="font-size:22px;font-weight:800;color:#7c3aed;font-family:'Space Grotesk',sans-serif;">${formatMoney(inv.totalAmount)}</div>
+            </div>
+            <div style="font-size:11px;color:#9ca3af;margin-top:8px;">Mã HĐ: <strong style="color:#0f172a;">${inv.id}</strong> — Sau khi POS xác nhận, bấm "Xác Nhận Đã Thu" bên dưới.</div>
+          </div>
+
+          <!-- ── PANEL: Ví điện tử (MoMo / VNPay) ── -->
+          <div id="cashier-panel-ewallet" style="display:none;margin:10px 0;">
+            <!-- Sub-tab chọn MoMo hoặc VNPay -->
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+              <button id="ewallet-tab-momo"
+                style="flex:1;padding:9px;border:2px solid #a50064;border-radius:10px;background:#a50064;color:#fff;font-weight:800;font-size:13px;cursor:pointer;transition:all 0.2s;">
+                💜 MoMo
+              </button>
+              <button id="ewallet-tab-vnpay"
+                style="flex:1;padding:9px;border:2px solid #0066cc;border-radius:10px;background:#f0f6ff;color:#0066cc;font-weight:800;font-size:13px;cursor:pointer;transition:all 0.2s;">
+                🔵 VNPay
+              </button>
+            </div>
+
+            <!-- MoMo Panel -->
+            <div id="ewallet-panel-momo" style="background:linear-gradient(135deg,#fff0f9,#fdf2f8);border:1.5px solid #f9a8d4;border-radius:14px;padding:16px;text-align:center;">
+              <div style="font-size:11px;font-weight:800;color:#a50064;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">💜 Quét Mã QR — Thanh Toán Ví MoMo</div>
+              <img id="cashier-qr-momo"
+                   src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=a50064&qzone=1&data=${encodeURIComponent('momo://app?action=payCode&amount=' + inv.totalAmount + '&note=' + (inv.id + ' ' + (inv.patientName||'')).trim())}"
+                   alt="MoMo QR"
+                   style="width:190px;height:190px;border-radius:12px;border:3px solid #f9a8d4;background:#fff;display:block;margin:0 auto 12px;" />
+              <div style="font-size:13px;font-weight:700;color:#a50064;margin-bottom:4px;">📱 Số điện thoại nhận tiền MoMo</div>
+              <div style="font-family:monospace;font-size:22px;font-weight:800;color:#0f172a;letter-spacing:2px;margin-bottom:4px;">0909 123 456</div>
+              <div style="font-size:11.5px;color:#a50064;font-weight:600;margin-bottom:10px;">Chủ ví: PHONG KHAM MAT DOCTOR4</div>
+              <div style="background:#fce7f3;border:1px solid #f9a8d4;border-radius:8px;padding:8px 16px;display:inline-block;">
+                <div style="font-size:10px;color:#a50064;font-weight:700;text-transform:uppercase;">Số tiền</div>
+                <div style="font-size:22px;font-weight:800;color:#a50064;font-family:'Space Grotesk',sans-serif;">${formatMoney(inv.totalAmount)}</div>
+              </div>
+              <div style="font-size:11px;color:#64748b;margin-top:8px;">Nội dung: <strong style="color:#0f172a;">${inv.id} ${inv.patientName || ''}</strong></div>
+            </div>
+
+            <!-- VNPay Panel (ẩn mặc định) -->
+            <div id="ewallet-panel-vnpay" style="display:none;background:linear-gradient(135deg,#eff6ff,#e0edff);border:1.5px solid #93c5fd;border-radius:14px;padding:16px;text-align:center;">
+              <div style="font-size:11px;font-weight:800;color:#0066cc;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">🔵 Quét Mã QR — Thanh Toán VNPay</div>
+              <img id="cashier-qr-vnpay"
+                   src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=0066cc&qzone=1&data=${encodeURIComponent('https://pay.vnpay.vn?amount=' + inv.totalAmount + '&info=' + (inv.id + ' ' + (inv.patientName||'')).trim())}"
+                   alt="VNPay QR"
+                   style="width:190px;height:190px;border-radius:12px;border:3px solid #93c5fd;background:#fff;display:block;margin:0 auto 12px;" />
+              <div style="font-size:13px;font-weight:700;color:#0066cc;margin-bottom:4px;">🔵 VNPay — Phòng Khám Mắt Doctor4</div>
+              <div style="font-size:11.5px;color:#475569;margin-bottom:10px;">Quét bằng app ngân hàng hoặc ví VNPay</div>
+              <div style="background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:8px 16px;display:inline-block;">
+                <div style="font-size:10px;color:#0066cc;font-weight:700;text-transform:uppercase;">Số tiền</div>
+                <div style="font-size:22px;font-weight:800;color:#0066cc;font-family:'Space Grotesk',sans-serif;">${formatMoney(inv.totalAmount)}</div>
+              </div>
+              <div style="font-size:11px;color:#64748b;margin-top:8px;">Nội dung: <strong style="color:#0f172a;">${inv.id} ${inv.patientName || ''}</strong></div>
+            </div>
+          </div>
+
           <!-- Cashier name -->
           <div style="margin-top:10px;">
             <label style="font-size:12px;color:#64748b;font-weight:600;">Thu ngân xác nhận:</label>
@@ -743,30 +809,53 @@ function openCollectModal(inv) {
     </div>
   `;
 
-  // Build QR URL helper
-  function buildQrUrl(amount) {
-    const content = encodeURIComponent(`${inv.id} ${inv.patientName || ''}`.trim());
-    return `https://img.vietqr.io/image/${CASHIER_BANK_ID}-${CASHIER_BANK_ACCOUNT}-compact2.png?amount=${amount}&addInfo=${content}&accountName=${encodeURIComponent(CASHIER_BANK_NAME)}`;
+  // Helper: ẩn tất cả panel
+  function hideAllPanels() {
+    ['cashier-vietqr-panel', 'cashier-panel-card', 'cashier-panel-ewallet'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
   }
 
-  // Method selection — toggle QR panel
+  // Method selection — toggle panels
   modalRoot.querySelectorAll('.method-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       modalRoot.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       selectedPaymentMethod = btn.getAttribute('data-method');
+      hideAllPanels();
 
-      const qrPanel = document.getElementById('cashier-vietqr-panel');
-      if (qrPanel) {
-        if (selectedPaymentMethod === 'Chuyển khoản ngân hàng') {
-          const qrImg = document.getElementById('cashier-qr-img');
-          if (qrImg) qrImg.src = buildQrUrl(inv.totalAmount);
-          qrPanel.style.display = 'block';
-        } else {
-          qrPanel.style.display = 'none';
-        }
+      if (selectedPaymentMethod === 'Chuyển khoản ngân hàng') {
+        const p = document.getElementById('cashier-vietqr-panel');
+        if (p) p.style.display = 'block';
+      } else if (selectedPaymentMethod === 'Thẻ tín dụng / Thẻ ATM') {
+        const p = document.getElementById('cashier-panel-card');
+        if (p) p.style.display = 'block';
+      } else if (selectedPaymentMethod === 'MoMo / VNPay') {
+        const p = document.getElementById('cashier-panel-ewallet');
+        if (p) p.style.display = 'block';
       }
     });
+  });
+
+  // Sub-tabs ví điện tử: MoMo ↔ VNPay
+  document.getElementById('ewallet-tab-momo')?.addEventListener('click', () => {
+    selectedPaymentMethod = 'MoMo';
+    document.getElementById('ewallet-panel-momo').style.display = 'block';
+    document.getElementById('ewallet-panel-vnpay').style.display = 'none';
+    const btnMomo = document.getElementById('ewallet-tab-momo');
+    const btnVnpay = document.getElementById('ewallet-tab-vnpay');
+    if (btnMomo) { btnMomo.style.background = '#a50064'; btnMomo.style.color = '#fff'; }
+    if (btnVnpay) { btnVnpay.style.background = '#f0f6ff'; btnVnpay.style.color = '#0066cc'; }
+  });
+  document.getElementById('ewallet-tab-vnpay')?.addEventListener('click', () => {
+    selectedPaymentMethod = 'VNPay';
+    document.getElementById('ewallet-panel-momo').style.display = 'none';
+    document.getElementById('ewallet-panel-vnpay').style.display = 'block';
+    const btnMomo = document.getElementById('ewallet-tab-momo');
+    const btnVnpay = document.getElementById('ewallet-tab-vnpay');
+    if (btnMomo) { btnMomo.style.background = '#fdf2f8'; btnMomo.style.color = '#a50064'; }
+    if (btnVnpay) { btnVnpay.style.background = '#0066cc'; btnVnpay.style.color = '#fff'; }
   });
 
   // Close
