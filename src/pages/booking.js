@@ -5,6 +5,7 @@
 
 import { INITIAL_10_DOCTORS, CLINIC_ROOMS, CLINIC_SERVICES, getClinicServices, calculateQueueNumber, formatQueueNumber, getSlotBookingInfo } from '../data/clinic-data.js';
 import { compressImageFile, getDefaultPatientPhotos, getPatientProfileData } from '../utils/patient-profile.js';
+import { sendBookingConfirmationEmail, isValidEmail, isEmailConfigured } from '../utils/email-service.js';
 
 const DOCTORS_STORAGE_KEY = 'doctor4_doctors_db';
 const APPOINTMENTS_STORAGE_KEY = 'doctor4_appointments_db';
@@ -328,7 +329,7 @@ export function setupBookingForm() {
       const nameInput = document.getElementById('book-name');
       const phoneInput = document.getElementById('book-phone');
       const emailInput = document.getElementById('book-email');
-      
+
       if (nameInput && user.name) nameInput.value = user.name;
       if (phoneInput && user.phone) phoneInput.value = user.phone;
       if (emailInput && user.email) emailInput.value = user.email;
@@ -393,6 +394,12 @@ export function setupBookingForm() {
     const phone = document.getElementById('book-phone').value.trim();
     const email = document.getElementById('book-email')?.value.trim() || '';
     const serviceCode = srvSelect.value;
+
+    if (email && !isValidEmail(email)) {
+      alert('Địa chỉ Email không đúng định dạng. Vui lòng kiểm tra lại để nhận được thông tin đặt lịch qua Gmail.');
+      document.getElementById('book-email')?.focus();
+      return;
+    }
 
     const services = getClinicServices();
     const selectedService = services.find(s => s.code === serviceCode || s.id === serviceCode) || services[0];
@@ -507,6 +514,26 @@ export function setupBookingForm() {
     localStorage.setItem('currentPaymentId', paymentId);
 
     showBookingSuccessModal(newApp, selectedService, paymentId);
+
+    // ── Gửi thông tin đặt lịch về Gmail của bệnh nhân ──────────
+    const emailConfigured = isEmailConfigured();
+    sendBookingConfirmationEmail(newApp, selectedService).then(result => {
+      if (result.success) {
+        window.__updateBookingEmailStatus?.(true, `Đã gửi thư xác nhận đặt lịch đến <strong>${email}</strong>. Vui lòng kiểm tra hộp thư (kể cả thư rác/Spam).`);
+        showBookingEmailNotice(true, email);
+      } else {
+        const reason = !emailConfigured
+          ? 'Hệ thống chưa cấu hình Gmail gửi thư (Admin → Cài đặt hệ thống).'
+          : (result.error || 'Không gửi được thư.');
+        window.__updateBookingEmailStatus?.(false, `Không gửi được thư tới <strong>${email}</strong>. ${reason}`);
+        showBookingEmailNotice(false, email, reason);
+      }
+    }).catch(err => {
+      console.error('Không gửi được mail xác nhận đặt lịch:', err);
+      window.__updateBookingEmailStatus?.(false, `Không gửi được thư tới <strong>${email}</strong>.`);
+      showBookingEmailNotice(false, email, err?.message);
+    });
+
     form.reset();
     updateDoctorAndRoomOptions(srvSelect.value);
     updateFeePreview(srvSelect.value);
@@ -518,6 +545,9 @@ export function setupBookingForm() {
  * Hiển thị modal đặt lịch thành công kèm nút Thanh toán QR & Theo dõi
  */
 function showBookingSuccessModal(app, serviceInfo = null, paymentId = null) {
+  // Lưu lại lịch hẹn vừa tạo để dùng khi mở Gmail dự phòng
+  window.__lastBookingApp = app;
+
   let modal = document.getElementById('booking-success-modal');
 
   if (!modal) {
@@ -538,6 +568,16 @@ function showBookingSuccessModal(app, serviceInfo = null, paymentId = null) {
         <h2 style="font-size:22px;font-weight:800;color:#16a34a;margin-bottom:6px;">Đặt Lịch Thành Công!</h2>
         <p style="color:#64748b;font-size:13.5px;margin-bottom:18px;">Doctor4 đã tiếp nhận ca hẹn. Hệ thống đã phát số thứ tự khám cho bạn.</p>
 
+        <div id="booking-email-status" style="display:flex;align-items:flex-start;gap:10px;text-align:left;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12.5px;color:#0369a1;">
+          <span style="font-size:18px;flex-shrink:0;">📧</span>
+          <div>
+            <strong style="display:block;margin-bottom:2px;">Thông tin đặt lịch đang được gửi về Gmail</strong>
+            <span id="booking-email-status-text">${app.patientEmail && app.patientEmail !== 'Chưa cập nhật'
+              ? `Hệ thống đang gửi thư xác nhận đến <strong>${app.patientEmail}</strong>...`
+              : 'Bạn chưa cung cấp email nên hệ thống không thể gửi thư xác nhận.'}</span>
+          </div>
+        </div>
+
         <!-- Thẻ Số Thứ Tự Khám (STT) Nổi Bật -->
         <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2.5px dashed #2563eb; border-radius: 18px; padding: 18px 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 8px 25px rgba(37,99,235,0.12);">
           <div style="font-size: 11px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 1.2px;">
@@ -547,8 +587,8 @@ function showBookingSuccessModal(app, serviceInfo = null, paymentId = null) {
             STT: #${sttFormatted}
           </div>
           <div style="font-size: 13.5px; color: #1e3a8a; line-height: 1.5; font-weight: 600;">
-            ${isMultiple 
-              ? `Đã có <strong>${app.queueNumber - 1} người</strong> đặt cùng khung giờ <strong>${app.timeSlot}</strong>. Quý khách giữ <strong>STT #${sttFormatted}</strong> và sẽ được Bác sĩ tiếp đón khám lần lượt theo số này.` 
+            ${isMultiple
+              ? `Đã có <strong>${app.queueNumber - 1} người</strong> đặt cùng khung giờ <strong>${app.timeSlot}</strong>. Quý khách giữ <strong>STT #${sttFormatted}</strong> và sẽ được Bác sĩ tiếp đón khám lần lượt theo số này.`
               : `Quý khách là người đầu tiên trong khung giờ <strong>${app.timeSlot}</strong>. Vui lòng giữ <strong>STT #${sttFormatted}</strong> khi đến phòng khám.`}
           </div>
         </div>
@@ -596,6 +636,24 @@ function showBookingSuccessModal(app, serviceInfo = null, paymentId = null) {
     modal.innerHTML = '';
   });
 
+  // Cập nhật trạng thái gửi mail trong modal (kết quả từ sendBookingConfirmationEmail)
+  window.__updateBookingEmailStatus = (ok, msg) => {
+    const box = document.getElementById('booking-email-status');
+    const txt = document.getElementById('booking-email-status-text');
+    if (!box || !txt) return;
+    if (ok) {
+      box.style.background = '#ecfdf5';
+      box.style.borderColor = '#6ee7b7';
+      box.style.color = '#065f46';
+      txt.innerHTML = msg;
+    } else {
+      box.style.background = '#fffbeb';
+      box.style.borderColor = '#fcd34d';
+      box.style.color = '#92400e';
+      txt.innerHTML = msg;
+    }
+  };
+
   document.getElementById('btn-view-ticket-now')?.addEventListener('click', () => {
     modal.innerHTML = '';
     import('./my-appointments.js').then(module => {
@@ -610,5 +668,70 @@ function showBookingSuccessModal(app, serviceInfo = null, paymentId = null) {
     const paymentUrl = `/payment.html?appointmentId=${encodeURIComponent(app.id)}&name=${encodeURIComponent(app.patientName)}&doctor=${encodeURIComponent(app.doctorName)}&date=${encodeURIComponent(app.date)}&time=${encodeURIComponent(app.timeSlot)}`;
     window.location.href = paymentUrl;
   });
+}
+
+/**
+ * Hiển thị thông báo trạng thái gửi mail xác nhận đặt lịch về Gmail bệnh nhân
+ * (dạng toast nhỏ ở góc dưới bên phải, tự ẩn sau vài giây)
+ */
+function showBookingEmailNotice(success, email = '', errorMsg = '') {
+  const toast = document.createElement('div');
+  toast.style.cssText = [
+    'position:fixed',
+    'right:20px',
+    'bottom:20px',
+    'z-index:10001',
+    'max-width:340px',
+    'padding:14px 16px',
+    'border-radius:14px',
+    'font-size:13px',
+    'line-height:1.55',
+    'font-family:inherit',
+    'box-shadow:0 12px 30px rgba(15,23,42,0.25)',
+    'animation:admScaleIn 0.25s ease-out',
+    success
+      ? 'background:#ecfdf5;border:1.5px solid #6ee7b7;color:#065f46'
+      : 'background:#fffbeb;border:1.5px solid #fcd34d;color:#92400e'
+  ].join(';');
+
+  toast.innerHTML = success
+    ? `<strong>📧 Đã gửi thông tin đặt lịch về Gmail!</strong>
+       <div style="margin-top:4px;">Hệ thống đã gửi thư xác nhận đến <strong>${email}</strong>. Vui lòng kiểm tra hộp thư (kể cả thư rác/Spam).</div>`
+    : `<strong>📧 Chưa gửi được thư xác nhận</strong>
+       <div style="margin-top:4px;">${email ? `Không gửi được tới <strong>${email}</strong>. ` : 'Bạn chưa cung cấp email. '}${errorMsg ? `Lý do: ${errorMsg}` : ''}</div>
+       <button type="button" id="btn-open-gmail-compose" style="margin-top:10px;padding:7px 12px;background:#d97706;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">✉️ Mở Gmail để gửi ngay</button>`;
+
+  document.body.appendChild(toast);
+
+  const closeBtn = toast.querySelector('#btn-open-gmail-compose');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      import('../utils/email-service.js').then(module => {
+        import('../utils/email-templates.js').then(tpl => {
+          const built = tpl.buildBookingEmail({
+            id: window.__lastBookingApp?.id || '—',
+            patientName: window.__lastBookingApp?.patientName || (document.getElementById('book-name')?.value.trim() || 'Quý khách'),
+            patientPhone: window.__lastBookingApp?.patientPhone || (document.getElementById('book-phone')?.value.trim() || ''),
+            patientEmail: email,
+            queueNumber: window.__lastBookingApp?.queueNumber,
+            serviceName: window.__lastBookingApp?.serviceName || '',
+            doctorName: window.__lastBookingApp?.doctorName || '',
+            roomName: window.__lastBookingApp?.roomName || '',
+            date: window.__lastBookingApp?.date || '',
+            timeSlot: window.__lastBookingApp?.timeSlot || '',
+            symptoms: window.__lastBookingApp?.symptoms || '',
+            patientProfile: window.__lastBookingApp?.patientProfile || null
+          });
+          module.openGmailCompose({ to: email, subject: built.subject, text: built.text });
+        });
+      });
+    });
+  }
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.4s';
+    setTimeout(() => toast.remove(), 450);
+  }, 9000);
 }
 
