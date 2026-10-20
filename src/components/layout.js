@@ -44,6 +44,7 @@ export function renderHeader(active) {
           ${user.role === 'cashier' || user.role === 'admin' ? `<a href="/thu-ngan.html" class="nav-dropdown-item" style="color: #22c55e; font-weight: 700;">💵 Cổng Thu Ngân (Viện Phí)</a>` : ''}
           <a href="javascript:void(0)" class="nav-dropdown-item btn-open-patient-profile" style="color: #38bdf8; font-weight: 600;">📋 Hồ sơ bệnh nhân & Tải ảnh CCCD</a>
           <a href="javascript:void(0)" class="nav-dropdown-item btn-open-user-lookup" data-phone="${user.phone || ''}">🎫 Xem phòng & vé khám của tôi</a>
+          <a href="javascript:void(0)" class="nav-dropdown-item" style="color: #fbbf24; font-weight: 700;" id="navItemChangePassword">🔐 Đổi mật khẩu</a>
           <a href="/index.html#dat-lich" class="nav-dropdown-item">📅 Đặt lịch khám mới</a>
           <div class="nav-dropdown-divider"></div>
           <button class="nav-dropdown-item text-danger" id="navBtnLogout">🚪 Đăng xuất</button>
@@ -138,6 +139,15 @@ export function setupHeaderEvents() {
     });
   }
 
+  const changePwdItem = document.getElementById('navItemChangePassword');
+  if (changePwdItem) {
+    changePwdItem.addEventListener('click', (e) => {
+      e.preventDefault();
+      userDropdown?.classList.remove('show');
+      import('./verification-modal.js').then(m => m.openChangePasswordModal());
+    });
+  }
+
   // Tra cứu phòng khám & lịch hẹn
   document.querySelectorAll('[data-nav="lookup"], .btn-open-user-lookup').forEach(el => {
     el.addEventListener('click', (e) => {
@@ -211,6 +221,8 @@ export function renderFooter() {
           <li><a href="/index.html#doctors">Đội ngũ bác sĩ</a></li>
           <li><a href="/index.html">Tin tức sức khỏe</a></li>
           <li><a href="/index.html">Câu hỏi thường gặp</a></li>
+          <li><a href="/ho-so.html#bao-mat">Đổi mật khẩu & Bảo mật</a></li>
+          <li><a href="/dang-nhap.html?forgot=1">Quên mật khẩu</a></li>
           <li><a href="/dang-nhap.html">Tài khoản thành viên</a></li>
         </ul>
       </div>

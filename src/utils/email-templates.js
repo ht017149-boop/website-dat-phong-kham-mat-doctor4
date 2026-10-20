@@ -340,3 +340,110 @@ export function buildPaymentEmail(app = {}, invoice = null) {
     })
   };
 }
+
+/* ============================================================
+   4. EMAIL MÃ XÁC THỰC OTP (quên mật khẩu / đổi email / đổi SĐT)
+   ============================================================ */
+export function buildOtpEmail({ toName = 'Quý khách', otp = '', purposeLabel = 'xác thực tài khoản', ttlMinutes = 5 } = {}) {
+  const safeName = escapeHtml(toName);
+  const safeOtp = escapeHtml(otp);
+  const subject = `[Doctor4] Mã xác thực ${otp} — ${purposeLabel}`;
+
+  const text = [
+    `Xin chào ${toName},`,
+    ``,
+    `Mã xác thực (OTP) để ${purposeLabel} tài khoản Doctor4 của quý khách là: ${otp}`,
+    ``,
+    `- Mã có hiệu lực trong ${ttlMinutes} phút và chỉ sử dụng được 1 lần.`,
+    `- Tuyệt đối KHÔNG chia sẻ mã này cho bất kỳ ai, kể cả người tự xưng là nhân viên Doctor4.`,
+    `- Nếu quý khách không thực hiện yêu cầu này, hãy bỏ qua email và đổi mật khẩu ngay.`,
+    ``,
+    `Trân trọng,`,
+    CLINIC.name
+  ].join('\n');
+
+  const bodyHtml = `
+    <p style="margin:0 0 14px;">Xin chào <strong>${safeName}</strong>,</p>
+    <p style="margin:0 0 12px;">Bạn vừa yêu cầu <strong>${escapeHtml(purposeLabel)}</strong> cho tài khoản Doctor4.</p>
+
+    <div style="background:#eff6ff;border:2px dashed #0284c7;border-radius:12px;padding:18px;margin:18px 0;text-align:center;">
+      <div style="font-size:12px;font-weight:800;color:#0369a1;text-transform:uppercase;letter-spacing:1px;">Mã xác thực (OTP)</div>
+      <div style="font-size:34px;font-weight:900;color:#0f172a;letter-spacing:10px;margin:6px 0 2px;font-family:'Courier New',monospace;">${safeOtp}</div>
+      <div style="font-size:12px;color:#64748b;">Có hiệu lực ${ttlMinutes} phút — chỉ dùng 1 lần</div>
+    </div>
+
+    <ul style="margin:0;padding-left:20px;font-size:13px;color:#334155;line-height:1.9;">
+      <li>Không chia sẻ mã này cho bất kỳ ai.</li>
+      <li>Doctor4 <strong>không bao giờ</strong> gọi điện yêu cầu bạn đọc mã OTP.</li>
+      <li>Nếu không phải bạn thực hiện, hãy bỏ qua email này và liên hệ hotline ${CLINIC.hotline}.</li>
+    </ul>
+
+    <p style="margin:20px 0 0;">Trân trọng,<br/><strong>${escapeHtml(CLINIC.name)}</strong></p>
+  `;
+
+  return {
+    subject,
+    text,
+    html: emailShell({
+      title: '🔐 Mã xác thực tài khoản',
+      subtitle: `Yêu cầu: <strong>${escapeHtml(purposeLabel)}</strong>`,
+      accent: '#0284c7',
+      bodyHtml
+    })
+  };
+}
+
+/* ============================================================
+   5. EMAIL THÔNG BÁO TÀI KHOẢN VỪA ĐỔI EMAIL / SỐ ĐIỆN THOẠI
+   (gửi tới địa chỉ CŨ để chủ tài khoản kịp phát hiện)
+   ============================================================ */
+export function buildProfileChangeEmail({ toName = 'Quý khách', changes = {}, changedAt = '' } = {}) {
+  const safeName = escapeHtml(toName);
+  const emailLine = changes.email ? `${changes.email.from} → ${changes.email.to}` : null;
+  const phoneLine = changes.phone ? `${changes.phone.from} → ${changes.phone.to}` : null;
+
+  const subject = '[Doctor4] Thông báo: thông tin liên hệ tài khoản của bạn vừa thay đổi';
+
+  const text = [
+    `Xin chào ${toName},`,
+    ``,
+    `Tài khoản Doctor4 của quý khách vừa được thay đổi thông tin liên hệ lúc ${changedAt}:`,
+    ...(emailLine ? [`- Email       : ${emailLine}`] : []),
+    ...(phoneLine ? [`- Điện thoại  : ${phoneLine}`] : []),
+    ``,
+    `Nếu chính quý khách thực hiện, không cần làm gì thêm.`,
+    `Nếu KHÔNG phải quý khách, hãy ngay lập tức đổi mật khẩu và gọi hotline ${CLINIC.hotline}.`,
+    ``,
+    `Trân trọng,`,
+    CLINIC.name
+  ].join('\n');
+
+  const bodyHtml = `
+    <p style="margin:0 0 14px;">Xin chào <strong>${safeName}</strong>,</p>
+    <p style="margin:0 0 16px;">Thông tin liên hệ của tài khoản Doctor4 vừa được thay đổi vào lúc <strong>${escapeHtml(changedAt)}</strong>:</p>
+
+    <table style="width:100%;border-collapse:collapse;font-size:13.5px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+      <tbody style="display:table;width:100%;padding:6px 16px;box-sizing:border-box;">
+        ${emailLine ? infoRow('✉️ Email', escapeHtml(emailLine)) : ''}
+        ${phoneLine ? infoRow('📞 Số điện thoại', escapeHtml(phoneLine)) : ''}
+      </tbody>
+    </table>
+
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:14px;margin-top:16px;font-size:13px;color:#991b1b;">
+      <strong>Không phải bạn thực hiện?</strong> Hãy đổi mật khẩu ngay và gọi hotline <strong>${CLINIC.hotline}</strong> để phòng khám khóa tài khoản tạm thời.
+    </div>
+
+    <p style="margin:20px 0 0;">Trân trọng,<br/><strong>${escapeHtml(CLINIC.name)}</strong></p>
+  `;
+
+  return {
+    subject,
+    text,
+    html: emailShell({
+      title: '🛡️ Thông tin tài khoản vừa thay đổi',
+      subtitle: 'Email thông báo bảo mật tự động từ Doctor4',
+      accent: '#dc2626',
+      bodyHtml
+    })
+  };
+}
