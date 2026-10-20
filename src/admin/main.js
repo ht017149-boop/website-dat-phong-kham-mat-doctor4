@@ -13,6 +13,7 @@ import { CLINIC_ROOMS, CLINIC_SERVICES, getClinicServices, saveClinicServices } 
 
 import { getComments, hideComment, showComment, deleteComment } from './comment-manager.js';
 import { getPatientProfileData } from '../utils/patient-profile.js';
+import { getEmailConfig, saveEmailConfig, isEmailConfigured, getEmailLog, isValidEmail, sendTestEmail } from '../utils/email-service.js';
 
 
 // Khởi tạo container chính
@@ -389,6 +390,7 @@ function renderAdminPortal() {
   `;
 
   bindPortalEvents();
+  mountCurrentTab();
 }
 
 function getTabTitle(tab) {
@@ -418,6 +420,14 @@ function renderTabContent() {
   if (currentTab === 'payments') return renderPaymentsManagementView();
 
   return renderSettingsPlaceholderView();
+}
+
+/** Render nội dung tab hiện tại + gắn sự kiện (dùng khi mở trang lần đầu) */
+function mountCurrentTab() {
+  const contentEl = document.getElementById('adm-main-content');
+  if (contentEl) contentEl.innerHTML = renderTabContent();
+  bindViewSpecificEvents();
+  if (currentTab === 'comments') bindCommentEvents();
 }
 
 // ── TAB: QUẢN LÝ BÌNH LUẬN ─────────────────────────────────────
@@ -614,10 +624,10 @@ function renderDoctorManagementView() {
       <div class="adm-filters-left">
         <div class="adm-search-input-wrap">
           <span class="adm-search-icon">🔍</span>
-          <input 
-            type="text" 
-            id="filter-search-doc" 
-            placeholder="Tìm theo tên bác sĩ, phòng khám, SĐT..." 
+          <input
+            type="text"
+            id="filter-search-doc"
+            placeholder="Tìm theo tên bác sĩ, phòng khám, SĐT..."
             value="${escapeHtml(docFilterState.query)}"
           />
         </div>
@@ -735,7 +745,7 @@ function renderDoctorRow(doc) {
 function renderAppointmentsManagementView() {
   const allApps = AppointmentManager.getAppointments();
   const allDocs = DoctorManager.getDoctors();
-  
+
   // Nếu đang ở chế độ 1 Bác sĩ, tự động lọc theo Bác sĩ đó
   const effectiveFilter = { ...appFilterState };
   if (currentRoleMode !== 'admin') {
@@ -824,10 +834,10 @@ function renderAppointmentsManagementView() {
       <div class="adm-filters-left" style="flex-wrap: wrap; gap: 10px;">
         <div class="adm-search-input-wrap">
           <span class="adm-search-icon">🔍</span>
-          <input 
-            type="text" 
-            id="filter-search-app" 
-            placeholder="Tìm theo Mã hẹn, Tên BN, SĐT, Bác sĩ..." 
+          <input
+            type="text"
+            id="filter-search-app"
+            placeholder="Tìm theo Mã hẹn, Tên BN, SĐT, Bác sĩ..."
             value="${escapeHtml(appFilterState.query)}"
           />
         </div>
@@ -1007,7 +1017,7 @@ function renderRoomsDiagramView() {
         return `
         <div style="background: var(--adm-bg-surface); border: 1px solid ${pendingCount > 0 ? 'rgba(234,179,8,0.5)' : r.isOccupied ? 'var(--adm-border-active)' : 'var(--adm-border)'}; border-radius: var(--adm-radius-lg); padding: 20px; box-shadow: var(--adm-shadow-sm); position: relative; overflow: hidden;">
           <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: ${pendingCount > 0 ? 'linear-gradient(90deg, #d97706, #fbbf24)' : r.isOccupied ? 'var(--adm-primary)' : 'var(--adm-border)'};"></div>
-          
+
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
             <div>
               <span style="font-size: 11px; font-weight: 700; background: rgba(56, 189, 248, 0.15); color: var(--adm-primary); padding: 2px 8px; border-radius: 4px;">
@@ -1220,7 +1230,7 @@ function getAccountUsers() {
     allDoctors.forEach(doc => {
       const cleanEmail = (doc.email || `doc.${doc.id}@doctor4.vn`).trim().toLowerCase();
       const cleanPhone = (doc.phone || '').replace(/\s+/g, '');
-      const existing = users.find(u => 
+      const existing = users.find(u =>
         (u.doctorId && String(u.doctorId) === String(doc.id)) ||
         (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) ||
         (cleanPhone && u.phone && u.phone.replace(/\s+/g, '') === cleanPhone)
@@ -2314,6 +2324,9 @@ function renderSettingsPlaceholderView() {
         </div>
       </div>
 
+      <!-- CẤU HÌNH GỬI GMAIL THÔNG TIN ĐẶT LỊCH -->
+      ${renderEmailConfigCard()}
+
       <!-- TÀI KHOẢN ADMIN -->
       <div style="background: var(--adm-bg-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-lg); padding: 24px; max-width: 600px;">
         <h3 style="color: #fff; margin-bottom: 16px;">🔑 Tài khoản Quản trị viên</h3>
@@ -2326,6 +2339,176 @@ function renderSettingsPlaceholderView() {
       </div>
     </div>
   `;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 3b. THẺ CẤU HÌNH GỬI GMAIL THÔNG TIN ĐẶT LỊCH (EmailJS → Gmail)
+// ─────────────────────────────────────────────────────────────
+function renderEmailConfigCard() {
+  const cfg = getEmailConfig();
+  const log = getEmailLog();
+  const ready = isEmailConfigured();
+
+  const statusColor = ready ? '#4ade80' : '#fbbf24';
+  const statusText = ready
+    ? 'Đang hoạt động — thông tin đặt lịch sẽ tự động gửi về Gmail bệnh nhân.'
+    : 'Chưa cấu hình — hệ thống chưa gửi được mail. Nhập đủ Service ID, Template ID và Public Key bên dưới.';
+
+  return `
+    <div style="background: var(--adm-bg-surface); border: 1.5px solid ${ready ? 'rgba(74,222,128,0.35)' : 'rgba(251,191,36,0.35)'}; border-radius: var(--adm-radius-lg); padding: 24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--adm-border);padding-bottom:12px;margin-bottom:16px;">
+        <div>
+          <h3 style="color:#38bdf8;margin:0;font-size:18px;">📧 Gửi Gmail thông tin đặt lịch khám</h3>
+          <p style="color:var(--adm-text-muted);font-size:13px;margin:4px 0 0;">
+            Cấu hình EmailJS (cổng Gmail SMTP &amp; OAuth) để tự động gửi thư xác nhận đặt lịch tới hộp thư bệnh nhân.
+          </p>
+        </div>
+        <button id="btn-save-email-config" style="padding: 10px 20px; background: linear-gradient(135deg, #16a34a, #22c55e); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          💾 Lưu cấu hình Gmail
+        </button>
+      </div>
+
+      <div style="padding:10px 14px;border-radius:10px;margin-bottom:16px;font-size:13px;line-height:1.6;background:${ready ? 'rgba(74,222,128,0.1)' : 'rgba(251,191,36,0.1)'};color:${statusColor};border:1px solid ${ready ? 'rgba(74,222,128,0.3)' : 'rgba(251,191,36,0.3)'};">
+        ${ready ? '✅' : '⚠️'} ${statusText}
+      </div>
+
+      <div class="adm-grid-2">
+        <div class="adm-form-group">
+          <label class="adm-form-label">EmailJS Service ID *</label>
+          <input type="text" id="cfg-email-service-id" class="adm-input adm-input-no-icon" placeholder="VD: service_abc1234" value="${escapeHtml(cfg.serviceId || '')}" />
+        </div>
+        <div class="adm-form-group">
+          <label class="adm-form-label">EmailJS Template ID *</label>
+          <input type="text" id="cfg-email-template-id" class="adm-input adm-input-no-icon" placeholder="VD: template_xyz5678" value="${escapeHtml(cfg.templateId || '')}" />
+        </div>
+      </div>
+
+      <div class="adm-grid-2">
+        <div class="adm-form-group">
+          <label class="adm-form-label">EmailJS Public Key *</label>
+          <input type="text" id="cfg-email-public-key" class="adm-input adm-input-no-icon" placeholder="VD: A1b2C3d4E5f6G7h8" value="${escapeHtml(cfg.publicKey || '')}" />
+        </div>
+        <div class="adm-form-group">
+          <label class="adm-form-label">Email phòng khám (nhận bản sao — tùy chọn)</label>
+          <input type="email" id="cfg-email-clinic" class="adm-input adm-input-no-icon" placeholder="VD: letan.doctor4@gmail.com" value="${escapeHtml(cfg.clinicEmail || '')}" />
+        </div>
+      </div>
+
+      <div class="adm-grid-2">
+        <div class="adm-form-group">
+          <label class="adm-form-label">Tên người gửi hiển thị</label>
+          <input type="text" id="cfg-email-from-name" class="adm-input adm-input-no-icon" value="${escapeHtml(cfg.fromName || '')}" />
+        </div>
+        <div class="adm-form-group">
+          <label class="adm-form-label">Email trả lời (Reply-To)</label>
+          <input type="email" id="cfg-email-reply-to" class="adm-input adm-input-no-icon" value="${escapeHtml(cfg.replyTo || '')}" />
+        </div>
+      </div>
+
+      <div class="adm-form-group" style="display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" id="cfg-email-enabled" ${cfg.enabled ? 'checked' : ''} style="width:18px;height:18px;accent-color:#22c55e;" />
+        <label for="cfg-email-enabled" class="adm-form-label" style="margin:0;cursor:pointer;">Bật gửi Gmail tự động khi bệnh nhân đặt lịch</label>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <input type="email" id="cfg-email-test-to" class="adm-input adm-input-no-icon" placeholder="Gmail nhận thư thử nghiệm" style="flex:1;min-width:240px;" />
+        <button id="btn-send-test-email" style="padding: 10px 18px; background: rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.4); border-radius:8px; font-weight:700; cursor:pointer;">
+          ✉️ Gửi thư thử
+        </button>
+      </div>
+
+      <div style="margin-top:18px;font-size:12.5px;color:var(--adm-text-muted);line-height:1.9;background:rgba(56,189,248,0.06);border:1px dashed rgba(56,189,248,0.3);border-radius:10px;padding:12px 14px;">
+        <strong style="color:#38bdf8;">Hướng dẫn nhanh:</strong><br/>
+        1. Đăng nhập <a href="https://www.emailjs.com" target="_blank" rel="noopener" style="color:#38bdf8;">emailjs.com</a> → <em>Email Services</em> → kết nối Gmail → lấy <strong>Service ID</strong>.<br/>
+        2. <em>Email Templates</em> → tạo template → lấy <strong>Template ID</strong>.<br/>
+        3. Template dùng To Email <code>{{to_email}}</code>, Subject <code>{{subject}}</code>, Body <code>{{message_html}}</code>; các biến phụ: {{patient_name}}, {{appointment_id}}, {{queue_number}}, {{doctor_name}}, {{room_name}}, {{appointment_date}}, {{appointment_time}}.<br/>
+        4. <em>Account → General</em> → lấy <strong>Public Key</strong>. Bấm “Gửi thư thử” để kiểm tra.
+      </div>
+
+      <div style="margin-top:16px;">
+        <div style="font-weight:700;color:#f1f5f9;margin-bottom:8px;font-size:14px;">🕘 Lịch sử gửi gần đây</div>
+        ${log.length ? `
+          <div style="overflow-x:auto;">
+            <table class="adm-table" style="width:100%;font-size:12.5px;">
+              <thead><tr><th>Thời gian</th><th>Người nhận</th><th>Tiêu đề</th><th>Trạng thái</th></tr></thead>
+              <tbody>
+                ${log.slice(0, 8).map(e => {
+                  const label = e.status === 'sent' ? '✅ Đã gửi' : e.status === 'failed' ? '❌ Lỗi' : '⚠️ Bỏ qua';
+                  const color = e.status === 'sent' ? '#4ade80' : e.status === 'failed' ? '#f87171' : '#fbbf24';
+                  return `<tr>
+                    <td>${new Date(e.sentAt).toLocaleString('vi-VN')}</td>
+                    <td>${escapeHtml(e.to || '')}</td>
+                    <td>${escapeHtml((e.subject || '').slice(0, 50))}</td>
+                    <td style="color:${color};font-weight:700;" title="${escapeHtml(e.error || '')}">${label}</td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>` : `<div style="font-size:13px;color:var(--adm-text-muted);">Chưa có lần gửi mail nào.</div>`}
+      </div>
+    </div>
+  `;
+}
+
+// Gắn sự kiện cho thẻ cấu hình Gmail (dùng chung cho lần load đầu & các lần render lại)
+function bindEmailConfigEvents() {
+  const saveBtn = document.getElementById('btn-save-email-config');
+  if (!saveBtn || saveBtn.dataset.bound === '1') return;
+  saveBtn.dataset.bound = '1';
+
+  // Lưu cấu hình gửi Gmail (EmailJS)
+  saveBtn.addEventListener('click', () => {
+    const clinicEmail = (document.getElementById('cfg-email-clinic')?.value || '').trim();
+    const replyTo = (document.getElementById('cfg-email-reply-to')?.value || '').trim();
+
+    if (clinicEmail && !isValidEmail(clinicEmail)) {
+      showToast('Email phòng khám (nhận bản sao) không đúng định dạng!', 'error');
+      return;
+    }
+    if (replyTo && !isValidEmail(replyTo)) {
+      showToast('Email trả lời (Reply-To) không đúng định dạng!', 'error');
+      return;
+    }
+
+    saveEmailConfig({
+      enabled: Boolean(document.getElementById('cfg-email-enabled')?.checked),
+      serviceId: (document.getElementById('cfg-email-service-id')?.value || '').trim(),
+      templateId: (document.getElementById('cfg-email-template-id')?.value || '').trim(),
+      publicKey: (document.getElementById('cfg-email-public-key')?.value || '').trim(),
+      clinicEmail,
+      fromName: (document.getElementById('cfg-email-from-name')?.value || '').trim() || 'Phòng Khám Mắt Doctor4',
+      replyTo
+    });
+
+    const ok = isEmailConfigured();
+    showToast(
+      ok
+        ? '✅ Đã lưu cấu hình Gmail! Từ giờ mọi lượt đặt lịch sẽ gửi thông tin về Gmail bệnh nhân.'
+        : 'Đã lưu, nhưng còn thiếu Service ID / Template ID / Public Key nên chưa gửi được mail.',
+      ok ? 'success' : 'error'
+    );
+    refreshMainView();
+  });
+
+  // Gửi thư thử nghiệm
+  document.getElementById('btn-send-test-email')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    const to = (document.getElementById('cfg-email-test-to')?.value || '').trim();
+    const oldText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ Đang gửi...';
+    const result = await sendTestEmail(to);
+    if (document.getElementById('btn-send-test-email') === btn) {
+      btn.disabled = false;
+      btn.textContent = oldText;
+    }
+    if (result.success) {
+      showToast(`Đã gửi thư thử nghiệm tới ${to}. Vui lòng kiểm tra hộp thư (cả mục Spam).`, 'success');
+    } else {
+      showToast(`Gửi thất bại: ${result.error || 'Không rõ nguyên nhân'}`, 'error');
+    }
+    refreshMainView();
+  });
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -2348,25 +2531,25 @@ function openDoctorModal(doc = null) {
             <div class="adm-grid-2">
               <div class="adm-form-group">
                 <label class="adm-form-label">Họ và tên bác sĩ *</label>
-                <input 
-                  type="text" 
-                  id="doc-form-name" 
-                  class="adm-input adm-input-no-icon" 
-                  placeholder="VD: Nguyễn Văn A" 
-                  value="${doc ? escapeHtml(doc.name) : ''}" 
-                  required 
+                <input
+                  type="text"
+                  id="doc-form-name"
+                  class="adm-input adm-input-no-icon"
+                  placeholder="VD: Nguyễn Văn A"
+                  value="${doc ? escapeHtml(doc.name) : ''}"
+                  required
                 />
               </div>
 
               <div class="adm-form-group">
                 <label class="adm-form-label">Học vị / Học hàm *</label>
-                <input 
-                  type="text" 
-                  id="doc-form-degree" 
-                  class="adm-input adm-input-no-icon" 
-                  placeholder="VD: BS. CKII, TS. Bác sĩ..." 
-                  value="${doc ? escapeHtml(doc.degree) : 'BS. Chuyên khoa I'}" 
-                  required 
+                <input
+                  type="text"
+                  id="doc-form-degree"
+                  class="adm-input adm-input-no-icon"
+                  placeholder="VD: BS. CKII, TS. Bác sĩ..."
+                  value="${doc ? escapeHtml(doc.degree) : 'BS. Chuyên khoa I'}"
+                  required
                 />
               </div>
             </div>
@@ -2399,24 +2582,24 @@ function openDoctorModal(doc = null) {
             <div class="adm-grid-2">
               <div class="adm-form-group">
                 <label class="adm-form-label">Tên hiển thị chuyên khoa *</label>
-                <input 
-                  type="text" 
-                  id="doc-form-specialty" 
-                  class="adm-input adm-input-no-icon" 
-                  value="${doc ? escapeHtml(doc.specialty) : 'Nhãn khoa – Phẫu thuật LASIK'}" 
-                  required 
+                <input
+                  type="text"
+                  id="doc-form-specialty"
+                  class="adm-input adm-input-no-icon"
+                  value="${doc ? escapeHtml(doc.specialty) : 'Nhãn khoa – Phẫu thuật LASIK'}"
+                  required
                 />
               </div>
 
               <div class="adm-form-group">
                 <label class="adm-form-label">Số năm kinh nghiệm</label>
-                <input 
-                  type="number" 
-                  id="doc-form-exp" 
-                  class="adm-input adm-input-no-icon" 
-                  min="0" 
-                  max="60" 
-                  value="${doc ? doc.experience : 10}" 
+                <input
+                  type="number"
+                  id="doc-form-exp"
+                  class="adm-input adm-input-no-icon"
+                  min="0"
+                  max="60"
+                  value="${doc ? doc.experience : 10}"
                 />
               </div>
             </div>
@@ -2424,21 +2607,21 @@ function openDoctorModal(doc = null) {
             <div class="adm-grid-2">
               <div class="adm-form-group">
                 <label class="adm-form-label">Số điện thoại</label>
-                <input 
-                  type="text" 
-                  id="doc-form-phone" 
-                  class="adm-input adm-input-no-icon" 
-                  value="${doc ? escapeHtml(doc.phone) : '0912 000 999'}" 
+                <input
+                  type="text"
+                  id="doc-form-phone"
+                  class="adm-input adm-input-no-icon"
+                  value="${doc ? escapeHtml(doc.phone) : '0912 000 999'}"
                 />
               </div>
 
               <div class="adm-form-group">
                 <label class="adm-form-label">Email (Dùng đăng nhập Cổng Bác Sĩ)</label>
-                <input 
-                  type="email" 
-                  id="doc-form-email" 
-                  class="adm-input adm-input-no-icon" 
-                  value="${doc ? escapeHtml(doc.email) : 'doctor@doctor4.vn'}" 
+                <input
+                  type="email"
+                  id="doc-form-email"
+                  class="adm-input adm-input-no-icon"
+                  value="${doc ? escapeHtml(doc.email) : 'doctor@doctor4.vn'}"
                 />
               </div>
             </div>
@@ -2446,23 +2629,23 @@ function openDoctorModal(doc = null) {
             <div class="adm-grid-2">
               <div class="adm-form-group">
                 <label class="adm-form-label">🔑 Mật khẩu đăng nhập Cổng Bác sĩ</label>
-                <input 
-                  type="text" 
-                  id="doc-form-password" 
-                  class="adm-input adm-input-no-icon" 
-                  placeholder="Mặc định: 123456" 
-                  value="123456" 
+                <input
+                  type="text"
+                  id="doc-form-password"
+                  class="adm-input adm-input-no-icon"
+                  placeholder="Mặc định: 123456"
+                  value="123456"
                 />
                 <span style="font-size: 11px; color: var(--adm-text-muted);">Bác sĩ dùng Email/SĐT & mật khẩu này để đăng nhập vào Cổng Bác Sĩ</span>
               </div>
 
               <div class="adm-form-group">
                 <label class="adm-form-label">Lịch làm việc</label>
-                <input 
-                  type="text" 
-                  id="doc-form-schedule" 
-                  class="adm-input adm-input-no-icon" 
-                  value="${doc ? escapeHtml(doc.schedule) : 'Thứ 2 - Thứ 6 (08:00 - 17:00)'}" 
+                <input
+                  type="text"
+                  id="doc-form-schedule"
+                  class="adm-input adm-input-no-icon"
+                  value="${doc ? escapeHtml(doc.schedule) : 'Thứ 2 - Thứ 6 (08:00 - 17:00)'}"
                 />
               </div>
             </div>
@@ -2482,17 +2665,17 @@ function openDoctorModal(doc = null) {
               <div class="adm-avatar-preview-wrap">
                 <img id="avatar-preview-img" src="${doc?.avatar || SAMPLE_AVATARS[0]}" class="adm-avatar-large" alt="Preview"/>
                 <div style="flex: 1;">
-                  <input 
-                    type="url" 
-                    id="doc-form-avatar" 
-                    class="adm-input adm-input-no-icon" 
-                    value="${doc?.avatar || SAMPLE_AVATARS[0]}" 
+                  <input
+                    type="url"
+                    id="doc-form-avatar"
+                    class="adm-input adm-input-no-icon"
+                    value="${doc?.avatar || SAMPLE_AVATARS[0]}"
                   />
                   <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
                     ${SAMPLE_AVATARS.map((url, i) => `
-                      <img 
-                        src="${url}" 
-                        class="btn-pick-sample-avatar" 
+                      <img
+                        src="${url}"
+                        class="btn-pick-sample-avatar"
                         data-url="${url}"
                         style="width: 28px; height: 28px; border-radius: 6px; cursor: pointer; border: 1px solid var(--adm-border);"
                         title="Chọn ảnh mẫu ${i + 1}"
@@ -2505,9 +2688,9 @@ function openDoctorModal(doc = null) {
 
             <div class="adm-form-group">
               <label class="adm-form-label">Mô tả giới thiệu bác sĩ</label>
-              <textarea 
-                id="doc-form-bio" 
-                class="adm-input adm-input-no-icon" 
+              <textarea
+                id="doc-form-bio"
+                class="adm-input adm-input-no-icon"
                 rows="2"
               >${doc ? escapeHtml(doc.bio) : ''}</textarea>
             </div>
@@ -2736,7 +2919,7 @@ function openMedicalExamModal(app, initialTab = 'info') {
     modalRoot.innerHTML = `
       <div class="adm-modal-overlay" id="adm-modal-overlay">
         <div class="adm-modal" style="max-width: 880px; width: 96%;">
-          
+
           <div class="adm-modal-header" style="background: linear-gradient(135deg, rgba(56,189,248,0.12), rgba(37,99,235,0.08)); border-bottom: 1px solid rgba(56,189,248,0.25); flex-direction: column; align-items: stretch; gap: 12px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
@@ -2763,7 +2946,7 @@ function openMedicalExamModal(app, initialTab = 'info') {
 
           <form id="adm-exam-form">
             <div class="adm-modal-body" style="max-height: 74vh; overflow-y: auto; padding: 22px;">
-              
+
               <!-- TAB 1: PHIẾU THÔNG TIN BỆNH NHÂN (ẢNH 4X6, CCCD TRƯỚC/SAU) -->
               <div id="pane-adm-info" style="display: ${initialTab === 'info' ? 'block' : 'none'};">
                 <div style="background: rgba(14,165,233,0.08); border: 1.5px solid rgba(14,165,233,0.3); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
@@ -2812,7 +2995,7 @@ function openMedicalExamModal(app, initialTab = 'info') {
                 <!-- Bảng Chi Tiết Thông Tin Bệnh Nhân -->
                 <div style="background: rgba(15,23,42,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px; font-size: 13px;">
                   <div style="font-weight: 700; color: #fff; margin-bottom: 12px; font-size: 14px; text-transform: uppercase;">📑 Chi Tiết Lý Lịch Bệnh Nhân</div>
-                  
+
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; line-height: 1.8;">
                     <div>• Họ và tên: <strong style="color: #fff;">${escapeHtml(profile.fullName)}</strong></div>
                     <div>• Giới tính: <strong style="color: #fff;">${escapeHtml(profile.gender)}</strong></div>
@@ -2835,7 +3018,7 @@ function openMedicalExamModal(app, initialTab = 'info') {
 
               <!-- TAB 2: KHÁM BỆNH & KÊ ĐƠN THUỐC -->
               <div id="pane-adm-exam" style="display: ${initialTab === 'exam' ? 'block' : 'none'};">
-              
+
                 ${isAdmin ? `
                 <!-- BANNER QUYỀN SUPER ADMIN TOÀN QUYỀN -->
                 <div style="background: rgba(234,179,8,0.12); border: 1.5px solid rgba(234,179,8,0.4); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; font-size: 12.5px; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
@@ -2864,7 +3047,7 @@ function openMedicalExamModal(app, initialTab = 'info') {
                   <div>
                     <div>Phòng khám: <strong style="color: #fbbf24;">${escapeHtml(app.roomName || 'Phòng 101')}</strong></div>
                     <div style="margin-top: 4px;">
-                      Bác sĩ điều trị: 
+                      Bác sĩ điều trị:
                       ${isAdmin ? `
                         <select id="exam-doctor-select" class="adm-select" style="padding: 2px 6px; font-size: 12.5px; height: auto; margin-left: 4px;">
                           ${allDocs.map(d => `
@@ -2875,7 +3058,7 @@ function openMedicalExamModal(app, initialTab = 'info') {
                         </select>
                       ` : `<strong style="color: #38bdf8;">${escapeHtml(app.doctorName)}</strong>`}
                     </div>
-                    <div style="color: var(--adm-text-muted); margin-top: 4px;">Trạng thái: 
+                    <div style="color: var(--adm-text-muted); margin-top: 4px;">Trạng thái:
                       <span style="font-weight: 700; color: ${isCompleted ? '#4ade80' : '#fbbf24'};">
                         ${isCompleted ? '✅ Đã hoàn thành ca khám' : '⏳ Đang tiếp nhận khám'}
                       </span>
@@ -2902,7 +3085,7 @@ function openMedicalExamModal(app, initialTab = 'info') {
                   <div style="font-size: 12.5px; font-weight: 700; color: #fff; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
                     <span>👁️</span> 1. Kết Quả Đo Khám Thị Lực & Bệnh Án
                   </div>
-                  
+
                   <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                     <div class="adm-form-group">
                       <label class="adm-form-label">Thị lực Mắt Phải (OD) *</label>
@@ -3213,7 +3396,7 @@ function openMedicalExamModal(app, initialTab = 'info') {
     // Submit Báo Xong / Cập nhật bệnh án & viện phí
     document.getElementById('adm-exam-form').addEventListener('submit', (e) => {
       e.preventDefault();
-      
+
       const drugRows = modalRoot.querySelectorAll('.drug-row');
       const prescriptions = [];
       drugRows.forEach(row => {
@@ -3490,7 +3673,7 @@ function bindPortalEvents() {
         currentTab = tab;
         document.querySelectorAll('.adm-nav-item').forEach(el => el.classList.remove('active'));
         item.classList.add('active');
-        
+
         const titleEl = document.getElementById('breadcrumb-title');
         if (titleEl) titleEl.textContent = getTabTitle(tab);
         refreshMainView();
@@ -3750,6 +3933,8 @@ function bindViewSpecificEvents() {
       showToast('Đã lưu cấu hình bảng giá thành công! Trang chủ và cổng thanh toán đã đồng bộ theo giá mới.', 'success');
       refreshMainView();
     });
+
+    bindEmailConfigEvents();
   }
 }
 
@@ -3843,6 +4028,7 @@ function refreshMainView() {
     bindViewSpecificEvents();
     if (currentTab === 'comments') bindCommentEvents();
   }
+
   const countTag = document.getElementById('nav-doc-count');
   if (countTag) countTag.textContent = DoctorManager.getDoctors().length;
   const appTag = document.getElementById('nav-app-count');

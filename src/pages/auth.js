@@ -9,6 +9,7 @@ import { renderHeader, renderFooter, setupHeaderEvents } from '../components/lay
 
 import { INITIAL_10_DOCTORS } from '../data/clinic-data.js';
 import { compressImageFile, getDefaultPatientPhotos } from '../utils/patient-profile.js';
+import { sendWelcomeEmail, isValidEmail } from '../utils/email-service.js';
 
 // Keys lưu trữ
 const USERS_STORAGE_KEY = 'doctor4_users_db';
@@ -96,8 +97,8 @@ export const AuthService = {
       doctorsList.forEach(doc => {
         const cleanEmail = (doc.email || `doc.${doc.id}@doctor4.vn`).trim().toLowerCase();
         const cleanPhone = (doc.phone || '').replace(/\s+/g, '');
-        const exists = users.find(u => 
-          (u.doctorId && String(u.doctorId) === String(doc.id)) || 
+        const exists = users.find(u =>
+          (u.doctorId && String(u.doctorId) === String(doc.id)) ||
           (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) ||
           (cleanPhone && u.phone && u.phone.replace(/\s+/g, '') === cleanPhone)
         );
@@ -166,8 +167,8 @@ export const AuthService = {
     const cleanEmail = (doc.email || '').trim().toLowerCase();
     const cleanPhone = (doc.phone || '').replace(/\s+/g, '');
 
-    const index = users.findIndex(u => 
-      (u.doctorId && String(u.doctorId) === String(doc.id)) || 
+    const index = users.findIndex(u =>
+      (u.doctorId && String(u.doctorId) === String(doc.id)) ||
       (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) ||
       (cleanPhone && u.phone && u.phone.replace(/\s+/g, '') === cleanPhone)
     );
@@ -263,7 +264,7 @@ export const AuthService = {
     const users = this.getUsers();
     const cleanId = (identifier || '').trim().toLowerCase();
     const cleanPhoneInput = (identifier || '').trim().replace(/\s+/g, '');
-    
+
     const matchedUser = users.find(u => {
       const uEmail = (u.email || '').trim().toLowerCase();
       const uPhone = (u.phone || '').trim().replace(/\s+/g, '');
@@ -546,6 +547,8 @@ function setupRegisterPage() {
     const name = nameInput ? nameInput.value.trim() : '';
     const phone = phoneInput ? phoneInput.value.trim() : '';
     const email = emailInput ? emailInput.value.trim() : '';
+    const contactEmailInput = document.getElementById('regContactEmail');
+    const contactEmail = contactEmailInput ? contactEmailInput.value.trim() : '';
     const password = pwdInput ? pwdInput.value : '';
     const confirmPassword = confirmPwdInput ? confirmPwdInput.value : '';
     const agreed = agreeTerms ? agreeTerms.checked : false;
@@ -572,6 +575,11 @@ function setupRegisterPage() {
 
     if (!email || !REGEX_EMAIL.test(email)) {
       setFieldError('regEmail', 'Email không đúng định dạng');
+      hasError = true;
+    }
+
+    if (contactEmail && !isValidEmail(contactEmail)) {
+      setFieldError('regContactEmail', 'Email nhận thông tin đặt lịch không đúng định dạng Gmail');
       hasError = true;
     }
 
@@ -619,6 +627,22 @@ function setupRegisterPage() {
       }, true);
 
       showToast('success', 'Đăng ký thành công!', `Hồ sơ bệnh nhân trực tuyến của ${newUser.name} đã tạo thành công!`);
+
+      // Gửi mail chào mừng về Gmail bệnh nhân
+      const welcomeTo = contactEmail || newUser.email;
+      if (isValidEmail(welcomeTo)) {
+        sendWelcomeEmail({
+          name: newUser.name,
+          email: welcomeTo,
+          phone: newUser.phone
+        }).then(res => {
+          if (res.success) {
+            showToast('success', 'Đã gửi email chào mừng', `Thông tin tài khoản đã được gửi tới ${welcomeTo}.`);
+          } else {
+            showToast('info', 'Chưa gửi được email', res.error || 'Không thể gửi email chào mừng.');
+          }
+        }).catch(() => {});
+      }
 
       setTimeout(() => {
         window.location.href = '/index.html';
