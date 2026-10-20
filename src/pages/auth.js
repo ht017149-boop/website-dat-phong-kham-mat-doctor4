@@ -10,6 +10,8 @@ import { renderHeader, renderFooter, setupHeaderEvents } from '../components/lay
 import { INITIAL_10_DOCTORS } from '../data/clinic-data.js';
 import { compressImageFile, getDefaultPatientPhotos } from '../utils/patient-profile.js';
 import { sendWelcomeEmail, isValidEmail } from '../utils/email-service.js';
+import { normalizePhone } from '../utils/otp-service.js';
+import { openForgotPasswordModal } from '../components/verification-modal.js';
 
 // Keys lưu trữ
 const USERS_STORAGE_KEY = 'doctor4_users_db';
@@ -310,6 +312,136 @@ export const AuthService = {
     users.push(newUser);
     this.saveUsers(users);
     return this.setCurrentUser(newUser, remember);
+  },
+
+  /** Tìm bản ghi người dùng theo id / email / số điện thoại (không phân biệt hoa thường) */
+  findUser(identifier) {
+    const clean = String(identifier || '').trim().toLowerCase();
+    const cleanPhone = normalizePhone(identifier);
+    if (!clean) return null;
+    return this.getUsers().find(u =>
+      (u.id && String(u.id).toLowerCase() === clean) ||
+      (u.email && String(u.email).trim().toLowerCase() === clean) ||
+      (u.phone && normalizePhone(u.phone) === cleanPhone)
+    ) || null;
+  },
+
+  /** Xác nhận mật khẩu hiện tại của 1 người dùng */
+  verifyPassword(user, password) {
+    if (!user) return false;
+    return String(user.password || '123456') === String(password || '');
+  },
+
+  /**
+   * Đặt lại / đổi mật khẩu.
+   * @param {object} params { userId, newPassword, requireOldPassword?, oldPassword? }
+   */
+  updatePassword({ userId, newPassword, oldPassword = null, requireOldPassword = false }) {
+    const users = this.getUsers();
+    const idx = users.findIndex(u => String(u.id) === String(userId));
+    if (idx === -1) throw new Error('Không tìm thấy tài khoản cần đổi mật khẩu.');
+
+    if (requireOldPassword && !this.verifyPassword(users[idx], oldPassword)) {
+      throw new Error('Mật khẩu hiện tại không chính xác.');
+    }
+
+    const pwd = String(newPassword || '');
+    if (pwd.length < 6) throw new Error('Mật khẩu mới phải có ít nhất 6 ký tự.');
+    if (this.verifyPassword(users[idx], pwd)) {
+      throw new Error('Mật khẩu mới phải khác mật khẩu hiện tại.');
+    }
+
+    users[idx] = {
+      ...users[idx],
+      password: pwd,
+      passwordUpdatedAt: new Date().toISOString()
+    };
+    this.saveUsers(users);
+
+    // Cập nhật phiên đăng nhập hiện tại trên thiết bị này
+    const session = this.getCurrentUser();
+    if (session && String(session.id) === String(userId)) {
+      this.setCurrentUser(users[idx], Boolean(localStorage.getItem(SESSION_STORAGE_KEY)));
+    }
+    return users[idx];
+  },
+
+  /** Kiểm tra email / số điện thoại đã thuộc tài khoản khác chưa */
+  isContactTaken({ email, phone, exceptUserId }) {
+    const cleanEmail = String(email || '').trim().toLowerCase();
+    const cleanPhone = normalizePhone(phone);
+    return this.getUsers().some(u => {
+      if (String(u.id) === String(exceptUserId)) return false;
+      const uEmail = String(u.email || '').trim().toLowerCase();
+      const uPhone = normalizePhone(u.phone);
+      return (cleanEmail && uEmail === cleanEmail) || (cleanPhone && uPhone === cleanPhone);
+    });
+  },
+
+  /**
+   * Cập nhật email / số điện thoại SAU KHI đã xác thực OTP.
+   * @param {object} params { userId, email?, phone? }
+   * @returns {{ user: object, changes: object }}
+   */
+  changeContact({ userId, email, phone }) {
+    const users = this.getUsers();
+    const idx = users.findIndex(u => String(u.id) === String(userId));
+    if (idx === -1) throw new Error('Không tìm thấy tài khoản cần cập nhật.');
+
+    const old = users[idx];
+    const nextEmail = email !== undefined ? String(email).trim() : old.email;
+    const nextPhone = phone !== undefined ? normalizePhone(phone) : old.phone;
+
+    if (email !== undefined) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
+        throw new Error('Địa chỉ email mới không đúng định dạng.');
+      }
+      if (this.isContactTaken({ email: nextEmail, exceptUserId: old.id })) {
+        throw new Error('Email này đã được dùng cho một tài khoản khác.');
+      }
+    }
+
+    if (phone !== undefined) {
+      if (!/^0\d{9}$/.test(nextPhone)) {
+        throw new Error('Số điện thoại mới không đúng định dạng (10 số, bắt đầu bằng 0).');
+      }
+      if (this.isContactTaken({ phone: nextPhone, exceptUserId: old.id })) {
+        throw new Error('Số điện thoại này đã được dùng cho một tài khoản khác.');
+      }
+    }
+
+    const changes = {};
+    if (nextEmail !== old.email) changes.email = { from: old.email, to: nextEmail };
+    if (nextPhone !== old.phone) changes.phone = { from: old.phone, to: nextPhone };
+
+    users[idx] = {
+      ...old,
+      email: nextEmail,
+      phone: nextPhone,
+      contactUpdatedAt: new Date().toISOString()
+    };
+    this.saveUsers(users);
+
+    // Đồng bộ email sang hồ sơ bệnh nhân (dùng khi gửi thư xác nhận lịch khám)
+    try {
+      const apps = JSON.parse(localStorage.getItem('doctor4_appointments_db') || '[]');
+      let touched = false;
+      const updated = apps.map(app => {
+        if (String(app.patientPhone || '') === String(old.phone || '') && app.patientEmail) {
+          touched = true;
+          return { ...app, patientEmail: changes.email ? nextEmail : app.patientEmail, patientPhone: nextPhone };
+        }
+        return app;
+      });
+      if (touched) localStorage.setItem('doctor4_appointments_db', JSON.stringify(updated));
+    } catch (e) { /* bỏ qua */ }
+
+    const session = this.getCurrentUser();
+    if (session && String(session.id) === String(userId)) {
+      this.setCurrentUser(users[idx], Boolean(localStorage.getItem(SESSION_STORAGE_KEY)));
+    }
+
+    return { user: users[idx], changes };
   }
 };
 
@@ -410,6 +542,23 @@ function clearFieldErrors(form) {
     err.textContent = '';
     err.classList.remove('visible');
   });
+}
+
+// ── Forgot Password (xác thực OTP) ───────────────────────────
+function setupForgotPassword() {
+  const link = document.getElementById('linkForgotPassword');
+  if (!link) return;
+
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const identifier = document.getElementById('loginIdentifier')?.value.trim() || '';
+    openForgotPasswordModal({ prefill: identifier });
+  });
+
+  // Hỗ trợ mở trực tiếp: /dang-nhap.html?forgot=1
+  if (new URLSearchParams(window.location.search).get('forgot') === '1') {
+    setTimeout(() => openForgotPasswordModal(), 300);
+  }
 }
 
 // ── Login Page Logic ─────────────────────────────────────────
@@ -667,7 +816,7 @@ function setupSocialButtons() {
       e.preventDefault();
       const provider = btn.textContent.trim();
       showToast('info', 'Đăng nhập mạng xã hội', `Đang kết nối xác thực với ${provider}...`);
-      
+
       // Auto mock social login
       setTimeout(() => {
         const mockUser = {
@@ -703,6 +852,7 @@ function initAuth() {
 
   setupHeaderEvents();
   setupPasswordToggles();
+  setupForgotPassword();
   setupLoginPage();
   setupRegisterPage();
   setupSocialButtons();
