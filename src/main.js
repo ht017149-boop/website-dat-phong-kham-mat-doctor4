@@ -1,3 +1,4 @@
+import './css/ai-assistant.css';
 import './css/style.css';
 import './css/home.css';
 import './css/gioi-thieu.css';
@@ -10,6 +11,7 @@ import {
 
 import { setupBookingSystem } from './pages/booking.js';
 import { initComments } from './pages/comments.js';
+import { AIAssistant } from './components/ai-assistant.js';
 
 function init() {
   const header = document.getElementById('header-container');
@@ -36,6 +38,12 @@ function init() {
 
   setupHeaderEvents();
   setupBookingSystem();
+
+  // Khởi động Trợ Lý Bác Sĩ AI
+  try {
+    AIAssistant.init();
+  } catch (e) {}
+
 
 
   // Khởi động chức năng bình luận

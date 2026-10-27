@@ -321,6 +321,30 @@ export function setupBookingForm() {
   let uploadedCccdFront = '';
   let uploadedCccdBack = '';
 
+  // Auto-fill thông tin bác sĩ & dịch vụ từ Trợ lý Bác Sĩ AI
+  try {
+    const aiBooking = sessionStorage.getItem('doctor4_ai_selected_booking');
+    if (aiBooking) {
+      const { spec, docId, symptom } = JSON.parse(aiBooking);
+      sessionStorage.removeItem('doctor4_ai_selected_booking');
+      if (spec && srvSelect) {
+        srvSelect.value = spec;
+        srvSelect.dispatchEvent(new Event('change'));
+      }
+      setTimeout(() => {
+        const docSelect = document.getElementById('book-doctor');
+        if (docSelect && docId) {
+          docSelect.value = docId;
+          docSelect.dispatchEvent(new Event('change'));
+        }
+        const sympInput = document.getElementById('book-symptoms');
+        if (sympInput && symptom) {
+          sympInput.value = symptom;
+        }
+      }, 250);
+    }
+  } catch (e) {}
+
   // Auto-fill thông tin nếu người dùng đã đăng nhập
   try {
     const session = localStorage.getItem('doctor4_session') || sessionStorage.getItem('doctor4_session');

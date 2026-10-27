@@ -367,16 +367,46 @@ export const AppointmentManager = {
   }
 };
 
-// Dữ liệu thuốc mắt có giá bán niêm yết (VNĐ)
+// Dữ liệu thuốc mắt có giá bán niêm yết (VNĐ) - Danh mục bệnh viện
 export const SAMPLE_EYE_DRUGS = [
-  { name: 'Systane Ultra (Lọ 10ml)', type: 'Nước mắt nhân tạo', dosage: 'Nhỏ 1 giọt x 3-4 lần/ngày khi khô mắt', price: 95000, quantity: 1 },
-  { name: 'Vismed 0.18% (Hộp 20 ống)', type: 'Bôi trơn nhãn cầu', dosage: 'Nhỏ 1 giọt x 3 lần/ngày', price: 230000, quantity: 1 },
-  { name: 'Tobrex 0.3% (Lọ 5ml)', type: 'Kháng sinh Tobramycin', dosage: 'Nhỏ 1-2 giọt x 3 lần/ngày trong 7 ngày', price: 68000, quantity: 1 },
-  { name: 'Tobradex (Lọ 5ml)', type: 'Kháng sinh + Kháng viêm Corticoid', dosage: 'Nhỏ 1 giọt x 2-3 lần/ngày theo chỉ định', price: 72000, quantity: 1 },
-  { name: 'Cravit 0.5% (Lọ 5ml)', type: 'Kháng sinh Levofloxacin', dosage: 'Nhỏ 1 giọt x 3 lần/ngày sau phẫu thuật', price: 115000, quantity: 1 },
-  { name: 'Nevanac 0.1% (Lọ 5ml)', type: 'Chống viêm NSAID', dosage: 'Nhỏ 1 giọt x 3 lần/ngày', price: 185000, quantity: 1 },
-  { name: 'Lumigan 0.01% (Lọ 3ml)', type: 'Hạ nhãn áp Glôcôm', dosage: 'Nhỏ 1 giọt vào buổi tối', price: 340000, quantity: 1 },
-  { name: 'Atropine 0.01% (Lọ 5ml)', type: 'Kiểm soát cận thị trẻ em', dosage: 'Nhỏ 1 giọt trước khi đi ngủ', price: 190000, quantity: 1 }
+  // 1. Nhóm Khô mắt / Bôi trơn nhãn cầu
+  { name: 'Systane Ultra (Lọ 10ml)', type: 'Nước mắt nhân tạo', category: 'dry_eye', dosage: 'Nhỏ 1 giọt x 3-4 lần/ngày khi khô mắt', price: 95000, quantity: 1, keywords: 'systane ultra kho mat moi mat nuoc mat nhan tao' },
+  { name: 'Systane Complete (Lọ 10ml)', type: 'Bổ sung lipid màng phim nước mắt', category: 'dry_eye', dosage: 'Nhỏ 1 giọt x 2-3 lần/ngày', price: 165000, quantity: 1, keywords: 'systane complete lipid kho mat bay hoi' },
+  { name: 'Vismed 0.18% (Hộp 20 ống)', type: 'Natri Hyaluronate không chất bảo quản', category: 'dry_eye', dosage: 'Nhỏ 1 giọt x 3 lần/ngày', price: 230000, quantity: 1, keywords: 'vismed 0.18 natri hyaluronate mo lasik khong bao quan' },
+  { name: 'Sanlein 0.1% (Lọ 5ml)', type: 'Natri Hyaluronate phục hồi giác mạc', category: 'dry_eye', dosage: 'Nhỏ 1 giọt x 5-6 lần/ngày', price: 65000, quantity: 1, keywords: 'sanlein 0.1 natri hyaluronate ton thuong giac mac' },
+  { name: 'Hyalein 0.1% (Lọ 5ml)', type: 'Dung dịch nhỏ mắt bôi trơn', category: 'dry_eye', dosage: 'Nhỏ 1 giọt x 3 lần/ngày', price: 62000, quantity: 1, keywords: 'hyalein 0.1 kho mat boi tron' },
+  { name: 'Refresh Tears (Lọ 15ml)', type: 'Nước mắt nhân tạo làm dịu kích ứng', category: 'dry_eye', dosage: 'Nhỏ 1-2 giọt khi mỏi mắt', price: 78000, quantity: 1, keywords: 'refresh tears diu mat chong moi mat' },
+
+  // 2. Nhóm Kháng sinh điều trị nhiễm khuẩn
+  { name: 'Tobrex 0.3% (Lọ 5ml)', type: 'Kháng sinh Tobramycin', category: 'antibiotic', dosage: 'Nhỏ 1-2 giọt x 3 lần/ngày trong 7 ngày', price: 68000, quantity: 1, keywords: 'tobrex 0.3 tobramycin khang sinh viem ket mac dau mat do' },
+  { name: 'Cravit 0.5% (Lọ 5ml)', type: 'Kháng sinh Levofloxacin', category: 'antibiotic', dosage: 'Nhỏ 1 giọt x 3 lần/ngày sau phẫu thuật', price: 115000, quantity: 1, keywords: 'cravit 0.5 levofloxacin khang sinh pho rong sau mo' },
+  { name: 'Cravit 1.5% (Lọ 5ml)', type: 'Kháng sinh Levofloxacin nồng độ cao', category: 'antibiotic', dosage: 'Nhỏ 1 giọt x 4 lần/ngày (Loét giác mạc)', price: 145000, quantity: 1, keywords: 'cravit 1.5 loet giac mac nhiem trung nang' },
+  { name: 'Vigamox 0.5% (Lọ 5ml)', type: 'Kháng sinh Moxifloxacin thế hệ 4', category: 'antibiotic', dosage: 'Nhỏ 1 giọt x 3 lần/ngày', price: 135000, quantity: 1, keywords: 'vigamox 0.5 moxifloxacin khang sinh the he 4' },
+
+  // 3. Nhóm Kháng viêm & Phối hợp
+  { name: 'Tobradex (Lọ 5ml)', type: 'Kháng sinh + Kháng viêm Corticoid', category: 'anti_inflammatory', dosage: 'Nhỏ 1 giọt x 2-3 lần/ngày theo chỉ định', price: 72000, quantity: 1, keywords: 'tobradex dexamethasone corticoid viem ket mac giac mac' },
+  { name: 'Nevanac 0.1% (Lọ 5ml)', type: 'Chống viêm NSAID Nepafenac giảm đau', category: 'anti_inflammatory', dosage: 'Nhỏ 1 giọt x 3 lần/ngày', price: 185000, quantity: 1, keywords: 'nevanac 0.1 nsaid giam dau chong viem phaco lasik' },
+  { name: 'Lotemax 0.5% (Lọ 5ml)', type: 'Kháng viêm Loteprednol an toàn', category: 'anti_inflammatory', dosage: 'Nhỏ 1-2 giọt x 2 lần/ngày', price: 175000, quantity: 1, keywords: 'lotemax 0.5 loteprednol it tang nhan ap' },
+  { name: 'Maxitrol (Lọ 5ml)', type: 'Kháng sinh + Dexamethasone đa phối hợp', category: 'anti_inflammatory', dosage: 'Nhỏ 1 giọt x 3 lần/ngày', price: 65000, quantity: 1, keywords: 'maxitrol neomycin polymyxin dexamethasone' },
+
+  // 4. Nhóm Hạ nhãn áp & Glôcôm
+  { name: 'Lumigan 0.01% (Lọ 3ml)', type: 'Hạ nhãn áp Glôcôm', category: 'glaucoma', dosage: 'Nhỏ 1 giọt vào buổi tối', price: 340000, quantity: 1, keywords: 'lumigan bimatoprost glocom ha nhan ap cuom nuoc' },
+  { name: 'Xalatan 0.005% (Lọ 2.5ml)', type: 'Hạ nhãn áp Latanoprost', category: 'glaucoma', dosage: 'Nhỏ 1 giọt duy nhất vào buổi tối', price: 295000, quantity: 1, keywords: 'xalatan latanoprost tang nhan ap glocom' },
+  { name: 'Azopt 1% (Lọ 5ml)', type: 'Hạ nhãn áp Brinzolamide', category: 'glaucoma', dosage: 'Nhỏ 1 giọt x 2 lần/ngày (Sáng & Tối)', price: 260000, quantity: 1, keywords: 'azopt brinzolamide uc che carbonic ha nhan ap' },
+  { name: 'Alphagan P 0.15% (Lọ 5ml)', type: 'Brimonidine bảo vệ thần kinh thị giác', category: 'glaucoma', dosage: 'Nhỏ 1 giọt x 2 lần/ngày', price: 280000, quantity: 1, keywords: 'alphagan brimonidine bao ve thi than kinh' },
+
+  // 5. Nhóm Chống dị ứng mắt
+  { name: 'Patanol 0.1% (Lọ 5ml)', type: 'Chống dị ứng mắt Olopatadine', category: 'allergy', dosage: 'Nhỏ 1 giọt x 2 lần/ngày khi ngứa đỏ mắt', price: 125000, quantity: 1, keywords: 'patanol olopatadine di ung ngua mat phan hoa do mat' },
+  { name: 'Relestat 0.05% (Lọ 5ml)', type: 'Chống dị ứng Epinastine', category: 'allergy', dosage: 'Nhỏ 1 giọt x 2 lần/ngày', price: 130000, quantity: 1, keywords: 'relestat epinastine viem ket mac di ung' },
+
+  // 6. Nhóm Cận thị & Nhãn nhi
+  { name: 'Atropine 0.01% (Lọ 5ml)', type: 'Kiểm soát cận thị trẻ em', category: 'pediatric', dosage: 'Nhỏ 1 giọt trước khi đi ngủ mỗi tối', price: 190000, quantity: 1, keywords: 'atropine 0.01 can thi hoc duong kiem soat can thi tre em' },
+  { name: 'Tropicamide 0.5% (Lọ 10ml)', type: 'Giãn đồng tử liệt điều tiết kiểm tra mắt', category: 'pediatric', dosage: 'Nhỏ theo chỉ định bác sĩ khi khám khúc xạ', price: 85000, quantity: 1, keywords: 'tropicamide liet dieu tiet do do can khuc xa tre em' },
+
+  // 7. Nhóm Bổ mắt & Chống thoái hóa
+  { name: 'Ocuvite Lutein (Hộp 30 viên)', type: 'Viên uống bổ mắt, chống thoái hóa điểm vàng', category: 'supplement', dosage: 'Uống 1 viên/ngày sau bữa ăn', price: 210000, quantity: 1, keywords: 'ocuvite lutein thoai hoa hoang diem diem vang bo mat' },
+  { name: 'Tobicom (Hộp 180 viên)', type: 'Viên nang mềm bổ mắt, giảm nhức mỏi', category: 'supplement', dosage: 'Uống 1 viên x 2 lần/ngày', price: 320000, quantity: 1, keywords: 'tobicom vitamin a bo mat moi mat nhuc mat' },
+  { name: 'Posod (Lọ 10ml)', type: 'Dung dịch nhỏ ngừa đục thủy tinh thể người già', category: 'supplement', dosage: 'Nhỏ 1 giọt x 3 lần/ngày', price: 85000, quantity: 1, keywords: 'posod duc thuy tinh the nguoi gia cuom kho' }
 ];
 
 export const SAMPLE_DIAGNOSES = [

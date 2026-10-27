@@ -1,3 +1,4 @@
+import { AIAssistant } from './ai-assistant.js';
 /* ============================================================
    src/components/layout.js — Doctor4 Eye Clinic
    Header & Footer components + Navigation & Auth status
@@ -168,6 +169,13 @@ export function setupHeaderEvents() {
       });
     });
   });
+
+  // Khởi tạo Trợ Lý Bác Sĩ AI
+  try {
+    AIAssistant.init();
+  } catch (err) {
+    console.warn('Lỗi khởi tạo Bác Sĩ AI:', err);
+  }
 
   window.addEventListener('scroll', () => {
     if (!navbar) return;
