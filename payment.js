@@ -112,15 +112,15 @@ function getCurrentContext() {
     if (paramApptId) {
       app = allApps.find(a => String(a.id) === String(paramApptId));
     }
-    // Nếu không có ID truyền vào nhưng có danh sách lịch hẹn, lấy lịch hẹn đầu tiên
+    // Nếu không có ID truyền vào, ưu tiên ca đang chờ thanh toán gần nhất
     if (!app && allApps.length > 0) {
-      app = allApps[0];
+      app = allApps.find(a => a.status === 'pending' || a.billing?.paymentStatus === 'unpaid') || allApps[allApps.length - 1];
     }
   } catch (e) {
     console.error("Lỗi đọc doctor4_appointments_db:", e);
   }
 
-  const effectiveApptId = paramApptId || (app ? app.id : "DOC-2026-1001");
+  const effectiveApptId = paramApptId || (app ? app.id : "");
 
   // Tìm trong hóa đơn (nếu bác sĩ đã gửi hóa đơn sang thu ngân)
   try {
@@ -468,27 +468,17 @@ function renderPaymentUI(ctx) {
   const counterCode = document.getElementById("counterApptCode");
   if (counterCode) counterCode.textContent = ctx.appointmentId;
 
-  // Nếu đã thanh toán rồi -> Hiển thị ngay biên nhận điện tử
+  // Nếu đã thanh toán rồi -> Hiển thị trạng thái đã hoàn tất
   if (ctx.isPaid) {
     if (step3Methods) step3Methods.style.display = "none";
     if (step4Exec) step4Exec.style.display = "none";
-    renderReceipt(ctx.paidRecord || {
-      id: ctx.paymentId,
-      appointmentId: ctx.appointmentId,
-      patientName: ctx.patientName,
-      serviceName: ctx.serviceName,
-      doctorName: ctx.doctorName,
-      amount: ctx.totalAmount,
-      date: ctx.appointmentDate,
-      time: ctx.appointmentTime,
-      paymentMethod: 'VietQR (MB Bank)',
-      confirmedAt: new Date().toLocaleString("vi-VN")
-    });
+    updateVerificationUI("success");
+    const actionsGrp = document.querySelector(".actions-group");
+    if (actionsGrp) actionsGrp.style.display = "none";
   } else {
     // Chưa thanh toán -> MỞ PHẦN CHỌN PHƯƠNG THỨC VÀ THANH TOÁN
     if (step3Methods) step3Methods.style.display = "block";
     if (step4Exec) step4Exec.style.display = "block";
-    if (receiptCard) receiptCard.style.display = "none";
 
     const actionsGrp = document.querySelector(".actions-group");
     if (actionsGrp) actionsGrp.style.display = "flex";
@@ -663,8 +653,8 @@ function simulateInstantVerification() {
   // Đồng bộ lịch hẹn và hóa đơn sang đã thanh toán
   syncAppointmentAndInvoicePaid(ctx.appointmentId, verifiedRecord);
 
-  // Hiển thị biên nhận điện tử
-  renderReceipt(verifiedRecord);
+  // Cập nhật trạng thái xác minh thành công
+  updateVerificationUI("success");
 }
 window.simulateInstantVerification = simulateInstantVerification;
 
@@ -691,7 +681,17 @@ function updateVerificationUI(status) {
     box.className = "verification-box success";
     if (icon) icon.textContent = "✅";
     if (title) title.textContent = "Giao dịch đã được đối chiếu & xác minh thành công!";
-    if (subtitle) subtitle.textContent = "Hệ thống đã nhận đủ số tiền viện phí & đơn thuốc. Biên nhận điện tử đã được kích hoạt.";
+    if (subtitle) {
+      subtitle.innerHTML = `
+        <div style="margin-bottom: 12px; font-weight: 600;">Hệ thống đã nhận đủ số tiền viện phí & đơn thuốc. Quý khách vui lòng đến quầy tiếp đón hoặc phòng khám đúng giờ.</div>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
+          <button type="button" onclick="goToAppointmentTicket()" style="padding: 10px 18px; background: #0284c7; color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 13px;">🎫 Xem vé khám & phòng</button>
+          <a href="/index.html" style="padding: 10px 18px; background: #16a34a; color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center;">🏠 Về Trang chủ</a>
+        </div>
+      `;
+    }
+    const actionsGrp = document.querySelector(".actions-group");
+    if (actionsGrp) actionsGrp.style.display = "none";
   } else if (status === "pending" || status === "counter_pending") {
     box.className = "verification-box pending";
     if (icon) icon.textContent = "⏳";
@@ -764,38 +764,6 @@ function renderReceipt(payment) {
 
   const step4Exec = document.getElementById("step-4-container");
   if (step4Exec) step4Exec.style.display = "none";
-
-  const receiptCard = document.getElementById("step-6-receipt");
-  if (receiptCard) {
-    receiptCard.classList.add("active");
-    receiptCard.style.display = "block";
-    receiptCard.scrollIntoView({ behavior: "smooth" });
-  }
-
-  const ctx = getCurrentContext();
-
-  document.getElementById("receiptIdText").textContent = payment.id || ctx.paymentId;
-  document.getElementById("receiptApptCode").textContent = payment.appointmentId || ctx.appointmentId;
-  
-  const elReceiptQueue = document.getElementById("receiptQueueNumber");
-  if (elReceiptQueue) {
-    const qNum = payment.queueNumber || payment.stt || ctx.queueNumber || 1;
-    elReceiptQueue.textContent = `STT #${String(qNum).padStart(2, '0')}`;
-  }
-
-  document.getElementById("receiptTimestamp").textContent = payment.confirmedAt || payment.paidAt || new Date().toLocaleString("vi-VN");
-
-  let methodLabel = "Chuyển khoản VietQR (MB Bank)";
-  if (payment.paymentMethod === 'counter') methodLabel = "Thanh toán trực tiếp tại Quầy Thu Ngân (Tầng 1)";
-  else if (payment.paymentMethod === 'vnpay') methodLabel = "Cổng thanh toán điện tử VNPAY-QR";
-  else if (payment.paymentMethod === 'momo') methodLabel = "Cổng thanh toán Ví MoMo";
-
-  document.getElementById("receiptMethodText").textContent = methodLabel;
-  document.getElementById("receiptPatientName").textContent = payment.patientName || ctx.patientName;
-  document.getElementById("receiptServiceName").textContent = payment.serviceName || ctx.serviceName;
-  document.getElementById("receiptDoctorName").textContent = payment.doctorName || ctx.doctorName;
-  document.getElementById("receiptDateTime").textContent = `${payment.time || ctx.appointmentTime} — Ngày ${payment.date || ctx.appointmentDate}`;
-  document.getElementById("receiptPaidAmount").textContent = formatMoney(payment.amount || ctx.totalAmount);
 
   updateVerificationUI("success");
 }
@@ -945,21 +913,7 @@ function checkRealtimeStatus(manual = false) {
 
   // Kiểm tra trạng thái thanh toán đã được duyệt chưa
   if (ctx.isPaid) {
-    const receiptCard = document.getElementById("step-6-receipt");
-    if (receiptCard && !receiptCard.classList.contains("active")) {
-      renderReceipt(ctx.paidRecord || {
-        id: ctx.paymentId,
-        appointmentId: ctx.appointmentId,
-        patientName: ctx.patientName,
-        serviceName: ctx.serviceName,
-        doctorName: ctx.doctorName,
-        amount: ctx.totalAmount,
-        date: ctx.appointmentDate,
-        time: ctx.appointmentTime,
-        paymentMethod: 'VietQR (MB Bank)',
-        confirmedAt: new Date().toLocaleString("vi-VN")
-      });
-    }
+    updateVerificationUI("success");
   }
 }
 window.checkRealtimeStatus = checkRealtimeStatus;

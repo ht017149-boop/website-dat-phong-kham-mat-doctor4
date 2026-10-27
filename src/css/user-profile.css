@@ -530,3 +530,74 @@
     flex: 1;
   }
 }
+
+/* ── Thẻ Bảo mật tài khoản ───────────────────────────────────── */
+.profile-security-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.profile-security-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--clr-border, #e2e8f0);
+  border-radius: var(--r-md, 12px);
+  background: #f8fafc;
+  transition: border-color var(--tr-fast, 150ms ease), box-shadow var(--tr-fast, 150ms ease);
+}
+
+.profile-security-row:hover {
+  border-color: #bae6fd;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);
+}
+
+.profile-security-icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border-radius: 10px;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+}
+
+.profile-security-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-security-title {
+  font-family: var(--font-heading, sans-serif);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.profile-security-desc {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: 0.15rem;
+  word-break: break-word;
+}
+
+.profile-security-row .btn-profile-outline {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .profile-security-row {
+    flex-wrap: wrap;
+  }
+
+  .profile-security-row .btn-profile-outline {
+    width: 100%;
+    text-align: center;
+  }
+}

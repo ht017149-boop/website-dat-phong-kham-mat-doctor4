@@ -1025,8 +1025,12 @@ function openDoctorExamModal(app) {
       const rawInvoices = localStorage.getItem(INVOICES_KEY);
       let invoiceList = rawInvoices ? JSON.parse(rawInvoices) : [];
 
-      const invoiceId = 'HD-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000);
-      const existingIdx = invoiceList.findIndex(i => i.appointmentId === app.id);
+      const invoiceId = app.invoiceId || ('HD-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000));
+      const existingIdx = invoiceList.findIndex(i =>
+        String(i.appointmentId) === String(app.id) ||
+        (app.invoiceId && String(i.id) === String(app.invoiceId)) ||
+        String(i.id) === String(app.id)
+      );
 
       const newInvoice = {
         id: existingIdx >= 0 ? invoiceList[existingIdx].id : invoiceId,

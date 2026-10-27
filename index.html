@@ -212,10 +212,10 @@
 
     <section class="how-it-works" id="quy-trinh">
       <div class="section-header">
-        <span class="section-tag">Quy trình đặt lịch & thanh toán</span>
-        <h2 class="section-title">Quy trình <span>6 bước chuẩn y khoa</span></h2>
+        <span class="section-tag">Quy trình khám & điều trị</span>
+        <h2 class="section-title">Quy trình <span>chuẩn y khoa</span></h2>
         <p class="section-desc">
-          Minh bạch từ khâu chọn dịch vụ, tính tiền, phương thức thanh toán VietQR đến xác minh giao dịch và cấp biên nhận điện tử.
+          Quy trình tiếp nhận chuyên nghiệp từ khâu đăng ký lịch khám, bác sĩ khám và kê đơn, đến tính viện phí minh bạch và thanh toán tiện lợi.
         </p>
       </div>
 
@@ -223,32 +223,32 @@
         <div class="step-item">
           <div class="step-number">📋<span class="step-num-text">1</span></div>
           <h3 class="step-label">Khách đặt lịch khám</h3>
-          <p class="step-desc">Chọn dịch vụ khám mắt, bác sĩ, ngày giờ khám và nhập thông tin cá nhân. Chờ xác nhận.</p>
+          <p class="step-desc">Chọn dịch vụ khám mắt, bác sĩ, ngày giờ khám và nhập thông tin cá nhân. Nhận mã hẹn tức thì.</p>
         </div>
         <div class="step-item">
-          <div class="step-number">💰<span class="step-num-text">2</span></div>
-          <h3 class="step-label">Hệ thống tính tiền</h3>
-          <p class="step-desc">Hiển thị dịch vụ, giá khám và tổng tiền. Xác định rõ khoản thu trước (giữ chỗ) và khoản thanh toán sau tại viện.</p>
+          <div class="step-number">🩺<span class="step-num-text">2</span></div>
+          <h3 class="step-label">Bác sĩ khám & Kê đơn</h3>
+          <p class="step-desc">Bác sĩ chuyên khoa thăm khám lâm sàng, đo thị lực, nhãn áp và kê đơn thuốc điều trị chi tiết.</p>
         </div>
         <div class="step-item">
-          <div class="step-number">💳<span class="step-num-text">3</span></div>
-          <h3 class="step-label">Chọn phương thức TT</h3>
-          <p class="step-desc">Chuyển khoản VietQR, thanh toán tại quầy hoặc cổng điện tử. Tạo thông tin chuyển khoản chuẩn mã đơn.</p>
+          <div class="step-number">💰<span class="step-num-text">3</span></div>
+          <h3 class="step-label">Bảng kê viện phí & Đơn thuốc</h3>
+          <p class="step-desc">Hệ thống tự động hiển thị chi tiết số tiền viện phí và danh mục thuốc sau khi Bác sĩ hoàn thành kê đơn.</p>
         </div>
         <div class="step-item">
           <div class="step-number">📱<span class="step-num-text">4</span></div>
           <h3 class="step-label">Khách thực hiện TT</h3>
-          <p class="step-desc">Khách mở ứng dụng ngân hàng, quét VietQR, kiểm tra tên người nhận và số tiền rồi xác nhận chuyển tiền.</p>
+          <p class="step-desc">Quét mã VietQR chuyển khoản nhanh theo đúng số tiền, thanh toán tại quầy thu ngân hoặc qua ví điện tử.</p>
         </div>
         <div class="step-item">
           <div class="step-number">🔍<span class="step-num-text">5</span></div>
           <h3 class="step-label">Xác minh giao dịch</h3>
-          <p class="step-desc">Hệ thống đối chiếu mã giao dịch, số tiền và trạng thái. Nhân viên tại quầy xác nhận sau khi nhận tiền.</p>
+          <p class="step-desc">Hệ thống đối chiếu mã giao dịch tự động với ngân hàng hoặc quầy thu ngân xác nhận tức thì.</p>
         </div>
         <div class="step-item">
           <div class="step-number">🧾<span class="step-num-text">6</span></div>
           <h3 class="step-label">Cập nhật & Biên nhận</h3>
-          <p class="step-desc">Đánh dấu đã thanh toán khi giao dịch được xác minh. Lưu mã, ngày giờ, số tiền và gửi biên nhận điện tử.</p>
+          <p class="step-desc">Nhận biên nhận điện tử chính thức và xuất trình tại Quầy Dược tầng 1 để nhận thuốc điều trị.</p>
         </div>
       </div>
     </section>
@@ -462,8 +462,9 @@
 
             <div>
               <label style="display: block; color: #cbd5e1; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; text-transform: uppercase;">
-                Email nhận mã hẹn
+                Email (Gmail) nhận thông tin đặt lịch *
               </label>
+
               <input type="email" id="book-email" placeholder="VD: email@gmail.com" style="width: 100%; padding: 0.75rem 1rem; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: #fff; font-size: 0.92rem; outline: none;" />
             </div>
           </div>
@@ -510,25 +511,14 @@
                 <div style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">2. Khoản thanh toán sau (Tại viện):</div>
                 <div id="preview-postpaid-amount" style="font-size: 1.15rem; font-weight: 700; color: #e2e8f0; margin: 4px 0 2px;">25.000.000đ - 45.000.000đ</div>
                 <div id="preview-postpaid-desc" style="font-size: 0.78rem; color: #cbd5e1;">Chi phí phẫu thuật nếu đủ điều kiện mổ</div>
-              </div>
-            </div>
 
-            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 12px 16px; flex-wrap: wrap; gap: 8px;">
-              <div style="font-size: 0.9rem; color: #cbd5e1;">
-                💳 <strong>Tổng tiền thanh toán giữ chỗ (Bước 3 - 4):</strong>
+              <input type="email" id="book-email" placeholder="VD: email@gmail.com" style="width: 100%; padding: 0.75rem 1rem; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: #fff; font-size: 0.92rem; outline: none;" required />
+              <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.35rem; line-height: 1.4;">
+                📧 Thông tin đặt lịch (mã hẹn, số thứ tự, bác sĩ, phòng, giờ khám) sẽ được gửi về Gmail này.
+
               </div>
-              <div id="preview-total-due" style="font-size: 1.4rem; font-weight: 800; color: #4ade80;">
-                500.000đ
-              </div>
-            </div>
-            <div style="font-size: 0.76rem; color: #94a3b8; margin-top: 8px; line-height: 1.4;">
-              * <em>Lưu ý:</em> Khoản thu trước dùng để xác nhận giữ chỗ bác sĩ & thực hiện quy trình khám ban đầu. Các chi phí phẫu thuật / thủ thuật / thuốc (nếu có) sẽ thanh toán sau tại quầy lễ tân tầng 1 sau khi có chỉ định của Bác sĩ.
             </div>
           </div>
-
-
-          <button type="submit" id="btn-submit-booking" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #0b1329; font-weight: 800; font-size: 1.05rem; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 24px rgba(56,189,248,0.4); transition: transform 0.2s;">
-            <span id="btn-submit-booking-text">✨ XÁC NHẬN ĐẶT LỊCH & TIẾP TỤC THANH TOÁN (500.000đ)</span>
 
           <!-- KHỐI TẢI THÔNG TIN BỆNH NHÂN & CCCD / ẢNH 4X6 TRỰC TUYẾN (TÙY CHỌN - COLLAPSIBLE) -->
           <details class="booking-patient-profile-section" style="background: rgba(14, 165, 233, 0.08); border: 1.5px dashed rgba(56, 189, 248, 0.4); border-radius: 14px; padding: 14px 18px; margin-bottom: 1.75rem; cursor: pointer;">
@@ -620,9 +610,8 @@
             </div>
           </details>
 
-          <button type="submit" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #0b1329; font-weight: 800; font-size: 1.05rem; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 24px rgba(56,189,248,0.4); transition: transform 0.2s;">
-            <span>✨ XÁC NHẬN ĐẶT LỊCH KHÁM</span>
-
+          <button type="submit" id="btn-submit-booking" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #0b1329; font-weight: 800; font-size: 1.05rem; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 24px rgba(56,189,248,0.4); transition: transform 0.2s;">
+            <span id="btn-submit-booking-text">✨ XÁC NHẬN ĐẶT LỊCH KHÁM</span>
             <span>→</span>
           </button>
         </form>

@@ -86,6 +86,7 @@ function buildProfile() {
     room: record.room || '',
     degree: record.degree || '',
     createdAt: record.createdAt || '',
+    passwordUpdatedAt: record.passwordUpdatedAt || '',
     eyeProfile: record.eyeProfile || null
   };
 }
@@ -165,6 +166,8 @@ function renderViewMode(p) {
       </div>
     </div>
 
+    ${renderSecurityCard(p)}
+
     ${renderEyeProfile(p.eyeProfile)}
 
     <div class="profile-card">
@@ -190,6 +193,46 @@ function renderPhotoBox(label, src, key) {
       <div class="profile-photo-frame" data-photo="${key}">
         <img src="${src}" alt="${label}" onerror="this.style.display='none'" />
       </div>
+    </div>
+  `;
+}
+
+// ── Thẻ Bảo mật tài khoản (đổi mật khẩu / đổi email-SĐT) ──────
+function renderSecurityCard(p) {
+  return `
+    <div class="profile-card">
+      <div class="profile-card-head">
+        <h2>🔐 Bảo mật tài khoản</h2>
+      </div>
+
+      <div class="profile-security-list">
+        <div class="profile-security-row">
+          <div class="profile-security-icon">🔑</div>
+          <div class="profile-security-info">
+            <div class="profile-security-title">Mật khẩu đăng nhập</div>
+            <div class="profile-security-desc">
+              ${p.passwordUpdatedAt
+                ? `Cập nhật lần cuối: ${formatDateTime(p.passwordUpdatedAt)}`
+                : 'Nên đổi mật khẩu định kỳ 3 – 6 tháng một lần.'}
+            </div>
+          </div>
+          <button type="button" class="btn-profile-outline" id="btn-change-password">Đổi mật khẩu</button>
+        </div>
+
+        <div class="profile-security-row">
+          <div class="profile-security-icon">✉️</div>
+          <div class="profile-security-info">
+            <div class="profile-security-title">Email & Số điện thoại</div>
+            <div class="profile-security-desc">${escapeHtml(p.email || '—')} · ${escapeHtml(p.phone || '—')}</div>
+          </div>
+          <button type="button" class="btn-profile-outline" id="btn-change-contact">Thay đổi (OTP)</button>
+        </div>
+      </div>
+
+      <p class="profile-note">
+        🛡️ Khi thay đổi email/SĐT, hệ thống gửi mã xác thực 6 số tới email hiện tại và
+        thông báo tới địa chỉ cũ sau khi hoàn tất.
+      </p>
     </div>
   `;
 }
@@ -328,6 +371,15 @@ function bindEvents(root, p) {
     el.addEventListener('click', () => {
       import('./my-appointments.js').then(m => m.openLookupAppointmentModal(el.getAttribute('data-phone') || ''));
     });
+  });
+
+  // Đổi mật khẩu / đổi email – SĐT (xác thực OTP)
+  root.querySelector('#btn-change-password')?.addEventListener('click', () => {
+    import('../components/verification-modal.js').then(m => m.openChangePasswordModal());
+  });
+
+  root.querySelector('#btn-change-contact')?.addEventListener('click', () => {
+    import('../components/verification-modal.js').then(m => m.openChangeContactModal());
   });
 
   // Bật chế độ chỉnh sửa

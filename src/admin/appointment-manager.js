@@ -251,6 +251,64 @@ export const AppointmentManager = {
     };
 
     localStorage.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(list));
+
+    // Đồng bộ trực tiếp vào doctor4_invoices_db cho Quầy Thu Ngân
+    try {
+      const INVOICES_STORAGE_KEY = 'doctor4_invoices_db';
+      const rawInvoices = localStorage.getItem(INVOICES_STORAGE_KEY);
+      let invoiceList = rawInvoices ? JSON.parse(rawInvoices) : [];
+      if (Array.isArray(invoiceList)) {
+        const invIdx = invoiceList.findIndex(i =>
+          String(i.appointmentId) === String(id) ||
+          (current.invoiceId && String(i.id) === String(current.invoiceId)) ||
+          String(i.id) === String(id)
+        );
+        const invPayload = {
+          examFee,
+          medicineFee,
+          serviceFee,
+          discount,
+          totalAmount,
+          prescriptions,
+          diagnosis: updatedRecord.diagnosis || '',
+          advice: updatedRecord.advice || '',
+          revisitDate: updatedRecord.revisitDate || '',
+          doctorName: updatedRecord.doctorName || current.doctorName || '',
+          roomName: updatedRecord.roomName || current.roomName || '',
+          status: billingData.paymentStatus === 'paid' ? 'paid' : (invIdx >= 0 ? invoiceList[invIdx].status : 'pending'),
+          paidAt: billingData.paymentStatus === 'paid' ? (billingData.paidAt || new Date().toISOString()) : (invIdx >= 0 ? invoiceList[invIdx].paidAt : null),
+          paymentMethod: billingData.paymentStatus === 'paid' ? billingData.paymentMethod : (invIdx >= 0 ? invoiceList[invIdx].paymentMethod : null)
+        };
+        if (invIdx >= 0) {
+          invoiceList[invIdx] = { ...invoiceList[invIdx], ...invPayload };
+        } else {
+          invoiceList.unshift({
+            id: current.invoiceId || ('HD-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000)),
+            appointmentId: id,
+            patientName: current.patientName || 'Bệnh nhân',
+            patientPhone: current.patientPhone || '',
+            patientGender: current.patientGender || current.patientProfile?.gender || '',
+            patientAge: current.patientAge || '',
+            doctorId: current.doctorId || 'doc_1',
+            doctorName: updatedRecord.doctorName || current.doctorName || 'Bác sĩ chuyên khoa',
+            roomId: current.roomId || 'r101',
+            roomName: updatedRecord.roomName || current.roomName || 'Phòng khám',
+            serviceName: current.serviceName || 'Khám Mắt',
+            sentAt: current.createdAt || new Date().toISOString(),
+            queueNumber: current.queueNumber || current.stt || 1,
+            stt: current.stt || current.queueNumber || 1,
+            appointmentDate: current.date || '',
+            appointmentTime: current.timeSlot || '',
+            cashierName: billingData.paymentStatus === 'paid' ? 'Bác sĩ xác nhận' : null,
+            ...invPayload
+          });
+        }
+        localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(invoiceList));
+      }
+    } catch (e) {
+      console.warn('Lỗi đồng bộ hóa đơn trong completeMedicalExam:', e);
+    }
+
     return list[index];
   },
 

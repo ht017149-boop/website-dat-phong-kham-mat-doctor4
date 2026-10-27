@@ -325,7 +325,8 @@
         background: #f8fafc;
         color: #0f172a;
         font-size: 13px;
-        width: 240px;
+        width: 320px;
+        max-width: 100%;
         outline: none;
         transition: all 0.2s;
       }
@@ -780,11 +781,52 @@
       }
 
       /* Receipt print */
+      #cashier-print-area {
+        display: none;
+      }
+
       @media print {
-        body * { display: none !important; }
-        #cashier-print-area,
-        #cashier-print-area * { display: block !important; }
-        #cashier-print-area { position: fixed; inset: 0; background: #fff; color: #000; padding: 24px; font-family: sans-serif; }
+        @page {
+          size: A4 portrait;
+          margin: 12mm 15mm;
+        }
+
+        html, body {
+          background: #ffffff !important;
+          color: #000000 !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        /* Ẩn toàn bộ UI khi in, chỉ hiển thị hóa đơn */
+        header, main, footer,
+        .cashier-header, .cashier-main,
+        #cashier-modal-root, #cashier-toast-container {
+          display: none !important;
+        }
+
+        body > *:not(#cashier-print-area) {
+          display: none !important;
+        }
+
+        #cashier-print-area {
+          display: block !important;
+          visibility: visible !important;
+          position: static !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          background: #ffffff !important;
+          color: #111827 !important;
+          padding: 0 !important;
+          margin: 0 auto !important;
+          font-family: 'Times New Roman', Times, serif, system-ui;
+        }
+
+        #cashier-print-area * {
+          visibility: visible !important;
+        }
       }
 
       @media (max-width: 768px) {
@@ -876,10 +918,10 @@
         <div class="cashier-section-header">
           <div>
             <h2 class="cashier-section-title">
-              <span>🧾</span> Danh Sách Hóa Đơn Viện Phí Cần Thu
+              <span>🧾</span> Danh Sách Hóa Đơn & Viện Phí Cần Thu
             </h2>
             <p class="cashier-section-subtitle">
-              Bác sĩ kê xong tự động hiện ở đây. Bấm "Thu Tiền" để xác nhận thanh toán từ bệnh nhân.
+              Tự động đồng bộ khách hàng đặt lịch khám & đơn thuốc từ Bác sĩ chuyển về. Tìm kiếm theo mã hóa đơn (HD-...), mã đặt lịch (DOC-...), tên khách hàng hoặc SĐT.
             </p>
           </div>
 
@@ -891,8 +933,9 @@
             </div>
 
             <input type="text" id="cashier-search"
-                   placeholder="🔍 Tìm bệnh nhân, mã hóa đơn..."
-                   class="cashier-search-input" />
+                   placeholder="🔍 Tìm mã hóa đơn (HD-...), mã đặt lịch (DOC-...), tên KH, SĐT..."
+                   class="cashier-search-input"
+                   style="min-width: 320px;" />
 
             <button type="button" id="btn-refresh-invoices" class="cashier-btn-refresh">
               🔄 Làm mới
