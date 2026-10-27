@@ -606,17 +606,49 @@ function openDoctorExamModal(app) {
                   <span style="font-size: 0.8rem; font-weight: 600; color: #0284c7;">Hệ thống tự động tính tiền thuốc</span>
                 </div>
 
-                <!-- Thêm thuốc nhanh -->
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
-                  <select id="select-sample-drug" class="exam-select" style="flex: 1; min-width: 240px;">
-                    <option value="">-- Chọn thuốc mắt từ danh mục bệnh viện --</option>
-                    ${SAMPLE_EYE_DRUGS.map((d, i) => `
-                      <option value="${i}">${d.name} (${formatCurrency(d.price)}) - ${d.type}</option>
-                    `).join('')}
-                  </select>
-                  <button type="button" id="btn-add-drug" class="btn-doc-exam" style="padding: 6px 14px;">
-                    ➕ Thêm vào đơn
-                  </button>
+                <!-- Thêm thuốc nhanh & Tìm kiếm thuốc thông minh -->
+                <div style="background: rgba(2, 132, 199, 0.04); border: 1.5px solid #0284c7; border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+                  <div style="display: flex; gap: 8px; align-items: center; position: relative;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #0284c7; pointer-events: none;">🔍</span>
+                    <input 
+                      type="text" 
+                      id="input-drug-search" 
+                      placeholder="Gõ tên thuốc, hoạt chất hoặc bệnh (VD: Systane, Tobrex, Vismed, Cravit, Khô mắt, Kháng sinh...)" 
+                      style="width: 100%; padding: 9px 36px 9px 38px; border: 1.5px solid #0284c7; border-radius: 8px; font-size: 13.5px; outline: none; background: #ffffff; color: #0f172a; font-weight: 500; box-shadow: 0 2px 6px rgba(2,132,199,0.08);"
+                    />
+                    <button type="button" id="btn-clear-drug-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #64748b; font-size: 16px; cursor: pointer; display: none;" title="Xóa tìm kiếm">✕</button>
+                  </div>
+
+                  <!-- Danh mục phân loại thuốc nhanh -->
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;" id="drug-category-chips">
+                    <button type="button" class="chip-drug-filter active" data-cat="all" style="padding: 3px 9px; font-size: 11.5px; border-radius: 14px; border: 1px solid #0284c7; background: #0284c7; color: #fff; font-weight: 700; cursor: pointer;">Tất cả (${SAMPLE_EYE_DRUGS.length})</button>
+                    <button type="button" class="chip-drug-filter" data-cat="dry_eye" style="padding: 3px 9px; font-size: 11.5px; border-radius: 14px; border: 1px solid #cbd5e1; background: #fff; color: #334155; font-weight: 600; cursor: pointer;">💧 Khô mắt / Bôi trơn</button>
+                    <button type="button" class="chip-drug-filter" data-cat="antibiotic" style="padding: 3px 9px; font-size: 11.5px; border-radius: 14px; border: 1px solid #cbd5e1; background: #fff; color: #334155; font-weight: 600; cursor: pointer;">🔬 Kháng sinh</button>
+                    <button type="button" class="chip-drug-filter" data-cat="anti_inflammatory" style="padding: 3px 9px; font-size: 11.5px; border-radius: 14px; border: 1px solid #cbd5e1; background: #fff; color: #334155; font-weight: 600; cursor: pointer;">💊 Kháng viêm</button>
+                    <button type="button" class="chip-drug-filter" data-cat="glaucoma" style="padding: 3px 9px; font-size: 11.5px; border-radius: 14px; border: 1px solid #cbd5e1; background: #fff; color: #334155; font-weight: 600; cursor: pointer;">⚡ Hạ nhãn áp Glôcôm</button>
+                    <button type="button" class="chip-drug-filter" data-cat="allergy" style="padding: 3px 9px; font-size: 11.5px; border-radius: 14px; border: 1px solid #cbd5e1; background: #fff; color: #334155; font-weight: 600; cursor: pointer;">🌸 Dị ứng</button>
+                    <button type="button" class="chip-drug-filter" data-cat="pediatric" style="padding: 3px 9px; font-size: 11.5px; border-radius: 14px; border: 1px solid #cbd5e1; background: #fff; color: #334155; font-weight: 600; cursor: pointer;">👶 Nhãn nhi</button>
+                    <button type="button" class="chip-drug-filter" data-cat="supplement" style="padding: 3px 9px; font-size: 11.5px; border-radius: 14px; border: 1px solid #cbd5e1; background: #fff; color: #334155; font-weight: 600; cursor: pointer;">✨ Bổ mắt</button>
+                  </div>
+
+                  <!-- Danh sách kết quả tìm kiếm xổ xuống trực quan -->
+                  <div id="drug-search-results-box" style="display: none; max-height: 230px; overflow-y: auto; background: #ffffff; border: 1px solid #bae6fd; border-radius: 8px; margin-top: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.12); padding: 4px;">
+                    <!-- Dynamic search results -->
+                  </div>
+
+                  <!-- Chọn từ danh mục & nút thêm -->
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+                    <span style="font-size: 12px; color: #64748b; font-weight: 600;">Hoặc chọn từ danh mục:</span>
+                    <select id="select-sample-drug" class="exam-select" style="flex: 1; min-width: 220px; height: 34px; font-size: 12.5px;">
+                      <option value="">-- Chọn thuốc từ danh mục --</option>
+                      ${SAMPLE_EYE_DRUGS.map((d, i) => `
+                        <option value="${i}">${d.name} (${formatCurrency(d.price)}) - ${d.type}</option>
+                      `).join('')}
+                    </select>
+                    <button type="button" id="btn-add-drug" class="btn-doc-exam" style="padding: 5px 12px; font-size: 12.5px; height: 34px; white-space: nowrap;">
+                      ➕ Thêm vào đơn
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Bảng đơn thuốc -->
@@ -771,35 +803,173 @@ function openDoctorExamModal(app) {
     }
   });
 
-  // Thêm thuốc
+    // Hàm tiện ích thêm thuốc vào đơn
+  const addDrugToPrescription = (drug) => {
+    if (!drug) return;
+    currentPrescription.push({
+      name: drug.name,
+      type: drug.type || 'Thuốc tra mắt',
+      quantity: 1,
+      dosage: drug.dosage || 'Nhỏ 1 giọt x 2-3 lần/ngày',
+      price: drug.price || 50000
+    });
+    renderPrescriptionRows();
+    recalculateBilling();
+    showToast('success', 'Kê đơn thuốc', `Đã thêm "${drug.name}" vào đơn thuốc.`);
+  };
+
+  // Setup chức năng Tìm kiếm thuốc thông minh (Searchable Drug Selector)
+  const searchInput = document.getElementById('input-drug-search');
+  const clearSearchBtn = document.getElementById('btn-clear-drug-search');
+  const resultsBox = document.getElementById('drug-search-results-box');
+  const chipBtns = document.querySelectorAll('.chip-drug-filter');
+  let currentCategory = 'all';
+
+  const renderDrugSearchResults = () => {
+    if (!resultsBox || !searchInput) return;
+    const query = searchInput.value.trim().toLowerCase();
+    
+    // Nếu cả query rỗng và category là 'all' thì ẩn box
+    if (!query && currentCategory === 'all') {
+      resultsBox.style.display = 'none';
+      if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+      return;
+    }
+
+    if (clearSearchBtn) {
+      clearSearchBtn.style.display = query ? 'block' : 'none';
+    }
+
+    const filtered = SAMPLE_EYE_DRUGS.filter(d => {
+      // Lọc theo Category
+      if (currentCategory !== 'all' && d.category !== currentCategory) {
+        return false;
+      }
+      if (!query) return true;
+
+      // Tìm kiếm theo tên thuốc, hoạt chất, công dụng, từ khóa
+      const text = `${d.name} ${d.type} ${d.dosage} ${d.keywords || ''}`.toLowerCase();
+      const normalize = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
+      return text.includes(query) || normalize(text).includes(normalize(query));
+    });
+
+    if (filtered.length === 0) {
+      resultsBox.innerHTML = `
+        <div style="padding: 12px; text-align: center; color: #64748b; font-size: 13px;">
+          🔎 Không tìm thấy thuốc phù hợp với từ khóa "<strong>${searchInput.value}</strong>".
+          <div style="margin-top: 6px;">
+            <button type="button" id="btn-add-custom-drug" style="padding: 5px 12px; background: #0284c7; color: #fff; font-size: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+              ➕ Kê đơn thuốc tùy chỉnh
+            </button>
+          </div>
+        </div>
+      `;
+      resultsBox.style.display = 'block';
+
+      document.getElementById('btn-add-custom-drug')?.addEventListener('click', () => {
+        addDrugToPrescription({
+          name: searchInput.value.trim() || 'Thuốc nhỏ mắt chỉ định riêng',
+          type: 'Dung dịch nhỏ mắt',
+          dosage: 'Nhỏ 1 giọt x 3 lần/ngày',
+          price: 50000
+        });
+        searchInput.value = '';
+        resultsBox.style.display = 'none';
+      });
+      return;
+    }
+
+    resultsBox.innerHTML = `
+      <div style="padding: 4px 8px; font-size: 11px; color: #0284c7; font-weight: 700; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">
+        <span>TÌM THẤY ${filtered.length} THUỐC PHÙ HỢP:</span>
+        <span style="color: #64748b; font-weight: normal;">Bấm vào thuốc để kê đơn ngay</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; padding: 4px 0;">
+        ${filtered.map(d => `
+          <div class="drug-search-item" data-drug-name="${d.name}" style="padding: 8px 10px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; border: 1px solid #f1f5f9; transition: all 0.15s ease;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <strong style="color: #0f172a; font-size: 13.5px;">${d.name}</strong>
+                <span style="font-size: 11px; padding: 2px 7px; border-radius: 4px; background: #e0f2fe; color: #0369a1; font-weight: 600;">${d.type}</span>
+              </div>
+              <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
+                📋 <em>${d.dosage}</em>
+              </div>
+            </div>
+            <div style="text-align: right; white-space: nowrap;">
+              <div style="color: #059669; font-weight: 800; font-size: 13px;">${formatCurrency(d.price)}</div>
+              <button type="button" class="btn-select-searched-drug" style="margin-top: 2px; padding: 3px 8px; background: #0284c7; color: #fff; border: none; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                + Kê đơn
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    resultsBox.style.display = 'block';
+
+    // Click chọn thuốc từ danh sách tìm kiếm
+    resultsBox.querySelectorAll('.drug-search-item').forEach(item => {
+      item.addEventListener('mouseenter', () => { item.style.background = '#f0f9ff'; item.style.borderColor = '#bae6fd'; });
+      item.addEventListener('mouseleave', () => { item.style.background = 'transparent'; item.style.borderColor = '#f1f5f9'; });
+      item.addEventListener('click', () => {
+        const drugName = item.getAttribute('data-drug-name');
+        const found = SAMPLE_EYE_DRUGS.find(d => d.name === drugName);
+        if (found) {
+          addDrugToPrescription(found);
+          resultsBox.style.display = 'none';
+        }
+      });
+    });
+  };
+
+  searchInput?.addEventListener('input', renderDrugSearchResults);
+  searchInput?.addEventListener('focus', () => {
+    if (searchInput.value.trim() || currentCategory !== 'all') {
+      renderDrugSearchResults();
+    }
+  });
+
+  clearSearchBtn?.addEventListener('click', () => {
+    searchInput.value = '';
+    renderDrugSearchResults();
+  });
+
+  chipBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      chipBtns.forEach(b => {
+        b.classList.remove('active');
+        b.style.background = '#fff';
+        b.style.color = '#334155';
+        b.style.borderColor = '#cbd5e1';
+      });
+      btn.classList.add('active');
+      btn.style.background = '#0284c7';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#0284c7';
+      currentCategory = btn.getAttribute('data-cat') || 'all';
+      renderDrugSearchResults();
+    });
+  });
+
+  // Thêm thuốc từ dropdown hoặc tùy biến
   document.getElementById('btn-add-drug')?.addEventListener('click', () => {
     const select = document.getElementById('select-sample-drug');
     const idx = select.value;
     if (idx !== '') {
       const drug = SAMPLE_EYE_DRUGS[idx];
       if (drug) {
-        currentPrescription.push({
-          name: drug.name,
-          type: drug.type,
-          quantity: 1,
-          dosage: drug.dosage,
-          price: drug.price
-        });
-        renderPrescriptionRows();
-        recalculateBilling();
+        addDrugToPrescription(drug);
         select.value = '';
       }
     } else {
-      // Thêm thuốc tùy biến
-      currentPrescription.push({
-        name: 'Thuốc nhỏ mắt tùy chỉnh',
+      addDrugToPrescription({
+        name: searchInput?.value.trim() || 'Thuốc nhỏ mắt tùy chỉnh',
         type: 'Dung dịch nhỏ mắt',
-        quantity: 1,
-        dosage: 'Nhỏ 1 giọt x 2 lần/ngày',
+        dosage: 'Nhỏ 1 giọt x 2-3 lần/ngày',
         price: 50000
       });
-      renderPrescriptionRows();
-      recalculateBilling();
+      if (searchInput) searchInput.value = '';
     }
   });
 
